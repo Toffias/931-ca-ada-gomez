@@ -49,6 +49,25 @@ describe('esquemas desde el modelo de ejemplo', () => {
   })
 })
 
+describe('volumetría de Cañada de Gómez 931', () => {
+  const ca931 = objetosDelModelo(leerJSONGLTF(fs.readFileSync(path.resolve(__dirname, '../../seed/assets/ca931/volumetria.glb'))))
+
+  it('PB y 4 pisos, con 2 unidades por piso y la de PB', () => {
+    expect(pisosDelModelo(ca931)).toEqual([0, 1, 2, 3, 4])
+    expect(esquemaPlanta(ca931, 2).formas.map((f) => f.clave)).toEqual(['2A', '2B'])
+    expect(esquemaPlanta(ca931, 0).formas.map((f) => f.clave)).toEqual(['PB'])
+  })
+
+  it('entre medianeras: sólo frente (sur) y contrafrente, con el 3 ambientes a la izquierda', () => {
+    expect(carasConUnidades(ca931)).toEqual(['norte', 'sur'])
+    const e = esquemaFachada(ca931, 'sur')
+    expect(e.formas).toHaveLength(9)
+    const a = e.formas.find((f) => f.clave === '3A')!
+    const b = e.formas.find((f) => f.clave === '3B')!
+    expect(a.centro[0]).toBeLessThan(b.centro[0])
+  })
+})
+
 describe('máscaras SVG de Blender', async () => {
   const { leerMascara } = await import('../escena/mascara')
   it('lee paths, polygons y rects con su clave', () => {

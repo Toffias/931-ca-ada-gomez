@@ -22,7 +22,7 @@ Las propiedades se cargan en *Object Properties → Custom Properties* y viajan 
 | Qué | Nombre del objeto | Propiedades |
 |---|---|---|
 | Piso del edificio | libre (ej. `Piso_05`) | `tipo = "piso"`, `piso = 5` |
-| Techo | libre | `tipo = "techo"` |
+| Techo | libre | `tipo = "techo"`; entre medianeras, también `medianeras = "este,oeste"` (esas caras no salen en Disponibilidad) |
 | Unidad (depto) | `Unidad_5B` | `tipo = "unidad"`, `unidad = "5B"`, `piso = 5` |
 | Cámara de vista | `Cam_Principal`, `Cam_Aerea`… | – |
 | Faroles (opcional) | `Faroles` | `luces = [x,y,z, x,y,z, …]` en coordenadas de Blender |

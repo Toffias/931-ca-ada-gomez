@@ -1,7 +1,7 @@
 {
-  "name": "plantilla-edificio-3d",
+  "name": "canada-de-gomez-931",
   "version": "1.0.0",
-  "description": "Plantilla Suris Code: sitio de edificio con visor 3D (Next.js + Payload CMS + React Three Fiber)",
+  "description": "Sitio de Cañada de Gómez 931 (Male Group S.A.), sobre la plantilla Suris Code de edificios",
   "license": "MIT",
   "type": "module",
   "scripts": {

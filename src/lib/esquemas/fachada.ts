@@ -33,8 +33,13 @@ function unidadesDeCara(objetos: ObjetoModelo[], o: Orientacion) {
   return unidades.filter((u) => Math.abs((signo > 0 ? u.max[eje] : u.min[eje]) - borde) <= prof * 0.12)
 }
 
+/**
+ * Caras con unidades, sin las medianeras: en un edificio entre medianeras las unidades tocan los laterales pero
+ * esas caras no se ven. Se marcan en cualquier objeto con la propiedad `medianeras = "este,oeste"`.
+ */
 export function carasConUnidades(objetos: ObjetoModelo[]): Orientacion[] {
-  return ORIENTACIONES.filter((o) => unidadesDeCara(objetos, o).length > 0)
+  const medianeras = new Set(objetos.flatMap((o) => String(o.extras.medianeras ?? '').split(',').map((c) => c.trim())))
+  return ORIENTACIONES.filter((o) => !medianeras.has(o) && unidadesDeCara(objetos, o).length > 0)
 }
 
 export function esquemaFachada(objetos: ObjetoModelo[], o: Orientacion, escala = 1): Escena {

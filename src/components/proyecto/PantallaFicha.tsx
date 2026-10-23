@@ -399,7 +399,8 @@ function PlantaFicha(p: Props & { estado: Unidad['estado'] }) {
   const tx = useTextos()
   const rutas = useRutas()
   const hay: Record<TipoPlanta, boolean> = { '2d': !!t?.planta2d, '3d': !!(t?.planta || p.huella) }
-  const tipo: TipoPlanta = p.tipoPlanta && hay[p.tipoPlanta] ? p.tipoPlanta : hay['3d'] ? '3d' : '2d'
+  // por defecto la imagen 3D; si no hay, el plano 2D real antes que el esquema de la huella
+  const tipo: TipoPlanta = p.tipoPlanta && hay[p.tipoPlanta] ? p.tipoPlanta : t?.planta || !hay['2d'] ? '3d' : '2d'
   const imagen = tipo === '2d' ? t?.planta2d : t?.planta
 
   let medio
