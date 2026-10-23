@@ -1,6 +1,7 @@
 /**
  * Carga el proyecto Cañada de Gómez 931 (Male Group S.A.): usuario admin, datos del proyecto, el edificio con la
- * volumetría provisoria, los renders del cliente, 3 tipologías y las 9 unidades leídas del propio .glb.
+ * modelo de Blender (scripts/blender/modelar_ca931.py), los renders del cliente, 3 tipologías y las 9 unidades
+ * leídas del propio .glb.
  * Material de origen en docs/referencias/ y plan en docs/plan-renders-931.md.
  *
  *   pnpm seed         → sólo crea lo que falta
@@ -34,14 +35,15 @@ const DATOS_EDIFICIO = {
   bajada: 'Planta baja y 4 pisos entre medianeras: 9 departamentos de 2, 3 y 4 ambientes, con balcón al frente o patio propio.',
   caracteristicas: ['9 unidades', 'Balcones al frente', 'Patio propio en planta baja', 'Ascensor', 'Portería'],
   config3D: {
-    escala: 1, // la volumetría está en metros
+    escala: 1, // el modelo está en metros
     solElevacion: 35,
     solAzimut: -30,
-    ventanasNoche: { material: 'WEB_Vidrio', alturaPrimerPiso: 3.2, alturaPiso: 2.9, anchoVentana: 1.5, encendidas: 70 },
+    ventanasNoche: { material: 'WEB_Vidrio', alturaPrimerPiso: 3.3, alturaPiso: 2.75, anchoVentana: 1.5, encendidas: 70 },
     vistas: [
       { camara: 'Cam_Principal', etiqueta: 'Frente', alturaObjetivo: 8 },
       { camara: 'Cam_Derecha', etiqueta: 'Frente derecha', alturaObjetivo: 8 },
       { camara: 'Cam_Aerea', etiqueta: 'Aérea' },
+      { camara: 'Cam_Acceso', etiqueta: 'Acceso', alturaObjetivo: 1.8 },
     ],
   },
 }
@@ -137,7 +139,7 @@ async function main() {
     payload.create({ collection: 'media', data: { alt }, filePath: asset(archivo) })
 
   // Renders del cliente (docs/referencias/), pasados a webp
-  const modelo = await subir('volumetria.glb', `Volumetría provisoria de ${NOMBRE}`)
+  const modelo = await subir('edificio.glb', `Modelo 3D de ${NOMBRE}`)
   const izquierda = await subir('fachada-izquierda.webp', `Fachada de ${NOMBRE} de día`)
   const derecha = await subir('fachada-derecha.webp', `Fachada de ${NOMBRE} desde la vereda de enfrente`)
   const atardecer = await subir('atardecer.webp', `Fachada de ${NOMBRE} al atardecer, con las luces encendidas`)
@@ -169,7 +171,7 @@ async function main() {
         video: false,
         obra: false,
         ubicacion: false,
-        modo3d: false,
+        modo3d: true,
         blog: false,
       },
       contacto: {
@@ -218,8 +220,8 @@ async function main() {
   }
   log(`${tipologias.size} tipologías creadas`)
 
-  // Unidades: salen del .glb (scripts/volumetria/ca931.ts); el código es el mismo que en el modelo
-  const unidades = leerUnidadesDelGLB(fs.readFileSync(asset('volumetria.glb')))
+  // Unidades: salen del .glb (Unidad_* de Blender); el código es el mismo que en el modelo
+  const unidades = leerUnidadesDelGLB(fs.readFileSync(asset('edificio.glb')))
   for (const u of unidades) {
     const t = TIPOLOGIAS[tipologiaDe(u.unidad)]
     await payload.create({

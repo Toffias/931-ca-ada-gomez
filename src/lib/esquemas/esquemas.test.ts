@@ -49,8 +49,8 @@ describe('esquemas desde el modelo de ejemplo', () => {
   })
 })
 
-describe('volumetría de Cañada de Gómez 931', () => {
-  const ca931 = objetosDelModelo(leerJSONGLTF(fs.readFileSync(path.resolve(__dirname, '../../seed/assets/ca931/volumetria.glb'))))
+describe('modelo de Cañada de Gómez 931', () => {
+  const ca931 = objetosDelModelo(leerJSONGLTF(fs.readFileSync(path.resolve(__dirname, '../../seed/assets/ca931/edificio.glb'))))
 
   it('PB y 4 pisos, con 2 unidades por piso y la de PB', () => {
     expect(pisosDelModelo(ca931)).toEqual([0, 1, 2, 3, 4])

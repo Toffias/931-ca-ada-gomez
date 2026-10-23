@@ -159,12 +159,13 @@ Cuando el usuario arranca un proyecto nuevo, recorrer esta lista y preguntar lo 
 Completar al crear un proyecto desde la plantilla (en el repo template queda así):
 
 - Proyecto: *Cañada de Gómez 931* (Male Group S.A.). Material del cliente en `docs/referencias/`, plan en
-  [`docs/plan-renders-931.md`](docs/plan-renders-931.md). Fase A hecha: seed con sus renders y una volumetría
-  provisoria por código (`scripts/volumetria/ca931.ts`) hasta que esté el modelo de Blender.
+  [`docs/plan-renders-931.md`](docs/plan-renders-931.md). Fases A y B hechas: seed con sus renders y el
+  modelo de Blender (`scripts/blender/modelar_ca931.py` → `blender/ca931_web.blend`, fuera del repo), con cámaras
+  `Ref_*` calzadas sobre las fotos.
 - Torres: `canada-de-gomez-931` (PB + 4 pisos entre medianeras; unidades `PB`, `1A`…`4A` 3 amb, `1B`…`4B` 2 amb)
 - Tema por defecto: oscuro
 - Idiomas: castellano (defecto) e inglés
-- Secciones apagadas: amenities, recorridos, video, obra, ubicación, modo 3D y blog (sin material todavía)
+- Secciones apagadas: amenities, recorridos, video, obra, ubicación y blog (sin material todavía)
 - Producción (hosting, base, storage, dominio): VPS Hostinger (pm2 `constructoras`, puerto 3003), Postgres local,
   `media/` en disco del VPS, `https://constructoras.apzsoftware.online`. Deploy por GitHub Actions y contenido con
   `scripts/deploy/subir-snapshot.sh`: ver [`docs/deploy.md`](docs/deploy.md).

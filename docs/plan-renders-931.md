@@ -58,10 +58,8 @@ generado**.
 
 ### Fase A — Sitio con las imágenes del cliente (sin Blender)
 
-Sale en días y ya se ve el proyecto real. **Hecha** (`src/seed/index.ts`, assets en `src/seed/assets/ca931/`). Como
-el edificio necesita un `.glb`, hay una volumetría de cajas generada por código desde el plano
-(`pnpm tsx scripts/volumetria/ca931.ts`): da pisos, unidades y los esquemas de Disponibilidad y plantas, y se
-reemplaza con el de la Fase B. Supone el frente al sur; las medianeras (este y oeste) no salen como fachadas.
+Sale en días y ya se ve el proyecto real. **Hecha** (`src/seed/index.ts`, assets en `src/seed/assets/ca931/`).
+Supone el frente al sur; las medianeras (este y oeste) no salen como fachadas.
 
 1. Pasar los renders a `.webp` y sumarlos al seed (`src/seed/assets/`), reemplazando la Torre Cityh:
    - Portada / póster de la intro: `fachada-dia-desde-izquierda`.
@@ -76,6 +74,22 @@ reemplaza con el de la Fase B. Supone el frente al sur; las medianeras (este y o
 
 El modelo se arma **sobre las fotos**: cada referencia va de fondo de una cámara y el volumen se ajusta hasta que
 coincida.
+
+**Hecha.** `scripts/blender/modelar_ca931.py` arma toda la escena (en Blender abierto, por el MCP: la versión de la
+Store no corre por línea de comandos) y se guarda en `blender/ca931_web.blend` (fuera del repo). Exportado a
+`src/seed/assets/ca931/edificio.glb` (0,09 MB). Lo que salió del calce:
+
+- Cámaras `Ref_Izquierda` y `Ref_Derecha` resueltas por mínimos cuadrados con 8–10 esquinas de cada foto (cámara
+  nivelada con shift: son tomas de arquitectura de dos puntos de fuga). Error medio 1,7 % y 2,1 % del ancho; no
+  baja más porque los renders del cliente no son del todo coherentes entre sí (las alturas de piso varían entre
+  tomas). `Ref_Atardecer` reusa la izquierda, sin calce propio.
+- Alturas medidas en la foto: **PB 3,30 m, pisos 2,75 m, remate 1,35 m** sobre la azotea (total ≈ 15,65 m).
+- La franja de madera **no está centrada** en las fotos (x ≈ 0,7–1,7 m desde el eje del lote, hacia la derecha),
+  mientras que el plano marca balcones de 3,50 + 1,36 + 3,50 simétricos. El modelo sigue la foto; A y B se separan
+  en el borde izquierdo de la franja, que deja anchos en la proporción de sus superficies.
+- Columna del 931 en x 0,15–1,05, acceso 1,05–2,35 y panel de madera 2,35–3,93 (también medidos en la foto).
+- Las tomas del cliente están hechas desde más lejos que el ancho real de la calle (~25 m de la línea municipal):
+  la cuadra de enfrente está en `Vecinos_Enfrente`, que no sale en los renders.
 
 1. **Modelado por medidas** (`ca931.blend`, metros, `escala = 1`): lote, muros, losas, balcones, núcleo con los
    valores del plano. Pisos separados (`tipo="piso"`), cajas `Unidad_PB`, `Unidad_1A`… `Unidad_4B` hasta el filo
