@@ -47,11 +47,14 @@ VESTIR = True
 MATERIALES = {
     # gris de losas y balcones del 3 ambientes; el visor no le pone textura (no dice Fachada)
     "WEB_Revoque_Gris": dict(color=(0.17, 0.16, 0.15), rug=0.85),
+    # pared del frente detrás de los balcones: queda en la sombra del voladizo, va más clara que los cantos para
+    # leerse gris medio como en las fotos (si no se confunde con el vidrio)
+    "WEB_Revoque_Muro": dict(color=(0.3, 0.285, 0.265), rug=0.85),
     # laterales y medianeras: gris claro
     "WEB_Revoque_Claro": dict(color=(0.36, 0.34, 0.31), rug=0.9),
     # antepechos del 2 ambientes y PB: crema (el visor le aplica revoque triplanar)
     "WEB_Fachada_Crema": dict(color=(0.70, 0.62, 0.48), rug=0.85),
-    "WEB_Cielorraso": dict(color=(0.86, 0.84, 0.80), rug=0.9),
+    "WEB_Cielorraso": dict(color=(0.66, 0.63, 0.58), rug=0.9),
     "WEB_Madera_Listones": dict(color=(0.42, 0.26, 0.13), rug=0.65),
     "WEB_Piedra_Negra": dict(color=(0.035, 0.035, 0.035), rug=0.55),
     "WEB_Metal_Negro": dict(color=(0.015, 0.015, 0.015), rug=0.35, metal=0.7),
@@ -59,11 +62,14 @@ MATERIALES = {
     "WEB_Vidrio": dict(color=(0.03, 0.04, 0.05), rug=0.05),
     "WEB_Vidrio_Baranda": dict(color=(0.55, 0.65, 0.68), rug=0.03, alfa=0.25),
     # spots y LED: el visor los apaga de día y los prende de noche (regla /Farol/ de convenciones.ts)
-    "WEB_Farol_Spot": dict(color=(1.0, 0.85, 0.65), emision=(1.0, 0.78, 0.52), fuerza=8),
-    "WEB_Farol_LED": dict(color=(1.0, 0.8, 0.55), emision=(1.0, 0.72, 0.42), fuerza=4),
+    # el visor multiplica la emisión ×6 de noche: con más fuerza el bloom quema los cielorrasos
+    "WEB_Farol_Spot": dict(color=(1.0, 0.85, 0.65), emision=(1.0, 0.78, 0.52), fuerza=2),
+    "WEB_Farol_LED": dict(color=(1.0, 0.8, 0.55), emision=(1.0, 0.72, 0.42), fuerza=1),
+    # vidrios de PB (ventanal detrás de los listones, puerta del hall): brillo cálido de noche (regla /Vidrio_Local/)
+    "WEB_Vidrio_Local": dict(color=(0.05, 0.05, 0.05), rug=0.05),
     "WEB_Maceta": dict(color=(0.42, 0.42, 0.42), rug=0.8),
     "WEB_Planta": dict(color=(0.09, 0.2, 0.06), rug=0.8),
-    "WEB_Fachada_Vecinos": dict(color=(0.80, 0.74, 0.62), rug=0.9),
+    "WEB_Fachada_Vecinos": dict(color=(0.58, 0.52, 0.42), rug=0.9),
     "WEB_Techo_Vecinos": dict(color=(0.07, 0.09, 0.09), rug=0.6),
     "WEB_Porton_Negro": dict(color=(0.03, 0.03, 0.03), rug=0.5),
     "WEB_Porton_Madera": dict(color=(0.35, 0.16, 0.07), rug=0.6),
@@ -216,6 +222,18 @@ def carpinteria(m, x0, x1, z0, z1, paños):
         m.caja("WEB_Metal_Negro", (x0, x1), (VIDRIO_Y - 0.05, VIDRIO_Y), (z - 0.03, z + 0.03))
 
 
+def frente(m, x0, x1, paños, z0, z1):
+    """muro de fachada gris entre x0 y x1 con carpinterías (xa, xb, hojas) de piso a techo"""
+    x = x0
+    for xa, xb, hojas in paños:
+        if xa > x:
+            m.caja("WEB_Revoque_Muro", (x, xa), (VIDRIO_Y - 0.05, VIDRIO_Y + 0.2), (z0, z1))
+        carpinteria(m, xa, xb, z0, z1, hojas)
+        x = xb
+    if x1 > x:
+        m.caja("WEB_Revoque_Muro", (x, x1), (VIDRIO_Y - 0.05, VIDRIO_Y + 0.2), (z0, z1))
+
+
 def muro_con_huecos(m, mat, x0, x1, y0, y1, z0, z1, huecos):
     """muro a lo largo de X con ventanas (xa, xb, za, zb): queda hueco, como para verlo cortado desde arriba"""
     x = x0
@@ -254,7 +272,7 @@ def planta_baja(col):
     m.caja("WEB_Fachada_Crema", (0.98, 1.05), (0.6, 2.3), (0, ALTO_PB))
     m.caja("WEB_Fachada_Crema", (2.35, 2.45), (0.6, 2.3), (0, ALTO_PB))
     # izquierda: ventanal de los dormitorios detrás de listones negros, con jardinera baja
-    m.caja("WEB_Vidrio", (X0 + 0.25, 0.05), (0.55, 0.6), (0.45, ALTO_PB - 0.3))
+    m.caja("WEB_Vidrio_Local", (X0 + 0.25, 0.05), (0.55, 0.6), (0.45, ALTO_PB - 0.3))
     m.caja("WEB_Revoque_Gris", (X0 + 0.15, 0.15), (0.05, 0.6), (0, 0.4))
     for x in (X0 + 1.5, X0 + 3.0):
         m.esfera("WEB_Planta", x, 0.3, 0.55, 0.3, 0.8)
@@ -267,7 +285,7 @@ def planta_baja(col):
     m.caja("WEB_Cielorraso", (1.05, 2.35), (0, 2.3), (ALTO_PB - 0.3, ALTO_PB - 0.25))
     m.caja("WEB_Farol_Spot", (1.55, 1.85), (1.0, 1.3), (ALTO_PB - 0.31, ALTO_PB - 0.3))
     m.caja("WEB_Metal_Negro", (1.25, 2.15), (2.1, 2.2), (0, 2.3))
-    m.caja("WEB_Vidrio", (1.33, 2.07), (2.08, 2.1), (0.05, 2.22))
+    m.caja("WEB_Vidrio_Local", (1.33, 2.07), (2.08, 2.1), (0.05, 2.22))
     # panel de listones de madera y pilar
     m.caja("WEB_Revoque_Gris", (2.35, X1 - 0.4), (0.0, 0.6), (0, ALTO_PB))
     listones(m, "WEB_Madera_Listones", 2.4, X1 - 0.45, -0.05, 0.0, 0.0, ALTO_PB - 0.25)
@@ -283,15 +301,16 @@ def piso(col, n):
     cascara(m, "WEB_Revoque_Claro", VIDRIO_Y + 0.02, z0 + LOSA, z1 - LOSA,
             [(X0 + 0.6, X0 + 2.6, z0 + 0.9, z1 - 0.4), (X0 + 3.6, X0 + 5.2, z0 + 0.9, z1 - 0.4),
              (X1 - 2.4, X1 - 0.6, z0 + 0.9, z1 - 0.4)])
-    for x0, x1 in ((X0 + 0.15, X0 + 0.25), (MAD_I - 0.1, MAD_I), (MAD_D, MAD_D + 0.25), (X1 - 0.3, X1 - 0.15)):
-        m.caja("WEB_Revoque_Claro", (x0, x1), (VIDRIO_Y - 0.05, VIDRIO_Y + 0.2), (z0 + LOSA, z1 - LOSA))
     # losa en todo el fondo: cierra el canto en los laterales (si no, se ve la caja de la unidad por la rendija)
     m.caja("WEB_Revoque_Claro", (X0, X1), (VIDRIO_Y + 0.1, FONDO), (z0 - LOSA, z0 + LOSA))
     # losa: canto gris del lado del 3 ambientes, con cielorraso claro y spots
     m.caja("WEB_Revoque_Gris", (X0, MAD_I), (-BALCON, VIDRIO_Y + 0.1), (z0 - LOSA, z0 + LOSA))
     m.caja("WEB_Cielorraso", (X0 + 0.05, MAD_I), (-BALCON + 0.05, VIDRIO_Y), (z0 - LOSA - 0.005, z0 - LOSA))
     m.caja("WEB_Farol_LED", (X0, MAD_I), (-BALCON - 0.005, -BALCON), (z0 - LOSA + 0.02, z0 - LOSA + 0.05))
-    carpinteria(m, X0 + 0.25, MAD_I - 0.1, z0 + LOSA, z1 - LOSA, 3)
+    # frente del 3 ambientes, medido en las fotos (y coincide con el plano): ventanal corredizo del estar, pared,
+    # ventana angosta de la cocina y pared hasta la franja de madera
+    paños_a = [(X0 + 0.25, -1.85, 2), (-0.85, -0.25, 1)]
+    frente(m, X0 + 0.15, MAD_I, paños_a, z0 + LOSA, z1 - LOSA)
     # baranda de vidrio con pasamanos y parantes negros, macetas en los extremos
     yb = -BALCON + 0.06
     m.caja("WEB_Vidrio_Baranda", (X0 + 0.08, MAD_I - 0.05), (yb - 0.01, yb + 0.01), (z0 + LOSA, z0 + LOSA + 1.0))
@@ -308,7 +327,8 @@ def piso(col, n):
     m.caja("WEB_Fachada_Crema", (MAD_D, X1), (-BALCON, VIDRIO_Y + 0.1), (z0 - LOSA, z0 + LOSA + 1.0))
     m.caja("WEB_Cielorraso", (MAD_D + 0.05, X1 - 0.05), (-BALCON + 0.05, VIDRIO_Y), (z0 - LOSA - 0.005, z0 - LOSA))
     spots(m, MAD_D + 0.3, X1 - 0.3, -BALCON / 2, z0 - LOSA - 0.005, 2)
-    carpinteria(m, MAD_D + 0.25, X1 - 0.3, z0 + LOSA, z1 - LOSA, 2)
+    # frente del 2 ambientes: pared junto a la madera y ventanal de dos hojas del estar
+    frente(m, MAD_D, X1 - 0.15, [(2.45, X1 - 0.3, 2)], z0 + LOSA, z1 - LOSA)
     m.esfera("WEB_Planta", X1 - 0.6, -BALCON + 0.2, z0 + LOSA + 1.05, 0.25, 0.7)
     # spots del cielorraso del 3 ambientes
     spots(m, X0 + 0.4, MAD_I - 0.4, -BALCON / 2, z0 - LOSA - 0.005, 3)
@@ -323,7 +343,9 @@ def remate(col):
     spots(m, X0 + 0.4, MAD_I - 0.4, -BALCON / 2, TECHO - LOSA - 0.005, 3)
     spots(m, MAD_D + 0.3, X1 - 0.3, -BALCON / 2, TECHO - LOSA - 0.005, 2)
     # entre medianeras: los laterales no van como fachadas en Disponibilidad
-    return m.objeto("Techo", col, {"tipo": "techo", "medianeras": "este,oeste"})
+    # sin bañadores de noche en el visor: alumbrarían de abajo los cielorrasos de los balcones (en las fotos del
+    # cliente la fachada se ve por sus spots y tiras LED)
+    return m.objeto("Techo", col, {"tipo": "techo", "medianeras": "este,oeste", "banadores": False})
 
 
 def numero_931(col):
@@ -580,6 +602,9 @@ def main():
     if VESTIR and os.path.isdir("C:/Renders/_assets/polyhaven"):
         exec(open(ruta.replace("interior_ca931.py", "vestir_ca931.py"), encoding="utf-8").read(), globals())
         vestir(col_interiores)
+    # para renders_ca931.py
+    bpy.app.driver_namespace["ca931_medidas"] = {k: globals()[k] for k in (
+        "X0", "X1", "FONDO", "BALCON", "ALTO_PB", "ALTO_PISO", "PISOS", "LOSA", "MAD_I", "MAD_D")}
     bpy.context.scene.camera = bpy.data.objects["Ref_Izquierda"]
     print(f"Cañada de Gómez 931: {len(bpy.data.collections['WEB'].all_objects)} objetos en WEB")
 

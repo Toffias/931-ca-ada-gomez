@@ -4,6 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { Suspense, useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass.js'
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
@@ -172,18 +173,30 @@ export function Ambiente({ solElevacion, solAzimut, tamano, centro }: Props) {
   )
 }
 
-/** Render final: pasa por bloom (luces que "brillan") sólo cuando la hora lo pide; de día, render directo. */
+/**
+ * Render final. En compu: oclusión ambiental (GTAO), las sombras de contacto bajo balcones, losas y rincones que
+ * más delatan un 3D, y bloom para las luces de noche. En celular, render directo salvo que haga falta bloom.
+ */
 function Render() {
   const { gl, scene, camera, size } = useThree()
+  const conAO = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 821px) and (pointer: fine)').matches, [])
   const { composer, bloom } = useMemo(() => {
     const c = new EffectComposer(gl)
     const b = new UnrealBloomPass(new THREE.Vector2(size.width, size.height), 0, 0.35, 0.92)
     c.addPass(new RenderPass(scene, camera))
+    if (conAO) {
+      const ao = new GTAOPass(scene, camera, size.width, size.height)
+      // en metros: rincones y aleros de ~1 m, sin oscurecer paredes enteras
+      ao.updateGtaoMaterial({ radius: 0.9, distanceExponent: 1.4, thickness: 1.5, scale: 1, samples: 16 })
+      ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 })
+      ao.blendIntensity = 0.85
+      c.addPass(ao)
+    }
     c.addPass(b)
     c.addPass(new OutputPass())
     return { composer: c, bloom: b }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gl, scene, camera])
+  }, [gl, scene, camera, conAO])
 
   useEffect(() => composer.setSize(size.width, size.height), [composer, size])
   useEffect(() => () => composer.dispose(), [composer])
@@ -193,7 +206,8 @@ function Render() {
   const estado = useMemo(() => ({ calentado: false }), [composer])
   useFrame(() => {
     bloom.strength = hora.p.bloom
-    if (!estado.calentado || bloom.strength > 0.003) composer.render()
+    bloom.enabled = bloom.strength > 0.003 || !estado.calentado
+    if (conAO || !estado.calentado || bloom.enabled) composer.render()
     else gl.render(scene, camera)
     estado.calentado = true
   }, 1)

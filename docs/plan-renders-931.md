@@ -132,6 +132,21 @@ común, y la PB tiene una platea para medir el corte igual que en los pisos. Cá
 Referencias): piso 2, 25° desde la vertical, 50 mm, frente abajo, `altura_corte = 2.0` (1,5 m sobre el piso
 terminado: el nivel de cada `Piso_NN` es el fondo de su losa), fondo blanco. Tanda: 2560×1440, Cycles 256 muestras.
 
+**Noche: en el modo 3D.** La web sólo usa la noche en el visor (no hay lugar para un render de noche aparte; la
+galería ya tiene el atardecer del cliente). Ajustado contra `fachada-atardecer`: spots y tiras LED con menos fuerza
+(el visor las multiplica ×6), vidrios de PB en `WEB_Vidrio_Local` (brillo cálido detrás de los listones y en el
+hall) y `banadores = False` en el techo, porque los bañadores de fachada del visor quemaban los cielorrasos de los
+balcones. Comparación en `docs/referencias/comparaciones/noche-3d.webp`. De paso se arregló el visor en desarrollo:
+StrictMode preparaba el modelo dos veces y la noche se aplicaba a materiales que no estaban en pantalla.
+
+**Fotorrealismo.** En el visor 3D: texturas reales por material (`convenciones.ts`: revoques gris, claro y crema
+con su tinte, madera de roble en `public/texturas/madera`, piedra negra), oclusión ambiental GTAO en compu
+(`Ambiente.tsx`), sol del sudoeste como en las fotos (`solAzimut = -125`) y cielorrasos que brillan cálidos de
+noche. Renders de Cycles con `scripts/blender/renders_ca931.py`: durante el render cambia los `WEB_*` por PBR
+(revoque, roble, piedra, hormigón, asfalto y vidrio real a través del que se ven los interiores vestidos), pone
+plantas de Poly Haven, luces reales en spots e interiores, y separa la luz (HDRI) del cielo que ve la cámara
+(degradado azul de día, naranja y azul al atardecer); al terminar restaura todo, el `.glb` no cambia.
+
 **Control de calidad de cada render:** ponerlo al lado (o encima, en diferencia) de la referencia con la misma
 cámara y revisar: proporciones, colores de cada material, cantidad de listones, ubicación del número 931, plantas y
 luces. Se guarda la comparación en `docs/referencias/comparaciones/` para mostrársela al cliente.

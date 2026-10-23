@@ -105,7 +105,8 @@ export function Modelo({ config, unidades, onListo }: Props) {
       [new THREE.Vector3(c.x, base, max.z + 5), new THREE.Vector3(c.x, base + alto * 0.8, max.z)],
       [new THREE.Vector3(c.x, base, min.z - 5), new THREE.Vector3(c.x, base + alto * 0.8, min.z)],
     ]
-    for (const [pos, obj] of lados) {
+    // los bañadores pegan de abajo en los cielorrasos de los balcones y los queman: ese modelo los apaga
+    for (const [pos, obj] of modelo.banadores ? lados : []) {
       const l = new THREE.SpotLight('#ffd29a', 110, alto * 2.2, 0.5, 0.8, 1.2)
       l.position.copy(pos)
       l.target.position.copy(obj)

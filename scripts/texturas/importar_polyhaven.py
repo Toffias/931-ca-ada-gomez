@@ -32,6 +32,8 @@ SETS = {
     "piedra": {"slug": "granite_tile", "media": None},
     "baldosa": {"slug": "large_square_pattern_01", "media": None},
     "asfalto": {"slug": "asphalt_02", "media": None},
+    # listones y revestimientos de madera: color neutro y más contraste, el tono lo da el tinte de la regla
+    "madera": {"slug": "oak_veneer_02", "media": (180, 180, 178), "contraste": 1.3},
 }
 MAPAS = {"color": "Diffuse", "normal": "nor_gl", "rugosidad": "Rough"}
 

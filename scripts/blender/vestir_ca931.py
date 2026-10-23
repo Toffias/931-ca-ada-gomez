@@ -36,7 +36,11 @@ def materiales_vestidos():
     liso("INT_Sanitario", (0.9, 0.9, 0.89), 0.05, **{"Coat Weight": 0.6})
     liso("INT_Pozo", (0.02, 0.02, 0.02), 0.9)
     liso("WEB_Corte", (0.16, 0.16, 0.17), 0.9)
-    return vi["materiales"]()
+    mats = vi["materiales"]()
+    # vestir_interior.materiales() rearma WEB_Cielorraso, que acá es el de los balcones y va al .glb: vuelve a su color
+    d = MATERIALES["WEB_Cielorraso"]
+    liso("WEB_Cielorraso", d["color"], d.get("rug", 0.5))
+    return mats
 
 
 class Pieza(vi["Pieza"]):

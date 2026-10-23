@@ -36,8 +36,9 @@ const DATOS_EDIFICIO = {
   caracteristicas: ['9 unidades', 'Balcones al frente', 'Patio propio en planta baja', 'Ascensor', 'Portería'],
   config3D: {
     escala: 1, // el modelo está en metros
-    solElevacion: 35,
-    solAzimut: -30,
+    // sol del sudoeste, de frente a la izquierda como en las fotos del cliente (el frente mira al sur, +Z del visor)
+    solElevacion: 40,
+    solAzimut: -125,
     ventanasNoche: { material: 'WEB_Vidrio', alturaPrimerPiso: 3.3, alturaPiso: 2.75, anchoVentana: 1.5, encendidas: 70 },
     vistas: [
       { camara: 'Cam_Principal', etiqueta: 'Frente', alturaObjetivo: 8 },
@@ -149,6 +150,17 @@ async function main() {
     { imagen: derecha.id, epigrafe: 'Desde la vereda de enfrente' },
     { imagen: atardecer.id, epigrafe: 'Al atardecer' },
     { imagen: acceso.id, epigrafe: 'Acceso' },
+    // renders de Cycles desde las mismas cámaras (scripts/blender/renders_ca931.py), con los interiores amueblados
+    ...(await Promise.all(
+      [
+        ['frente-dia', 'Render de día'],
+        ['frente-derecha-dia', 'Render de día desde la derecha'],
+        ['frente-atardecer', 'Render al atardecer'],
+      ].map(async ([archivo, epigrafe]) => ({
+        imagen: (await subir(`renders/${archivo}.webp`, `${NOMBRE} · ${epigrafe.toLowerCase()}`)).id,
+        epigrafe,
+      })),
+    )),
   ]
   // Disponibilidad sobre las fotos del cliente: máscaras calculadas en Blender con las cámaras calzadas
   // (Render_Fachada_* de scripts/blender/modelar_ca931.py, docs/plan-renders-931.md Fase C)

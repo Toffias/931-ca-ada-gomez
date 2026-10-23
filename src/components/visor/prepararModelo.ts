@@ -13,6 +13,8 @@ export type ModeloPreparado = {
   techo: THREE.Object3D | null
   camaras: CamaraModelo[]
   faroles: THREE.Vector3[]
+  /** bañadores de fachada de noche; un edificio con balcones en voladizo los apaga (extras banadores = false) */
+  banadores: boolean
   caja: THREE.Box3 // caja del edificio principal (a partir de las unidades)
   uNoche: { value: number }
   /** 0 = día, 1 = noche; los valores intermedios mezclan la emisión */
@@ -35,13 +37,18 @@ export function prepararModelo(escena: THREE.Object3D, config: ConfigVisor): Mod
   const pisos = new Map<number, THREE.Object3D>()
   let techo: THREE.Object3D | null = null
   const camaras: CamaraModelo[] = []
+  let banadores = true
   const materiales = new Set<THREE.MeshStandardMaterial>()
-  const uNoche = { value: 0 }
+  // En desarrollo React corre dos veces el useMemo que llama a esto, sobre la misma escena (cacheada por useGLTF):
+  // cada pasada clona los materiales y las mallas se quedan con los de la última, aunque React use el resultado de
+  // otra. Por eso el uniforme de las ventanas se comparte en la escena y aplicarModo busca los materiales actuales.
+  const uNoche: { value: number } = (raiz.userData.uNoche ??= { value: 0 })
 
   raiz.traverse((obj) => {
     const d = obj.userData || {}
     if (d.tipo === TIPO.piso) pisos.set(Number(d.piso), obj)
     if (d.tipo === TIPO.techo) techo = obj
+    if (d.banadores === false) banadores = false
 
     if ((obj as THREE.PerspectiveCamera).isPerspectiveCamera && obj.name.startsWith(PREFIJO_CAMARA)) {
       const cam = obj as THREE.PerspectiveCamera
@@ -135,19 +142,25 @@ export function prepararModelo(escena: THREE.Object3D, config: ConfigVisor): Mod
     })
   }
 
-  // las reglas se buscan una vez: aplicarModo corre en cada cuadro mientras se mueve la barrita
-  const conRegla = [...materiales].flatMap((m) => {
-    const regla = REGLAS_EMISION.find((r) => r.patron.test(m.name))
-    return regla ? [{ m, regla }] : []
-  })
+  const conRegla = () => {
+    const actuales = new Set<THREE.MeshStandardMaterial>()
+    raiz.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh) actuales.add((o as THREE.Mesh).material as THREE.MeshStandardMaterial)
+    })
+    return [...actuales].flatMap((m) => {
+      const regla = REGLAS_EMISION.find((r) => r.patron.test(m.name))
+      return regla ? [{ m, regla }] : []
+    })
+  }
+  // aplicarModo corre en cada cuadro sólo mientras se mueve la barrita (Modelo.tsx compara con el valor anterior)
   const aplicarModo = (noche: number) => {
     uNoche.value = noche
-    for (const { m, regla } of conRegla)
+    for (const { m, regla } of conRegla())
       m.emissiveIntensity = THREE.MathUtils.lerp(regla.dia, regla.noche, noche) * (m.userData.emisionBase ?? 1)
   }
   aplicarModo(0)
 
-  return { raiz, unidades, pisos, techo, camaras, faroles, caja, uNoche, aplicarModo }
+  return { raiz, unidades, pisos, techo, camaras, faroles, banadores, caja, uNoche, aplicarModo }
 }
 
 /** Ventanas encendidas al azar de noche: hash por celda (piso × ventana) según la posición en el mundo. */
