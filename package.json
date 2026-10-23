@@ -1,0 +1,81 @@
+{
+  "name": "plantilla-edificio-3d",
+  "version": "1.0.0",
+  "description": "Plantilla Suris Code: sitio de edificio con visor 3D (Next.js + Payload CMS + React Three Fiber)",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
+    "build:vps": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=3072\" next build",
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
+    "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
+    "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
+    "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/seed/index.ts",
+    "seed:fresh": "cross-env NODE_OPTIONS=--no-deprecation payload run src/seed/index.ts fresh",
+    "seed:snapshot": "cross-env NODE_OPTIONS=--no-deprecation payload run src/seed/snapshot.ts",
+    "exportar:snapshot": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/exportar-snapshot.ts",
+    "cargar:plantas": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/cargar-plantas.ts",
+    "cargar:fachadas": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/cargar-fachadas.ts",
+    "cargar:recorridos": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/cargar-recorridos.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@payloadcms/db-postgres": "3.90.2",
+    "@payloadcms/db-sqlite": "3.90.2",
+    "@payloadcms/email-resend": "3.90.2",
+    "@payloadcms/next": "3.90.2",
+    "@payloadcms/richtext-lexical": "3.90.2",
+    "@payloadcms/translations": "3.90.2",
+    "@payloadcms/ui": "3.90.2",
+    "@photo-sphere-viewer/core": "^5.15.1",
+    "@photo-sphere-viewer/markers-plugin": "^5.15.1",
+    "@photo-sphere-viewer/virtual-tour-plugin": "^5.15.1",
+    "@react-three/drei": "10.7.8",
+    "@react-three/fiber": "9.8.1",
+    "cross-env": "^7.0.3",
+    "dotenv": "16.4.7",
+    "embla-carousel-react": "^8.6.0",
+    "graphql": "^16.8.1",
+    "hls.js": "^1.7.3",
+    "jspdf": "^4.2.1",
+    "next": "16.3.3",
+    "payload": "3.90.2",
+    "qrcode": "^1.5.4",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "react-zoom-pan-pinch": "^4.2.0",
+    "server-only": "^0.0.1",
+    "sharp": "0.35.4",
+    "three": "0.186.1",
+    "zustand": "5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.9",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@types/three": "0.186.0",
+    "eslint": "^9.16.0",
+    "eslint-config-next": "16.3.3",
+    "prettier": "^3.4.2",
+    "tsx": "4.22.4",
+    "typescript": "5.7.3",
+    "vitest": "^5.0.2"
+  },
+  "engines": {
+    "node": "^18.20.2 || >=20.9.0",
+    "pnpm": "^9 || ^10 || ^11"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "esbuild",
+      "unrs-resolver"
+    ]
+  }
+}

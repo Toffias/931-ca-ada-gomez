@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=block" rel="stylesheet">
+<style>
+  :root { --naranja: #ff8632; --petroleo: #074f69; --azul: #0b2556; --texto: #f5f2ec; --suave: rgba(245,242,236,.66); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #07090d; }
+  body { font-family: 'Manrope', sans-serif; color: var(--texto); -webkit-font-smoothing: antialiased; }
+  #fondo { position: absolute; inset: 0; }
+  #grano { position: absolute; inset: 0; opacity: .06; mix-blend-mode: overlay; pointer-events: none; z-index: 50;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  #escena { position: absolute; inset: 0; perspective: 2600px; }
+  #pantalla { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; transform-origin: 50% 50%;
+    background: #000; will-change: transform; }
+  #pantalla img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #brillo { position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.14); }
+  #sombra { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 50% 50%; border-radius: 30px;
+    box-shadow: 0 60px 140px rgba(0,0,0,.65), 0 20px 40px rgba(0,0,0,.4); }
+  #velo { position: absolute; inset: 0; pointer-events: none; }
+  .bloque { position: absolute; z-index: 10; }
+  .kicker { font-size: 21px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--naranja);
+    margin-bottom: 26px; display: flex; align-items: center; gap: 16px; }
+  .kicker::before { content: ''; width: 38px; height: 2px; background: var(--naranja); }
+  .h { font-weight: 700; letter-spacing: -.035em; line-height: 1.02; }
+  .h .l { display: block; overflow: hidden; padding-bottom: .09em; margin-bottom: -.09em; }
+  .h .l > span { display: inline-block; will-change: transform; }
+  .h em { font-style: normal; color: var(--naranja); }
+  .sub { margin-top: 30px; font-size: 27px; line-height: 1.4; color: var(--suave); font-weight: 500; }
+  .chips { display: flex; gap: 14px; margin-top: 34px; }
+  .chip { padding: 14px 26px; border-radius: 99px; font-size: 24px; font-weight: 600; border: 1.5px solid rgba(255,255,255,.28);
+    background: rgba(10,12,16,.35); backdrop-filter: blur(10px); }
+  .chip.activo { background: var(--naranja); border-color: var(--naranja); color: #1a0d03; }
+  #cierre { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #cierre img { width: 330px; height: 330px; }
+  #cierre .lema { font-size: 50px; font-weight: 700; letter-spacing: -.03em; line-height: 1.12; margin-top: 4px; }
+  #cierre .lema em { font-style: normal; color: var(--naranja); }
+  #cierre .url { margin-top: 38px; font-size: 27px; font-weight: 600; color: var(--suave); letter-spacing: .02em; }
+  #cierre .cta { margin-top: 34px; padding: 20px 44px; border-radius: 99px; background: var(--naranja); color: #1a0d03; font-size: 27px; font-weight: 800; }
+  #cierre > * { will-change: transform, opacity, filter; }
+</style>
+</head>
+<body>
+<canvas id="fondo" width="1920" height="1080"></canvas>
+<div id="escena">
+  <div id="sombra"></div>
+  <div id="pantalla"><img id="imgA"><img id="imgB"><div id="velo"></div><div id="brillo"></div></div>
+</div>
+<div id="textos"></div>
+<div id="cierre">
+  <img src="logo_claro.png" id="logo">
+  <div class="lema">Webs interactivas para<br><em>desarrolladoras inmobiliarias.</em></div>
+  <div class="url">constructoras.apzsoftware.online</div>
+  <div class="cta">Pedí tu demo</div>
+</div>
+<div id="grano"></div>
+<script src="linea.js"></script>
+<script>
+const L = window.LINEA, FPS = L.fps, W = 1920, H = 1080;
+const $ = (s) => document.querySelector(s);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const eio = (t) => (t = clamp(t), t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const eo = (t) => (t = clamp(t), 1 - Math.pow(1 - t, 4));   // easeOutQuart
+const eoe = (t) => (t = clamp(t), t === 1 ? 1 : 1 - Math.pow(2, -10 * t)); // easeOutExpo
+const ei = (t) => (t = clamp(t), t * t * t);
+
+// ---------- fondo: degradé oscuro con dos luces de marca que derivan ----------
+const fx = $('#fondo').getContext('2d');
+function fondo(t) {
+  fx.fillStyle = '#07090d'; fx.fillRect(0, 0, W, H);
+  const luces = [
+    [960 + Math.sin(t * .23) * 520, 380 + Math.cos(t * .17) * 200, 900, 'rgba(7,79,105,.55)'],
+    [960 + Math.cos(t * .19 + 2) * 600, 760 + Math.sin(t * .21) * 180, 780, 'rgba(255,134,50,.16)'],
+    [300 + Math.sin(t * .13) * 200, 900, 700, 'rgba(11,37,86,.5)'],
+  ];
+  for (const [x, y, r, c] of luces) {
+    const g = fx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, c); g.addColorStop(1, 'rgba(0,0,0,0)');
+    fx.fillStyle = g; fx.fillRect(0, 0, W, H);
+  }
+}
+
+// ---------- textos de cada escena ----------
+const escenas = L.escenas;
+const bloques = escenas.map((e, i) => {
+  const tx = e.texto || {};
+  if (!tx.pos || tx.pos === 'cierre') return null;
+  const b = document.createElement('div'); b.className = 'bloque';
+  const tam = tx.pos === 'centro' ? 104 : tx.pos === 'abajo' ? 92 : 66;
+  let html = tx.k ? `<div class="kicker">${tx.k}</div>` : '';
+  html += `<div class="h" style="font-size:${tam}px">` + tx.h.map((l) => `<span class="l"><span>${l}</span></span>`).join('') + '</div>';
+  if (tx.sub) html += `<div class="sub">${tx.sub}</div>`;
+  if (tx.chips) html += '<div class="chips">' + tx.chips.map((c) => `<span class="chip">${c}</span>`).join('') + '</div>';
+  b.innerHTML = html;
+  if (tx.pos === 'centro') Object.assign(b.style, { left: '0', right: '0', top: '50%', textAlign: 'center', transform: 'translateY(-50%)' });
+  if (tx.pos === 'abajo') Object.assign(b.style, { left: '120px', bottom: '118px', width: '1500px' });
+  if (tx.pos === 'izq') Object.assign(b.style, { left: '96px', top: '50%', width: '450px' });
+  if (tx.pos === 'der') Object.assign(b.style, { right: '96px', top: '50%', width: '450px' });
+  $('#textos').appendChild(b);
+  return b;
+});
+// el grupo "todo" comparte un solo bloque (el de la primera escena del grupo)
+function bloqueDe(i) {
+  const e = escenas[i];
+  if (!e.grupo) return { b: bloques[i], ini: e.ini, fin: e.fin };
+  const g = escenas.filter((x) => x.grupo === e.grupo);
+  return { b: bloques[escenas.indexOf(g[0])], ini: g[0].ini, fin: g[g.length - 1].fin };
+}
+
+function animarTexto(b, e, ini, fin, t) {
+  const pos = e.texto.pos;
+  const lineas = b.querySelectorAll('.h .l > span');
+  const entra = ini + (pos === 'centro' ? 0.15 : 0.35);
+  const sale = fin - 0.42;
+  const vis = t >= ini - 0.01 && t < fin;
+  b.style.display = vis ? '' : 'none';
+  if (!vis) return;
+  const salida = eio((t - sale) / 0.36);
+  lineas.forEach((l, j) => {
+    const p = eoe((t - entra - j * 0.09) / 0.85);
+    l.style.transform = `translateY(${(1 - p) * 110}%)`;
+  });
+  const k = b.querySelector('.kicker'), s = b.querySelector('.sub'), c = b.querySelector('.chips');
+  const pk = eo((t - entra + 0.05) / 0.6);
+  if (k) { k.style.opacity = pk; k.style.transform = `translateX(${(1 - pk) * -24}px)`; }
+  const ps = eo((t - entra - 0.35) / 0.7);
+  if (s) { s.style.opacity = ps; s.style.transform = `translateY(${(1 - ps) * 18}px)`; }
+  if (c) {
+    const actual = escenas.filter((x) => x.grupo === e.grupo && t >= x.ini).length - 1;
+    c.querySelectorAll('.chip').forEach((ch, j) => {
+      const pc = eo((t - entra - 0.25 - j * 0.08) / 0.5);
+      ch.style.opacity = pc; ch.style.transform = `translateY(${(1 - pc) * 16}px)`;
+      ch.classList.toggle('activo', j === actual);
+    });
+  }
+  // salida: sube, se desenfoca y se apaga
+  const baseT = pos === 'izq' || pos === 'der' ? 'translateY(-50%)' : pos === 'centro' ? 'translateY(-50%)' : '';
+  b.style.opacity = 1 - salida;
+  b.style.filter = salida > 0 ? `blur(${salida * 14}px)` : 'none';
+  b.style.transform = `${baseT} translateY(${-salida * 40}px)` + (pos === 'centro' ? ` scale(${1 + salida * .18})` : '');
+}
+
+// ---------- pantalla: encuadre continuo entre escenas ----------
+const E = L.encuadres;
+function encuadreEn(t) {
+  // cada escena interpola desde el encuadre anterior durante los primeros 0.9 s
+  let i = escenas.findIndex((e) => t < e.fin); if (i < 0) i = escenas.length - 1;
+  const e = escenas[i], ant = escenas[i - 1];
+  const a = E[ant ? ant.encuadre : e.encuadre], b = E[e.encuadre];
+  const dur = e.id === 'intro' ? 1.1 : 0.9;
+  const p = eio((t - e.ini + 0.25) / dur);
+  const r = {}; for (const k in b) r[k] = lerp(a[k], b[k], p);
+  // deriva lenta de cámara dentro de la escena
+  const q = (t - e.ini) / e.dur;
+  if (b.s < 1) { r.ry += Math.sin(q * Math.PI) * 1.4 * Math.sign(b.ry || 1); r.dy += lerp(10, -10, q); }
+  r.zoom = e.encuadre === 'completa' ? lerp(1.0, 1.045, q) : 1;
+  return r;
+}
+
+// ---------- contenido de la pantalla: cuadro de la toma correspondiente ----------
+function cuadro(e, t) {
+  if (!e || !e.toma) return null;
+  const n = Math.round((t - e.ini + e.solape) * FPS) - e.salto;
+  return `cuadros/${e.id}/${String(clamp(n, 0, e.n - 1) + 1).padStart(5, '0')}.jpg`;
+}
+const cargar = (img, src) => new Promise((ok) => {
+  if (!src) { img.removeAttribute('src'); img.style.opacity = 0; return ok(); }
+  if (img.getAttribute('src') === src) return ok();
+  img.onload = () => ok(); img.onerror = () => ok(); img.src = src;
+});
+
+// zoom de cámara hacia un punto de la toma (la tarjeta de la unidad cuando aparece)
+function foco(e, t) {
+  if (!e || !e.foco) return '';
+  const f = e.foco, p = eio((t - e.ini - f.t) / 0.8);
+  if (p <= 0) return '';
+  const s = lerp(1, f.z, p), cx = (960 - f.x) * p * .55, cy = (540 - f.y) * p * .55;
+  return ` translate(${cx}px, ${cy}px) translate(${f.x - 960}px, ${f.y - 540}px) scale(${s}) translate(${960 - f.x}px, ${540 - f.y}px)`;
+}
+
+window.render = async function (t) {
+  fondo(t);
+  let i = escenas.findIndex((e) => t < e.fin); if (i < 0) i = escenas.length - 1;
+  const e = escenas[i], ant = escenas[i - 1];
+  // fundido con zoom entre la toma anterior y la actual (0.32 s centrado en el corte)
+  const FUN = 0.32;
+  const pf = ant && ant.toma ? eio((t - e.ini + FUN / 2) / FUN) : 1;
+  const A = $('#imgA'), Bi = $('#imgB');
+  // en el gancho la pantalla ya muestra el primer cuadro de la intro, que crece detrás del texto
+  const fuente = e.toma ? e : (e.id === 'gancho' ? escenas[i + 1] : null);
+  await Promise.all([cargar(A, pf < 1 ? cuadro(ant, t) : null), cargar(Bi, cuadro(fuente, t))]);
+  const f = encuadreEn(t);
+  A.style.opacity = pf < 1 ? 1 : 0;
+  A.style.transform = `scale(${f.zoom * (1 + pf * .06)})` + foco(ant, t); A.style.filter = pf > 0 && pf < 1 ? `blur(${Math.sin(pf * Math.PI) * 6}px)` : 'none';
+  Bi.style.opacity = fuente ? pf : 0;
+  Bi.style.transform = `scale(${f.zoom * (1 - (1 - pf) * .04)})` + foco(fuente, t);
+  Bi.style.filter = pf < 1 ? `blur(${(1 - pf) * 5}px)` : 'none';
+
+  // gancho → intro: la pantalla aparece chica detrás del texto y crece hasta llenar el cuadro
+  let o = f.o;
+  if (e.id === 'gancho') { o = eo((t - (e.fin - 0.55)) / 0.5); }
+  if (e.id === 'intro') o = 1; // ya apareció al final del gancho
+  const tr = `translate3d(${f.dx}px, ${f.dy}px, 0) rotateY(${f.ry}deg) scale(${f.s})`;
+  const P = $('#pantalla'), S = $('#sombra');
+  P.style.transform = tr; P.style.borderRadius = `${f.r / f.s}px`; P.style.opacity = o;
+  S.style.transform = tr; S.style.borderRadius = `${f.r / f.s}px`; S.style.opacity = o * (1 - clamp((f.s - .8) / .2));
+
+  // velo: oscurece abajo cuando el texto va encima de la toma
+  const tx = (e.grupo ? escenas.find((x) => x.grupo === e.grupo) : e).texto || {};
+  let velo = tx.pos === 'abajo' ? 1 : 0;
+  if (ant && (ant.texto || {}).pos === 'abajo' && !e.grupo && tx.pos !== 'abajo') velo = 1 - eio((t - e.ini) / .4);
+  if (e.id === 'intro') velo = eio((t - e.ini - .2) / .6);
+  $('#velo').style.background = `linear-gradient(to top, rgba(4,6,9,${.86 * velo}) 0%, rgba(4,6,9,${.45 * velo}) 38%, rgba(4,6,9,0) 66%)`;
+
+  // cierre: la toma del edificio se desenfoca y oscurece, entra la marca
+  const C = $('#cierre');
+  if (e.id === 'cierre') {
+    const q = t - e.ini;
+    const pv = eio(q / 1.1);
+    Bi.style.filter = `blur(${pv * 18}px) brightness(${1 - pv * .62}) saturate(${1 - pv * .3})`;
+    $('#velo').style.background = `radial-gradient(ellipse at 50% 45%, rgba(4,6,9,${.25 * pv}) 0%, rgba(4,6,9,${.7 * pv}) 100%)`;
+    C.style.display = 'flex';
+    const hijos = [...C.children];
+    hijos.forEach((h, j) => {
+      const p = eoe((q - 0.55 - j * 0.16) / 1.0);
+      h.style.opacity = clamp(p * 1.4);
+      h.style.transform = j === 0 ? `scale(${lerp(.86, 1, p)})` : `translateY(${(1 - p) * 34}px)`;
+      h.style.filter = p < 1 ? `blur(${(1 - p) * 10}px)` : 'none';
+    });
+    // el final se funde a negro
+    C.style.opacity = 1; document.body.style.filter = `brightness(${1 - eio((q - (e.dur - 0.5)) / 0.5)})`;
+  } else { C.style.display = 'none'; document.body.style.filter = 'none'; }
+
+  escenas.forEach((x, j) => { if (bloques[j]) { const { ini, fin } = bloqueDe(j); animarTexto(bloques[j], x, ini, fin, t); } });
+  await document.fonts.ready;
+};
+</script>
+</body>
+</html>

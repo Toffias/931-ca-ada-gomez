@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=block" rel="stylesheet">
+<style>
+  :root { --naranja: #ff8632; --petroleo: #074f69; --azul: #0b2556; --texto: #f5f2ec; --suave: rgba(245,242,236,.66); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #07090d; }
+  body { font-family: 'Manrope', sans-serif; color: var(--texto); -webkit-font-smoothing: antialiased; }
+  #fondo { position: absolute; inset: 0; }
+  #grano { position: absolute; inset: 0; opacity: .06; mix-blend-mode: overlay; pointer-events: none; z-index: 50;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  #escena { position: absolute; inset: 0; perspective: 2600px; }
+  #pantalla { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; transform-origin: 50% 50%;
+    background: #000; will-change: transform; }
+  #pantalla img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #brillo { position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,.16); }
+  #sombra { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 50% 50%; border-radius: 60px;
+    box-shadow: 0 60px 140px rgba(0,0,0,.65), 0 20px 40px rgba(0,0,0,.4); }
+  #velo { position: absolute; inset: 0; pointer-events: none; }
+  .bloque { position: absolute; z-index: 10; }
+  .kicker { font-size: 27px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--naranja);
+    margin-bottom: 26px; display: flex; align-items: center; gap: 16px; }
+  .kicker::before { content: ''; width: 38px; height: 2px; background: var(--naranja); }
+  .h { font-weight: 700; letter-spacing: -.035em; line-height: 1.02; }
+  .h .l { display: block; overflow: hidden; padding-bottom: .09em; margin-bottom: -.09em; }
+  .h .l > span { display: inline-block; will-change: transform; }
+  .h em { font-style: normal; color: var(--naranja); }
+  .sub { margin-top: 30px; font-size: 27px; line-height: 1.4; color: var(--suave); font-weight: 500; }
+  .chips { display: flex; gap: 14px; margin-top: 34px; }
+  .chip { padding: 16px 28px; border-radius: 99px; font-size: 30px; font-weight: 600; border: 1.5px solid rgba(255,255,255,.28);
+    background: rgba(10,12,16,.35); backdrop-filter: blur(10px); }
+  .chip.activo { background: var(--naranja); border-color: var(--naranja); color: #1a0d03; }
+  #cierre { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-bottom: 180px; }
+  #cierre img { width: 520px; height: 520px; }
+  #cierre .lema { font-size: 70px; font-weight: 700; letter-spacing: -.03em; line-height: 1.12; margin-top: 4px; }
+  #cierre .lema em { font-style: normal; color: var(--naranja); }
+  #cierre .url { margin-top: 44px; font-size: 34px; font-weight: 600; color: var(--suave); letter-spacing: .02em; }
+  #cierre .cta { margin-top: 40px; padding: 26px 56px; border-radius: 99px; background: var(--naranja); color: #1a0d03; font-size: 36px; font-weight: 800; }
+  #reloj { position: absolute; left: 0; right: 0; top: 470px; text-align: center; z-index: 10; font-weight: 800;
+    font-size: 250px; letter-spacing: -.04em; font-variant-numeric: tabular-nums; line-height: 1; }
+  #reloj .pts { color: var(--naranja); }
+  #reloj .rot { display: block; margin-top: 26px; font-size: 30px; font-weight: 700; letter-spacing: .24em; color: var(--suave); text-transform: uppercase; }
+  #reloj .rot i { display: inline-block; width: 16px; height: 16px; border-radius: 50%; background: #ff5a4e; margin-right: 16px; vertical-align: 2px;
+    box-shadow: 0 0 18px rgba(255,90,78,.8); }
+  #avisos { position: absolute; left: 70px; width: 940px; top: 640px; z-index: 12; display: flex; flex-direction: column; gap: 22px; }
+  .aviso { display: flex; gap: 26px; align-items: flex-start; padding: 30px 32px; border-radius: 40px;
+    background: rgba(38,40,46,.78); backdrop-filter: blur(24px) saturate(1.4); border: 1.5px solid rgba(255,255,255,.12);
+    box-shadow: 0 30px 70px rgba(0,0,0,.5); will-change: transform, opacity; }
+  .aviso .ic { flex: none; width: 84px; height: 84px; border-radius: 22px; display: grid; place-items: center; }
+  .aviso .ic svg { width: 48px; height: 48px; }
+  .aviso .tx { flex: 1; min-width: 0; }
+  .aviso .app { display: flex; justify-content: space-between; font-size: 24px; font-weight: 600; color: var(--suave); letter-spacing: .02em; }
+  .aviso .ti { margin-top: 6px; font-size: 34px; font-weight: 700; letter-spacing: -.01em; }
+  .aviso .cu { margin-top: 4px; font-size: 29px; line-height: 1.3; color: rgba(245,242,236,.8); }
+  #cierre > * { will-change: transform, opacity, filter; }
+</style>
+</head>
+<body>
+<canvas id="fondo" width="1080" height="1920"></canvas>
+<div id="escena">
+  <div id="sombra"></div>
+  <div id="pantalla"><img id="imgA"><img id="imgB"><div id="velo"></div><div id="brillo"></div></div>
+</div>
+<div id="textos"></div>
+<div id="reloj"><span id="hora">18</span><span class="pts">:</span><span id="min">00</span><span class="rot"><i></i>Showroom cerrado</span></div>
+<div id="avisos"></div>
+<div id="cierre">
+  <img src="logo_claro.png" id="logo">
+  <div class="lema">Tu showroom,<br><em>abierto las 24 h.</em></div>
+  <div class="url" style="margin-top:22px">Webs interactivas para desarrolladoras inmobiliarias</div>
+  <div class="url">constructoras.apzsoftware.online</div>
+  <div class="cta">Pedí tu demo</div>
+</div>
+<div id="grano"></div>
+<script src="linea_v2b.js"></script>
+<script>
+const L = window.LINEA, FPS = L.fps, W = 1080, H = 1920;
+const $ = (s) => document.querySelector(s);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const eio = (t) => (t = clamp(t), t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const eo = (t) => (t = clamp(t), 1 - Math.pow(1 - t, 4));   // easeOutQuart
+const eoe = (t) => (t = clamp(t), t === 1 ? 1 : 1 - Math.pow(2, -10 * t)); // easeOutExpo
+const ei = (t) => (t = clamp(t), t * t * t);
+
+// ---------- fondo: degradé oscuro con dos luces de marca que derivan ----------
+const fx = $('#fondo').getContext('2d');
+function fondo(t) {
+  fx.fillStyle = '#07090d'; fx.fillRect(0, 0, W, H);
+  const luces = [
+    [540 + Math.sin(t * .23) * 320, 500 + Math.cos(t * .17) * 300, 1000, 'rgba(7,79,105,.55)'],
+    [540 + Math.cos(t * .19 + 2) * 360, 1400 + Math.sin(t * .21) * 260, 900, 'rgba(255,134,50,.16)'],
+    [200 + Math.sin(t * .13) * 150, 1700, 800, 'rgba(11,37,86,.5)'],
+  ];
+  for (const [x, y, r, c] of luces) {
+    const g = fx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, c); g.addColorStop(1, 'rgba(0,0,0,0)');
+    fx.fillStyle = g; fx.fillRect(0, 0, W, H);
+  }
+}
+
+// ---------- textos de cada escena ----------
+const escenas = L.escenas;
+const bloques = escenas.map((e, i) => {
+  const tx = e.texto || {};
+  if (!tx.pos || tx.pos === 'cierre') return null;
+  const b = document.createElement('div'); b.className = 'bloque';
+  const tam = tx.pos === 'centro' ? 116 : tx.pos === 'abajo' ? 90 : 84;
+  let html = tx.k ? `<div class="kicker">${tx.k}</div>` : '';
+  html += `<div class="h" style="font-size:${tam}px">` + tx.h.map((l) => `<span class="l"><span>${l}</span></span>`).join('') + '</div>';
+  if (tx.sub) html += `<div class="sub">${tx.sub}</div>`;
+  if (tx.chips) html += '<div class="chips">' + tx.chips.map((c) => `<span class="chip">${c}</span>`).join('') + '</div>';
+  b.innerHTML = html;
+  if (tx.pos === 'centro') Object.assign(b.style, { left: '0', right: '0', top: '60%', textAlign: 'center', transform: 'translateY(-50%)' });
+  // zonas seguras de Reels: nada arriba de 230 px ni debajo de 1920 - 420
+  if (tx.pos === 'abajo') Object.assign(b.style, { left: '80px', bottom: (tx.bajo || 430) + 'px', width: '920px' });
+  if (tx.pos === 'arriba') Object.assign(b.style, { left: '80px', top: '232px', width: '920px' });
+  $('#textos').appendChild(b);
+  return b;
+});
+// el grupo "todo" comparte un solo bloque (el de la primera escena del grupo)
+function bloqueDe(i) {
+  const e = escenas[i];
+  if (!e.grupo) return { b: bloques[i], ini: e.ini, fin: e.fin };
+  const g = escenas.filter((x) => x.grupo === e.grupo);
+  return { b: bloques[escenas.indexOf(g[0])], ini: g[0].ini, fin: g[g.length - 1].fin };
+}
+
+function animarTexto(b, e, ini, fin, t) {
+  const pos = e.texto.pos;
+  const lineas = b.querySelectorAll('.h .l > span');
+  const entra = ini + (pos === 'centro' ? 0.15 : 0.35);
+  const sale = fin - 0.42;
+  const vis = t >= ini - 0.01 && t < fin;
+  b.style.display = vis ? '' : 'none';
+  if (!vis) return;
+  const salida = eio((t - sale) / 0.36);
+  lineas.forEach((l, j) => {
+    const p = eoe((t - entra - j * 0.09) / 0.85);
+    l.style.transform = `translateY(${(1 - p) * 110}%)`;
+  });
+  const k = b.querySelector('.kicker'), s = b.querySelector('.sub'), c = b.querySelector('.chips');
+  const pk = eo((t - entra + 0.05) / 0.6);
+  if (k) { k.style.opacity = pk; k.style.transform = `translateX(${(1 - pk) * -24}px)`; }
+  const ps = eo((t - entra - 0.35) / 0.7);
+  if (s) { s.style.opacity = ps; s.style.transform = `translateY(${(1 - ps) * 18}px)`; }
+  if (c) {
+    const actual = escenas.filter((x) => x.grupo === e.grupo && t >= x.ini).length - 1;
+    c.querySelectorAll('.chip').forEach((ch, j) => {
+      const pc = eo((t - entra - 0.25 - j * 0.08) / 0.5);
+      ch.style.opacity = pc; ch.style.transform = `translateY(${(1 - pc) * 16}px)`;
+      ch.classList.toggle('activo', j === actual);
+    });
+  }
+  // salida: sube, se desenfoca y se apaga
+  const baseT = pos === 'centro' ? 'translateY(-50%)' : '';
+  b.style.opacity = 1 - salida;
+  b.style.filter = salida > 0 ? `blur(${salida * 14}px)` : 'none';
+  b.style.transform = `${baseT} translateY(${-salida * 40}px)` + (pos === 'centro' ? ` scale(${1 + salida * .18})` : '');
+}
+
+// ---------- pantalla: encuadre continuo entre escenas ----------
+const E = L.encuadres;
+function encuadreEn(t) {
+  // cada escena interpola desde el encuadre anterior durante los primeros 0.9 s
+  let i = escenas.findIndex((e) => t < e.fin); if (i < 0) i = escenas.length - 1;
+  const e = escenas[i], ant = escenas[i - 1];
+  const a = E[ant ? ant.encuadre : e.encuadre], b = E[e.encuadre];
+  const dur = ant && ant.id === 'gancho' ? 1.1 : 0.9;
+  const p = eio((t - e.ini + 0.25) / dur);
+  const r = {}; for (const k in b) r[k] = lerp(a[k], b[k], p);
+  // deriva lenta de cámara dentro de la escena
+  const q = (t - e.ini) / e.dur;
+  if (b.s < 1) { r.ry += Math.sin(q * Math.PI) * 1.4 * Math.sign(b.ry || 1); r.dy += lerp(10, -10, q); }
+  r.zoom = e.encuadre === 'completa' ? lerp(1.0, 1.045, q) : 1;
+  return r;
+}
+
+// ---------- contenido de la pantalla: cuadro de la toma correspondiente ----------
+function cuadro(e, t) {
+  if (!e || !e.toma) return null;
+  const n = Math.round((t - e.ini + e.solape) * FPS) - e.salto;
+  return `cuadros_v2b/${e.id}/${String(clamp(n, 0, e.n - 1) + 1).padStart(5, '0')}.jpg`;
+}
+const cargar = (img, src) => new Promise((ok) => {
+  if (!src) { img.removeAttribute('src'); img.style.opacity = 0; return ok(); }
+  if (img.getAttribute('src') === src) return ok();
+  img.onload = () => ok(); img.onerror = () => ok(); img.src = src;
+});
+
+// zoom de cámara hacia un punto de la toma (la tarjeta de la unidad cuando aparece)
+function foco(e, t) {
+  if (!e || !e.foco) return '';
+  const f = e.foco, p = eio((t - e.ini - f.t) / 0.8);
+  if (p <= 0) return '';
+  const pan = f.pan ?? .45, s = lerp(1, f.z, p), cx = (540 - f.x) * p * pan, cy = (960 - f.y) * p * pan;
+  return ` translate(${cx}px, ${cy}px) translate(${f.x - 540}px, ${f.y - 960}px) scale(${s}) translate(${540 - f.x}px, ${960 - f.y}px)`;
+}
+
+const ICONOS = {
+  consulta: '<svg viewBox="0 0 24 24" fill="none" stroke="#1a0d03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V6l8-3 8 3v15"/><path d="M9 21v-5h6v5"/><path d="M8 9h1M15 9h1M8 13h1M15 13h1"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg>',
+};
+const avisos = [];
+escenas.forEach((e) => (e.avisos || []).forEach((a, j) => {
+  const d = document.createElement('div'); d.className = 'aviso';
+  const tipo = a.app === 'Mail' ? 'mail' : 'consulta';
+  d.innerHTML = `<div class="ic" style="background:${tipo === 'mail' ? 'var(--petroleo)' : 'var(--naranja)'}">${ICONOS[tipo]}</div>
+    <div class="tx"><div class="app"><span>${a.app}</span><span>ahora</span></div><div class="ti">${a.titulo}</div><div class="cu">${a.cuerpo}</div></div>`;
+  $('#avisos').appendChild(d); avisos.push({ d, e, a });
+}));
+function reloj(t) {
+  const e = escenas[0], R = $('#reloj');
+  if (!e.reloj || t >= e.fin) { R.style.display = 'none'; return; }
+  R.style.display = '';
+  const m0 = (([h, m]) => h * 60 + m)(e.reloj.de.split(':').map(Number)), m1 = (([h, m]) => h * 60 + m)(e.reloj.a.split(':').map(Number));
+  const m = Math.round(lerp(m0, m1, eio((t - 0.35) / 1.5)));
+  $('#hora').textContent = String(Math.floor(m / 60)).padStart(2, '0'); $('#min').textContent = String(m % 60).padStart(2, '0');
+  const pe = eoe(t / 0.7), ps = eio((t - (e.fin - 0.5)) / 0.4);
+  R.style.opacity = pe * (1 - ps); R.style.transform = `translateY(${(1 - pe) * 30 - ps * 40}px) scale(${1 + ps * .1})`;
+  R.style.filter = ps > 0 ? `blur(${ps * 14}px)` : 'none';
+  $('#reloj .pts').style.opacity = (Math.floor(t * 2) % 2) ? .35 : 1;
+}
+function animarAvisos(t) {
+  for (const { d, e, a } of avisos) {
+    const p = eoe((t - e.ini - a.t) / 0.7), ps = eio((t - (e.fin - 0.42)) / 0.36);
+    const vis = t >= e.ini + a.t - 0.02 && t < e.fin;
+    d.style.display = vis ? '' : 'none';
+    if (!vis) continue;
+    d.style.opacity = clamp(p * 1.6) * (1 - ps);
+    d.style.transform = `translateY(${(1 - p) * -70 - ps * 40}px) scale(${lerp(.94, 1, p)})`;
+    d.style.filter = ps > 0 ? `blur(${ps * 12}px)` : 'none';
+  }
+}
+
+window.render = async function (t) {
+  reloj(t); animarAvisos(t);
+  fondo(t);
+  let i = escenas.findIndex((e) => t < e.fin); if (i < 0) i = escenas.length - 1;
+  const e = escenas[i], ant = escenas[i - 1];
+  // fundido con zoom entre la toma anterior y la actual (0.32 s centrado en el corte)
+  const FUN = 0.32;
+  const pf = ant && ant.toma ? eio((t - e.ini + FUN / 2) / FUN) : 1;
+  const A = $('#imgA'), Bi = $('#imgB');
+  // en el gancho la pantalla ya muestra el primer cuadro de la intro, que crece detrás del texto
+  const fuente = e.toma ? e : (e.id === 'gancho' ? escenas[i + 1] : null);
+  await Promise.all([cargar(A, pf < 1 ? cuadro(ant, t) : null), cargar(Bi, cuadro(fuente, t))]);
+  const f = encuadreEn(t);
+  A.style.opacity = pf < 1 ? 1 : 0;
+  A.style.transform = `scale(${f.zoom * (1 + pf * .06)})` + foco(ant, t); A.style.filter = pf > 0 && pf < 1 ? `blur(${Math.sin(pf * Math.PI) * 6}px)` : 'none';
+  Bi.style.opacity = fuente ? pf : 0;
+  Bi.style.transform = `scale(${f.zoom * (1 - (1 - pf) * .04)})` + foco(fuente, t);
+  Bi.style.filter = pf < 1 ? `blur(${(1 - pf) * 5}px)` : 'none';
+
+  // gancho → intro: la pantalla aparece chica detrás del texto y crece hasta llenar el cuadro
+  let o = f.o;
+  if (e.id === 'gancho') { o = eo((t - (e.fin - 0.55)) / 0.5); }
+  if (e.opaca) o = 1; // ya apareció al final del gancho
+  const tr = `translate3d(${f.dx}px, ${f.dy}px, 0) rotateY(${f.ry}deg) scale(${f.s})`;
+  const P = $('#pantalla'), S = $('#sombra');
+  P.style.transform = tr; P.style.borderRadius = `${f.r / f.s}px`; P.style.opacity = o;
+  P.style.filter = e.apagar ? `brightness(${1 - eio((t - e.ini) / .8) * .5})` : 'none';
+  S.style.transform = tr; S.style.borderRadius = `${f.r / f.s}px`; S.style.opacity = o * (1 - clamp((f.s - .8) / .2));
+
+  // velo: oscurece abajo cuando el texto va encima de la toma
+  const tx = (e.grupo ? escenas.find((x) => x.grupo === e.grupo) : e).texto || {};
+  let velo = tx.pos === 'abajo' ? 1 : 0;
+  if (ant && (ant.texto || {}).pos === 'abajo' && !e.grupo && tx.pos !== 'abajo') velo = 1 - eio((t - e.ini) / .4);
+  if (e.velo === 'arriba') velo = eio((t - e.ini - .2) / .6);
+  // en la intro el texto va arriba, sobre el cielo: el velo oscurece desde arriba
+  const dir = e.velo === 'arriba' ? 'bottom' : 'top';
+  $('#velo').style.background = `linear-gradient(to ${dir}, rgba(4,6,9,${.86 * velo}) 0%, rgba(4,6,9,${.6 * velo}) 38%, rgba(4,6,9,0) 68%)`;
+
+  // cierre: la toma del edificio se desenfoca y oscurece, entra la marca
+  const C = $('#cierre');
+  if (e.id === 'cierre') {
+    const q = t - e.ini;
+    const pv = eio(q / 1.1);
+    Bi.style.filter = `blur(${pv * 18}px) brightness(${1 - pv * .62}) saturate(${1 - pv * .3})`;
+    $('#velo').style.background = `radial-gradient(ellipse at 50% 45%, rgba(4,6,9,${.25 * pv}) 0%, rgba(4,6,9,${.7 * pv}) 100%)`;
+    C.style.display = 'flex';
+    const hijos = [...C.children];
+    hijos.forEach((h, j) => {
+      const p = eoe((q - 0.55 - j * 0.16) / 1.0);
+      h.style.opacity = clamp(p * 1.4);
+      h.style.transform = j === 0 ? `scale(${lerp(.86, 1, p)})` : `translateY(${(1 - p) * 34}px)`;
+      h.style.filter = p < 1 ? `blur(${(1 - p) * 10}px)` : 'none';
+    });
+    // el final se funde a negro
+    C.style.opacity = 1; document.body.style.filter = `brightness(${1 - eio((q - (e.dur - 0.5)) / 0.5)})`;
+  } else { C.style.display = 'none'; document.body.style.filter = 'none'; }
+
+  escenas.forEach((x, j) => { if (bloques[j]) { const { ini, fin } = bloqueDe(j); animarTexto(bloques[j], x, ini, fin, t); } });
+  await document.fonts.ready;
+};
+</script>
+</body>
+</html>

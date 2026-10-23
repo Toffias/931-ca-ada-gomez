@@ -1,0 +1,64 @@
+name: Deploy to VPS
+
+on:
+  workflow_run:
+    workflows: ["CI Tests"]
+    types:
+      - completed
+    branches:
+      - master
+
+# Evita dos deploys pisándose.
+concurrency:
+  group: deploy-vps-constructoras
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
+
+    env:
+      DEPLOY_DIR: /var/www/constructoras
+      PM2_NAME: constructoras
+      APP_PORT: "3003"
+      SHA: ${{ github.event.workflow_run.head_sha }}
+
+    steps:
+      - name: Setup SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts || true
+
+      - name: Deploy
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          SSH_OPTS="-i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new"
+          ssh $SSH_OPTS root@"$VPS_HOST" bash -s <<EOF
+            set -euo pipefail
+            cd "$DEPLOY_DIR"
+            # Trae exactamente el commit validado por CI y corre el script de ese commit.
+            git fetch origin master
+            git reset --hard "$SHA"
+            bash scripts/deploy/actualizar.sh "$SHA" < /dev/null
+          EOF
+
+      - name: Verify deployed commit
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          SSH_OPTS="-i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new"
+          DEPLOYED_SHA=$(ssh $SSH_OPTS root@"$VPS_HOST" "cat $DEPLOY_DIR/DEPLOYED_SHA.txt 2>/dev/null || echo unknown")
+          echo "Esperado:   $SHA"
+          echo "Desplegado: $DEPLOYED_SHA"
+          if [ "$DEPLOYED_SHA" != "$SHA" ]; then
+            echo "::error::El VPS quedó en $DEPLOYED_SHA, no en el commit esperado $SHA."
+            exit 1
+          fi
+          echo "VPS en el commit esperado. ✅"

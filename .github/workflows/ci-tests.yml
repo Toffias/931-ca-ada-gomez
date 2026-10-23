@@ -1,0 +1,65 @@
+name: CI Tests
+
+# Compuerta previa al deploy. El workflow de deploy se dispara sólo si esto pasa en master.
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    # Postgres efímero para que `payload migrate` y el build (pre-renderiza páginas que consultan la base) funcionen.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: edificio_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://ci:ci@127.0.0.1:5432/edificio_ci
+      PAYLOAD_SECRET: ci-payload-secret-not-used-in-prod
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # `lint` está roto en este repo (@eslint/eslintrc faltante); typecheck + tests + build son la validación.
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Tests
+        run: pnpm test
+
+      # scripts/migrar.sh confirma que el migrate terminó (a veces Payload sale en silencio sin migrar) y reintenta
+      - name: Run migrations
+        run: NODE_ENV=production bash scripts/migrar.sh
+
+      - name: Build
+        run: pnpm build

@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=block" rel="stylesheet">
+<style>
+  :root { --naranja: #ff8632; --petroleo: #074f69; --azul: #0b2556; --texto: #f5f2ec; --suave: rgba(245,242,236,.66); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #07090d; }
+  body { font-family: 'Manrope', sans-serif; color: var(--texto); -webkit-font-smoothing: antialiased; }
+  #fondo { position: absolute; inset: 0; }
+  #grano { position: absolute; inset: 0; opacity: .06; mix-blend-mode: overlay; pointer-events: none; z-index: 50;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  #escena { position: absolute; inset: 0; perspective: 2600px; }
+  #pantalla { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; transform-origin: 50% 50%;
+    background: #000; will-change: transform; }
+  #pantalla img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #brillo { position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,.16); }
+  #sombra { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 50% 50%; border-radius: 60px;
+    box-shadow: 0 60px 140px rgba(0,0,0,.65), 0 20px 40px rgba(0,0,0,.4); }
+  #velo { position: absolute; inset: 0; pointer-events: none; }
+  .bloque { position: absolute; z-index: 10; }
+  .kicker { font-size: 27px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--naranja);
+    margin-bottom: 26px; display: flex; align-items: center; gap: 16px; }
+  .kicker::before { content: ''; width: 38px; height: 2px; background: var(--naranja); }
+  .h { font-weight: 700; letter-spacing: -.035em; line-height: 1.02; }
+  .h .l { display: block; overflow: hidden; padding-bottom: .09em; margin-bottom: -.09em; }
+  .h .l > span { display: inline-block; will-change: transform; }
+  .h em { font-style: normal; color: var(--naranja); }
+  .sub { margin-top: 30px; font-size: 27px; line-height: 1.4; color: var(--suave); font-weight: 500; }
+  .chips { display: flex; gap: 14px; margin-top: 34px; }
+  .chip { padding: 16px 28px; border-radius: 99px; font-size: 30px; font-weight: 600; border: 1.5px solid rgba(255,255,255,.28);
+    background: rgba(10,12,16,.35); backdrop-filter: blur(10px); }
+  .chip.activo { background: var(--naranja); border-color: var(--naranja); color: #1a0d03; }
+  #cierre { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-bottom: 180px; }
+  #cierre img { width: 520px; height: 520px; }
+  #cierre .lema { font-size: 70px; font-weight: 700; letter-spacing: -.03em; line-height: 1.12; margin-top: 4px; }
+  #cierre .lema em { font-style: normal; color: var(--naranja); }
+  #cierre .url { margin-top: 44px; font-size: 34px; font-weight: 600; color: var(--suave); letter-spacing: .02em; }
+  #cierre .cta { margin-top: 40px; padding: 26px 56px; border-radius: 99px; background: var(--naranja); color: #1a0d03; font-size: 36px; font-weight: 800; }
+  .kicker.gris { color: #8d9199; } .kicker.gris::before { background: #8d9199; }
+  .bloque.antes .h { color: #d9d9d6; } .bloque.antes .h em { color: #8d9199; }
+  /* ---------- mockups del "antes": gris, papel, interfaz vieja ---------- */
+  .mock { position: absolute; left: 130px; width: 820px; top: 690px; transform-origin: 50% 0; z-index: 8; will-change: transform, opacity, filter;
+    font-family: Arial, Helvetica, sans-serif; color: #3b3d40; }
+  .mock [data-ev] { will-change: transform, opacity; }
+  .pdf { background: #d7d7d4; border-radius: 10px; box-shadow: 0 40px 90px rgba(0,0,0,.6); overflow: hidden; }
+  .pdf .barra { display: flex; align-items: center; gap: 16px; padding: 18px 22px; background: #4a4c50; color: #dcdcda; font-size: 25px; }
+  .pdf .barra .ic { background: #8a8d91; color: #2c2e31; font-weight: 700; font-size: 19px; padding: 6px 9px; border-radius: 5px; }
+  .pdf .barra .peso { margin-left: auto; color: #a8aaad; }
+  .pdf .hoja { margin: 26px 34px 0; background: #f1f1ef; padding: 28px; height: 470px; box-shadow: 0 4px 12px rgba(0,0,0,.15); position: relative; }
+  .pdf .foto { width: 100%; height: 250px; object-fit: cover; object-position: 50% 26%; filter: grayscale(1) contrast(.75) brightness(1.05) blur(1.2px); }
+  .pdf .tit { margin-top: 24px; height: 30px; width: 70%; background: #b9b9b6; }
+  .pdf .lin { margin-top: 16px; height: 16px; background: #d0d0cd; }
+  .pdf .pag { position: absolute; right: 26px; bottom: 18px; font-size: 21px; color: #9a9c9f; }
+  .pdf .descarga { padding: 22px 34px 30px; font-size: 25px; color: #55575b; }
+  .pdf .pista { margin-top: 12px; height: 14px; background: #b5b5b2; border-radius: 7px; overflow: hidden; }
+  .pdf .lleno { height: 100%; width: 34%; background: #6f7276; }
+  .chat { background: #cfd0cc; border-radius: 34px; overflow: hidden; box-shadow: 0 40px 90px rgba(0,0,0,.6); padding-bottom: 34px; }
+  .chat .cab { display: flex; align-items: center; gap: 20px; padding: 24px 30px; background: #5a5d61; color: #e4e4e1; }
+  .chat .av { width: 70px; height: 70px; border-radius: 50%; background: #8d9095; display: grid; place-items: center; font-size: 30px; font-weight: 700; color: #3a3c3f; }
+  .chat .nom { font-size: 30px; font-weight: 700; } .chat .est { font-size: 22px; color: #b9bbbe; margin-top: 4px; }
+  .chat .dia { margin: 26px auto 6px; width: max-content; font-size: 21px; padding: 7px 18px; border-radius: 12px; background: #b9bab6; color: #5d5f62; }
+  .chat .gl { max-width: 76%; margin: 18px 30px 0; padding: 20px 26px 34px; font-size: 32px; line-height: 1.3; border-radius: 26px; position: relative; }
+  .chat .gl small { position: absolute; right: 20px; bottom: 9px; font-size: 19px; color: #7d7f82; }
+  .chat .sale { margin-left: auto; background: #eeeeec; border-bottom-right-radius: 8px; }
+  .chat .entra { background: #a9aaa6; border-bottom-left-radius: 8px; }
+  .planos { height: 760px; } .planos .plano { width: 470px; }
+  .plano { position: absolute; width: 520px; background: #ecebe8; padding: 18px 18px 0; box-shadow: 0 30px 70px rgba(0,0,0,.55); border-radius: 6px; }
+  .plano svg { width: 100%; display: block; background: #f7f7f5; filter: blur(.6px); }
+  .plano .nom { padding: 14px 4px 18px; font-size: 24px; color: #5f6164; }
+  .turno { background: #d9d9d6; border-radius: 30px; padding: 40px 42px 44px; box-shadow: 0 40px 90px rgba(0,0,0,.6); }
+  .turno .t1 { font-size: 40px; font-weight: 700; color: #34363a; } .turno .t2 { font-size: 26px; color: #6b6d71; margin-top: 8px; }
+  .turno .dias { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 34px; }
+  .turno .d { background: #eeeeec; border-radius: 16px; padding: 18px 0 20px; text-align: center; font-size: 24px; color: #6b6d71; }
+  .turno .d b { display: block; font-size: 44px; color: #34363a; margin-top: 4px; }
+  .turno .d.no { opacity: .45; text-decoration: line-through; }
+  .turno .d.si { background: #6f7276; color: #eee; } .turno .d.si b { color: #fff; }
+  .turno .hora { margin-top: 26px; font-size: 28px; color: #4a4c50; }
+  .turno .btn { margin-top: 26px; padding: 24px; border-radius: 16px; background: #8a8d91; color: #f2f2f0; font-size: 30px; font-weight: 700; text-align: center; }
+  .turno .espera { margin-top: 18px; font-size: 24px; color: #6b6d71; text-align: center; }
+  #cierre > * { will-change: transform, opacity, filter; }
+</style>
+</head>
+<body>
+<canvas id="fondo" width="1080" height="1920"></canvas>
+<div id="escena">
+  <div id="sombra"></div>
+  <div id="pantalla"><img id="imgA"><img id="imgB"><div id="velo"></div><div id="brillo"></div></div>
+</div>
+<div id="textos"></div>
+<div id="antes"></div>
+<div id="cierre">
+  <img src="logo_claro.png" id="logo">
+  <div class="lema">Dejá de vender<br><em>con PDFs.</em></div>
+  <div class="url" style="margin-top:22px">Webs interactivas para desarrolladoras inmobiliarias</div>
+  <div class="url">constructoras.apzsoftware.online</div>
+  <div class="cta">Pedí tu demo</div>
+</div>
+<div id="grano"></div>
+<script src="linea_v3.js"></script>
+<script>
+const L = window.LINEA, FPS = L.fps, W = 1080, H = 1920;
+const $ = (s) => document.querySelector(s);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const eio = (t) => (t = clamp(t), t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const eo = (t) => (t = clamp(t), 1 - Math.pow(1 - t, 4));   // easeOutQuart
+const eoe = (t) => (t = clamp(t), t === 1 ? 1 : 1 - Math.pow(2, -10 * t)); // easeOutExpo
+const ei = (t) => (t = clamp(t), t * t * t);
+
+// ---------- fondo: degradé oscuro con dos luces de marca que derivan ----------
+const fx = $('#fondo').getContext('2d');
+function pesoColor(t) {
+  // 1 = color de marca (ahora), 0 = gris (antes); el cambio dura 0.35 s en cada corte
+  let i = escenas.findIndex((e) => t < e.fin); if (i < 0) i = escenas.length - 1;
+  const e = escenas[i], ant = escenas[i - 1];
+  const v = (x) => (x && x.antes ? 0 : 1);
+  return lerp(ant ? v(ant) : v(e), v(e), eio((t - e.ini + .1) / .35));
+}
+const mezcla = (c1, c2, p) => `rgba(${c1.map((x, j) => (j < 3 ? Math.round(lerp(c2[j], x, p)) : lerp(c2[j], x, p).toFixed(3))).join(',')})`;
+function fondo(t) {
+  const pc = pesoColor(t);
+  fx.fillStyle = '#07090d'; fx.fillRect(0, 0, W, H);
+  const luces = [
+    [540 + Math.sin(t * .23) * 320, 500 + Math.cos(t * .17) * 300, 1000, mezcla([7,79,105,.55], [70,72,76,.35], pc)],
+    [540 + Math.cos(t * .19 + 2) * 360, 1400 + Math.sin(t * .21) * 260, 900, mezcla([255,134,50,.16], [120,120,120,.08], pc)],
+    [200 + Math.sin(t * .13) * 150, 1700, 800, mezcla([11,37,86,.5], [40,42,46,.4], pc)],
+  ];
+  for (const [x, y, r, c] of luces) {
+    const g = fx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, c); g.addColorStop(1, 'rgba(0,0,0,0)');
+    fx.fillStyle = g; fx.fillRect(0, 0, W, H);
+  }
+}
+
+// ---------- textos de cada escena ----------
+const escenas = L.escenas;
+const bloques = escenas.map((e, i) => {
+  const tx = e.texto || {};
+  if (!tx.pos || tx.pos === 'cierre') return null;
+  const b = document.createElement('div'); b.className = 'bloque';
+  const tam = tx.pos === 'centro' ? 116 : tx.pos === 'abajo' ? 90 : 84;
+  let html = tx.k ? `<div class="kicker${tx.antes ? ' gris' : ''}">${tx.k}</div>` : '';
+  if (tx.antes) b.classList.add('antes');
+  html += `<div class="h" style="font-size:${tam}px">` + tx.h.map((l) => `<span class="l"><span>${l}</span></span>`).join('') + '</div>';
+  if (tx.sub) html += `<div class="sub">${tx.sub}</div>`;
+  if (tx.chips) html += '<div class="chips">' + tx.chips.map((c) => `<span class="chip">${c}</span>`).join('') + '</div>';
+  b.innerHTML = html;
+  if (tx.pos === 'centro') Object.assign(b.style, { left: '0', right: '0', top: '50%', textAlign: 'center', transform: 'translateY(-50%)' });
+  // zonas seguras de Reels: nada arriba de 230 px ni debajo de 1920 - 420
+  if (tx.pos === 'abajo') Object.assign(b.style, { left: '80px', bottom: (tx.bajo || 430) + 'px', width: '920px' });
+  if (tx.pos === 'arriba') Object.assign(b.style, { left: '80px', top: '232px', width: '920px' });
+  $('#textos').appendChild(b);
+  return b;
+});
+// el grupo "todo" comparte un solo bloque (el de la primera escena del grupo)
+function bloqueDe(i) {
+  const e = escenas[i];
+  if (!e.grupo) return { b: bloques[i], ini: e.ini, fin: e.fin };
+  const g = escenas.filter((x) => x.grupo === e.grupo);
+  return { b: bloques[escenas.indexOf(g[0])], ini: g[0].ini, fin: g[g.length - 1].fin };
+}
+
+function animarTexto(b, e, ini, fin, t) {
+  const pos = e.texto.pos;
+  const lineas = b.querySelectorAll('.h .l > span');
+  const entra = ini + (pos === 'centro' ? 0.15 : 0.35);
+  const sale = fin - 0.42;
+  const vis = t >= ini - 0.01 && t < fin;
+  b.style.display = vis ? '' : 'none';
+  if (!vis) return;
+  const salida = eio((t - sale) / 0.36);
+  lineas.forEach((l, j) => {
+    const p = eoe((t - entra - j * 0.09) / 0.85);
+    l.style.transform = `translateY(${(1 - p) * 110}%)`;
+  });
+  const k = b.querySelector('.kicker'), s = b.querySelector('.sub'), c = b.querySelector('.chips');
+  const pk = eo((t - entra + 0.05) / 0.6);
+  if (k) { k.style.opacity = pk; k.style.transform = `translateX(${(1 - pk) * -24}px)`; }
+  const ps = eo((t - entra - 0.35) / 0.7);
+  if (s) { s.style.opacity = ps; s.style.transform = `translateY(${(1 - ps) * 18}px)`; }
+  if (c) {
+    const actual = escenas.filter((x) => x.grupo === e.grupo && t >= x.ini).length - 1;
+    c.querySelectorAll('.chip').forEach((ch, j) => {
+      const pc = eo((t - entra - 0.25 - j * 0.08) / 0.5);
+      ch.style.opacity = pc; ch.style.transform = `translateY(${(1 - pc) * 16}px)`;
+      ch.classList.toggle('activo', j === actual);
+    });
+  }
+  // salida: sube, se desenfoca y se apaga
+  const baseT = pos === 'centro' ? 'translateY(-50%)' : '';
+  b.style.opacity = 1 - salida;
+  b.style.filter = salida > 0 ? `blur(${salida * 14}px)` : 'none';
+  b.style.transform = `${baseT} translateY(${-salida * 40}px)` + (pos === 'centro' ? ` scale(${1 + salida * .18})` : '');
+}
+
+// ---------- pantalla: encuadre continuo entre escenas ----------
+const E = L.encuadres;
+function encuadreEn(t) {
+  // cada escena interpola desde el encuadre anterior durante los primeros 0.9 s
+  let i = escenas.findIndex((e) => t < e.fin); if (i < 0) i = escenas.length - 1;
+  const e = escenas[i], ant = escenas[i - 1];
+  const a = E[ant ? ant.encuadre : e.encuadre], b = E[e.encuadre];
+  const dur = ant && ant.id === 'gancho' ? 1.1 : e.bisagra ? 1.3 : e.encuadre === 'bajo' ? 0.55 : 0.9;
+  const p = eio((t - e.ini + 0.25) / dur);
+  const r = {}; for (const k in b) r[k] = lerp(a[k], b[k], p);
+  // deriva lenta de cámara dentro de la escena
+  const q = (t - e.ini) / e.dur;
+  if (b.s < 1) { r.ry += Math.sin(q * Math.PI) * 1.4 * Math.sign(b.ry || 1); r.dy += lerp(10, -10, q); }
+  r.zoom = e.encuadre === 'completa' ? lerp(1.0, 1.045, q) : 1;
+  return r;
+}
+
+// ---------- contenido de la pantalla: cuadro de la toma correspondiente ----------
+function cuadro(e, t) {
+  if (!e || !e.toma) return null;
+  const n = Math.round((t - e.ini + e.solape) * FPS) - e.salto;
+  return `cuadros_v3/${e.id}/${String(clamp(n, 0, e.n - 1) + 1).padStart(5, '0')}.jpg`;
+}
+const cargar = (img, src) => new Promise((ok) => {
+  if (!src) { img.removeAttribute('src'); img.style.opacity = 0; return ok(); }
+  if (img.getAttribute('src') === src) return ok();
+  img.onload = () => ok(); img.onerror = () => ok(); img.src = src;
+});
+
+// zoom de cámara hacia un punto de la toma (la tarjeta de la unidad cuando aparece)
+function foco(e, t) {
+  if (!e || !e.foco) return '';
+  const f = e.foco, p = eio((t - e.ini - f.t) / 0.8);
+  if (p <= 0) return '';
+  const pan = f.pan ?? .45, s = lerp(1, f.z, p), cx = (540 - f.x) * p * pan, cy = (960 - f.y) * p * pan;
+  return ` translate(${cx}px, ${cy}px) translate(${f.x - 540}px, ${f.y - 960}px) scale(${s}) translate(${540 - f.x}px, ${960 - f.y}px)`;
+}
+
+
+// ---------- mockups del "antes" ----------
+const PLANO = (v) => `<svg viewBox="0 0 400 300"><g fill="none" stroke="#6d6f72" stroke-width="${v ? 3 : 4}">
+  <rect x="20" y="20" width="360" height="260"/><path d="M20 150h${150 + v * 10}M${190 + v * 8} 20v130M${190 + v * 8} 190v90M270 150h110M270 150v${50 + v * 10}"/>
+  <path d="M60 280v-30M120 20v20M330 280v-24" stroke-width="2"/></g>
+  <g fill="#8a8c8f" font-family="Arial" font-size="15"><text x="60" y="90">DORM.</text><text x="240" y="90">LIVING</text><text x="60" y="220">COCINA</text><text x="300" y="220">BAÑO</text></g></svg>`;
+const MOCKS = {
+  pdf: () => `<div class="barra"><span class="ic">PDF</span>Folleto_TorreCityh_FINAL_v7.pdf<span class="peso">38 MB</span></div>
+    <div class="hoja"><img class="foto" src="cuadros_v3/giro/00095.jpg"><div class="tit"></div><div class="lin"></div><div class="lin"></div><div class="lin" style="width:62%"></div><div class="pag">Página 1 de 24</div></div>
+    <div class="descarga" data-ev="0">Descargando… <b class="pct">34 %</b><div class="pista"><div class="lleno"></div></div></div>`,
+  chat: () => `<div class="cab"><div class="av">V</div><div><div class="nom">Ventas · Torre</div><div class="est">últ. vez hace 2 h</div></div></div>
+    <div class="gl sale" data-ev="0">Hola! ¿Qué precio tiene el 3C?<small>19:02 ✓✓</small></div>
+    <div class="gl entra" data-ev="1">Hola! Te paso por privado 😊<small>21:47</small></div>
+    <div class="dia" data-ev="2">Hoy</div>
+    <div class="gl sale" data-ev="2">¿? Sigo esperando…<small>11:30 ✓✓</small></div>`,
+  planos: () => ['plano_3C.jpg', 'plano_3C_rev2.jpg', 'plano_3C_FINAL(1).jpg'].map((n, j) =>
+    `<div class="plano" data-ev="${j}" style="left:${[10, 250, 110][j]}px; top:${[0, 190, 400][j]}px; --r:${[-7, 5, -2][j]}deg">${PLANO(j)}<div class="nom">📎 ${n}</div></div>`).join(''),
+  turno: () => `<div class="t1">Showroom</div><div class="t2">Lunes a viernes · 10 a 18 h</div>
+    <div class="dias">${[['Lun', 5], ['Mar', 6], ['Mié', 7], ['Jue', 8], ['Vie', 9]].map(([d, n], j) => `<div class="d${j < 3 ? ' no' : ''}${j === 3 ? ' elegible' : ''}">${d}<b>${n}</b></div>`).join('')}</div>
+    <div class="hora" data-ev="0">Primer turno libre: <b>jueves 15:30</b></div>
+    <div class="btn">Pedir turno</div><div class="espera" data-ev="1">Te confirmamos por mail en 48 h hábiles.</div>`,
+};
+const mocks = escenas.filter((e) => e.antes && MOCKS[e.antes]).map((e) => {
+  const d = document.createElement('div'); d.className = `mock ${e.antes}`; d.innerHTML = MOCKS[e.antes]();
+  $('#antes').appendChild(d); return { d, e };
+});
+// los mockups se apilan: el nuevo cae encima y los anteriores quedan atrás, más chicos y apagados;
+// en la bisagra (primera escena del "ahora") toda la pila se cae y se desenfoca
+const T_PILA = (escenas.find((e) => e.bisagra) || escenas[escenas.length - 1]).ini;
+function animarAntes(t) {
+  mocks.forEach(({ d, e }, j) => {
+    const vis = t >= e.ini - 0.01 && t < T_PILA + 0.9;
+    d.style.display = vis ? '' : 'none';
+    if (!vis) return;
+    const q = t - e.ini;
+    const p = eoe((q - 0.05) / 0.6);
+    // cuántos mockups cayeron encima (suave)
+    const encima = mocks.slice(j + 1).reduce((s, m) => s + eio((t - m.e.ini - 0.05) / 0.5), 0);
+    const ps = eio((t - T_PILA + 0.35 - j * 0.07) / 0.7);
+    const giro = [-4, 3.5, -2.5, 2][j % 4];
+    d.style.zIndex = 8 + j;
+    d.style.opacity = clamp(p * 1.5) * (1 - clamp(ps * 1.2));
+    d.style.transform = `translateY(${(1 - p) * 120 - encima * 58 + ps * 700}px) rotate(${lerp(giro * 2, giro, p) + ps * (j % 2 ? 16 : -16)}deg) scale(${(lerp(.9, 1, p) - encima * .045 - ps * .1) * 1.1})`;
+    d.style.filter = `grayscale(1) brightness(${1 - encima * .16}) blur(${encima * 1.2 + ps * 14}px)`;
+    const ev = e.eventos || [];
+    d.querySelectorAll('[data-ev]').forEach((x) => {
+      const pe = eoe((q - ev[+x.dataset.ev]) / 0.45);
+      x.style.visibility = q >= ev[+x.dataset.ev] ? 'visible' : 'hidden';
+      const r = x.style.getPropertyValue('--r') || '0deg';
+      x.style.transform = `translateY(${(1 - pe) * 26}px) scale(${lerp(.9, 1, pe)}) rotate(${r})`;
+      x.style.opacity = clamp(pe * 1.4);
+    });
+    if (e.antes === 'pdf') {  // la descarga que no avanza
+      const pct = Math.round(lerp(34, 37, clamp((q - ev[0]) / 1.4)));
+      d.querySelector('.pct').textContent = pct + ' %'; d.querySelector('.lleno').style.width = pct + '%';
+    }
+    if (e.antes === 'turno') d.querySelector('.elegible').classList.toggle('si', q >= ev[0]);
+  });
+}
+
+window.render = async function (t) {
+  animarAntes(t);
+  fondo(t);
+  let i = escenas.findIndex((e) => t < e.fin); if (i < 0) i = escenas.length - 1;
+  const e = escenas[i], ant = escenas[i - 1];
+  // fundido con zoom entre la toma anterior y la actual (0.32 s centrado en el corte)
+  const FUN = 0.32;
+  const pf = ant && ant.toma ? eio((t - e.ini + FUN / 2) / FUN) : 1;
+  const A = $('#imgA'), Bi = $('#imgB');
+  // en el gancho la pantalla ya muestra el primer cuadro de la intro, que crece detrás del texto
+  const fuente = e.toma ? e : (ant && ant.toma ? ant : null);
+  await Promise.all([cargar(A, pf < 1 ? cuadro(ant, t) : null), cargar(Bi, cuadro(fuente, t))]);
+  const f = encuadreEn(t);
+  A.style.opacity = pf < 1 ? 1 : 0;
+  A.style.transform = `scale(${f.zoom * (1 + pf * .06)})` + foco(ant, t); A.style.filter = pf > 0 && pf < 1 ? `blur(${Math.sin(pf * Math.PI) * 6}px)` : 'none';
+  Bi.style.opacity = fuente ? pf : 0;
+  Bi.style.transform = `scale(${f.zoom * (1 - (1 - pf) * .04)})` + foco(fuente, t);
+  Bi.style.filter = pf < 1 ? `blur(${(1 - pf) * 5}px)` : 'none';
+
+  // gancho → intro: la pantalla aparece chica detrás del texto y crece hasta llenar el cuadro
+  let o = f.o;
+  if (e.opaca) o = 1; // ya apareció al final del gancho
+  const tr = `translate3d(${f.dx}px, ${f.dy}px, 0) rotateY(${f.ry}deg) scale(${f.s})`;
+  const P = $('#pantalla'), S = $('#sombra');
+  P.style.transform = tr; P.style.borderRadius = `${f.r / f.s}px`; P.style.opacity = o;
+  P.style.filter = e.apagar ? `brightness(${1 - eio((t - e.ini) / .8) * .5})` : 'none';
+  S.style.transform = tr; S.style.borderRadius = `${f.r / f.s}px`; S.style.opacity = o * (1 - clamp((f.s - .8) / .2));
+
+  // velo: oscurece abajo cuando el texto va encima de la toma
+  const tx = (e.grupo ? escenas.find((x) => x.grupo === e.grupo) : e).texto || {};
+  let velo = tx.pos === 'abajo' ? 1 : 0;
+  if (ant && (ant.texto || {}).pos === 'abajo' && !e.grupo && tx.pos !== 'abajo') velo = 1 - eio((t - e.ini) / .4);
+  if (e.velo === 'arriba') velo = eio((t - e.ini - .2) / .6);
+  // en la intro el texto va arriba, sobre el cielo: el velo oscurece desde arriba
+  const dir = e.velo === 'arriba' ? 'bottom' : 'top';
+  $('#velo').style.background = `linear-gradient(to ${dir}, rgba(4,6,9,${.86 * velo}) 0%, rgba(4,6,9,${.6 * velo}) 38%, rgba(4,6,9,0) 68%)`;
+
+  // cierre: la toma del edificio se desenfoca y oscurece, entra la marca
+  const C = $('#cierre');
+  if (e.id === 'cierre') {
+    const q = t - e.ini;
+    const pv = eio(q / 1.1);
+    Bi.style.filter = `blur(${pv * 18}px) brightness(${1 - pv * .62}) saturate(${1 - pv * .3})`;
+    $('#velo').style.background = `radial-gradient(ellipse at 50% 45%, rgba(4,6,9,${.25 * pv}) 0%, rgba(4,6,9,${.7 * pv}) 100%)`;
+    C.style.display = 'flex';
+    const hijos = [...C.children];
+    hijos.forEach((h, j) => {
+      const p = eoe((q - 0.55 - j * 0.16) / 1.0);
+      h.style.opacity = clamp(p * 1.4);
+      h.style.transform = j === 0 ? `scale(${lerp(.86, 1, p)})` : `translateY(${(1 - p) * 34}px)`;
+      h.style.filter = p < 1 ? `blur(${(1 - p) * 10}px)` : 'none';
+    });
+    // el final se funde a negro
+    C.style.opacity = 1; document.body.style.filter = `brightness(${1 - eio((q - (e.dur - 0.5)) / 0.5)})`;
+  } else { C.style.display = 'none'; document.body.style.filter = 'none'; }
+
+  escenas.forEach((x, j) => { if (bloques[j]) { const { ini, fin } = bloqueDe(j); animarTexto(bloques[j], x, ini, fin, t); } });
+  await document.fonts.ready;
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# PostgreSQL local para probar como en producción.
+#   docker compose up -d
+#   DATABASE_URL=postgres://edificio:edificio@localhost:5432/edificio
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: edificio
+      POSTGRES_PASSWORD: edificio
+      POSTGRES_DB: edificio
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
