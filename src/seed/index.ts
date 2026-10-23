@@ -150,6 +150,30 @@ async function main() {
     { imagen: atardecer.id, epigrafe: 'Al atardecer' },
     { imagen: acceso.id, epigrafe: 'Acceso' },
   ]
+  // Disponibilidad sobre las fotos del cliente: máscaras calculadas en Blender con las cámaras calzadas
+  // (Render_Fachada_* de scripts/blender/modelar_ca931.py, docs/plan-renders-931.md Fase C)
+  const vistasDisponibilidad = [
+    { etiqueta: 'Frente', imagen: izquierda.id, mascara: (await subir('mascara-frente.svg', 'Máscara de unidades · Frente')).id },
+    {
+      etiqueta: 'Frente derecha',
+      imagen: derecha.id,
+      mascara: (await subir('mascara-frente-derecha.svg', 'Máscara de unidades · Frente derecha')).id,
+    },
+  ]
+  // Plantas por piso: renders fotorrealistas con el edificio cortado y su máscara (renders_plantas.py con fondo
+  // blanco, docs/plan-renders-931.md Fase C); misma cámara para todos los pisos
+  const niveles = []
+  for (let piso = 0; piso <= 4; piso++) {
+    const n = String(piso).padStart(2, '0')
+    const nombre = piso === 0 ? 'Planta baja' : `Piso ${piso}`
+    niveles.push({
+      piso,
+      ...(piso === 0 ? { nombre } : {}),
+      tipo: 'unidades' as const,
+      cenitalBlanco: (await subir(`plantas/piso-${n}.webp`, `${NOMBRE} · ${nombre} vista desde arriba`)).id,
+      mascara: (await subir(`plantas/piso-${n}.svg`, `Máscara de unidades · ${nombre}`)).id,
+    })
+  }
   log('Archivos subidos')
 
   // Proyecto. Contacto, ubicación y logo quedan vacíos hasta que los pase el cliente.
@@ -198,6 +222,9 @@ async function main() {
       modelo3D: modelo.id,
       portada: izquierda.id,
       galeria,
+      vistasDisponibilidad,
+      fondoPlantas: 'blanco',
+      niveles,
     },
   })
 

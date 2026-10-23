@@ -116,6 +116,22 @@ Store no corre por línea de comandos) y se guarda en `blender/ca931_web.blend` 
 | Recorrido 360 | `interior_tipo.py` → `vestir_interior.py` → `renders_recorrido.py` | 3 amb y 2 amb (y PB si hay tiempo). El interior sale del plano; el estilo (cálido, madera, gris) de lo que se ve por los ventanales de los renders. Seguir la skill `recorrido-360`. |
 | Noche | mismo `.blend`, luces y emisión | Comparar contra `fachada-atardecer`: spots en cielorrasos, LED en cantos de losa, hall cálido. |
 
+**Disponibilidad: hecha.** Las cámaras `Render_Fachada_1/2` (copias de `Ref_Izquierda/Derecha`) calculan la máscara
+sobre las fotos del cliente; se corre `renders_fachadas.py --camaras N --solo-mascaras` una por vez, con la
+resolución de cada foto. Las máscaras están en `src/seed/assets/ca931/mascara-*.svg` y el seed las carga como
+*Edificio → Disponibilidad → Vistas* (Frente y Frente derecha) con las fotos de fondo. Para que no se pinten las
+unidades a través de las medianeras, la tolerancia va en 0,10 m (las cajas de unidad están por delante de vidrios
+y barandas) y las losas cubren todo el fondo.
+
+**Plantas por piso: fotorrealistas.** Interiores calcados de los planos (`scripts/blender/interior_ca931.py`: muros
+con vanos, solados por ambiente, núcleo, escalera, muebles fijos) y vestidos con `vestir_ca931.py` (texturas y
+modelos de Poly Haven bajados con `bajar_assets_interior.py`, muebles de detalle de `vestir_interior.py`, HDRI).
+Los dos corren dentro de `modelar_ca931.py` (`VESTIR = True`). Cambios del modelo para poder cortarlo: los pisos son
+medianeras y contrafrente con ventanas (no cajas macizas), las cajas `Unidad_*` siguen la planta en L sin el núcleo
+común, y la PB tiene una platea para medir el corte igual que en los pisos. Cámara `Render_Planta` (en
+Referencias): piso 2, 25° desde la vertical, 50 mm, frente abajo, `altura_corte = 2.0` (1,5 m sobre el piso
+terminado: el nivel de cada `Piso_NN` es el fondo de su losa), fondo blanco. Tanda: 2560×1440, Cycles 256 muestras.
+
 **Control de calidad de cada render:** ponerlo al lado (o encima, en diferencia) de la referencia con la misma
 cámara y revisar: proporciones, colores de cada material, cantidad de listones, ubicación del número 931, plantas y
 luces. Se guarda la comparación en `docs/referencias/comparaciones/` para mostrársela al cliente.

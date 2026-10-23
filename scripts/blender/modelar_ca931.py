@@ -39,6 +39,9 @@ LOSA = 0.25            # media losa (el canto se ve de ~0,5 m en los renders)
 MAD_I, MAD_D = 0.70, 1.70
 VIDRIO_Y = 0.40        # retiro de los ventanales detrás de la línea municipal
 TECHO = ALTO_PB + PISOS * ALTO_PISO
+# interiores fotorrealistas para los renders (vestir_ca931.py: texturas y muebles de Poly Haven, fuera del repo, con
+# scripts/blender/bajar_assets_interior.py). Sin los assets queda el interior en cajas
+VESTIR = True
 
 # ---------------------------------------------------------------- materiales (colores con cuentagotas de las referencias)
 MATERIALES = {
@@ -171,6 +174,13 @@ class Malla:
 
     def objeto(self, nombre, col, extras=None):
         bmesh.ops.recalc_face_normals(self.bm, faces=self.bm.faces)
+        # UV por proyección de caja en metros: las texturas de vestir_ca931.py calzan a escala real
+        uv = self.bm.loops.layers.uv.new("UVMap")
+        for f in self.bm.faces:
+            eje = max(range(3), key=lambda i: abs(f.normal[i]))
+            a, b = [(1, 2), (0, 2), (0, 1)][eje]
+            for loop in f.loops:
+                loop[uv].uv = (loop.vert.co[a], loop.vert.co[b])
         me = bpy.data.meshes.new(nombre)
         self.bm.to_mesh(me)
         self.bm.free()
@@ -206,6 +216,25 @@ def carpinteria(m, x0, x1, z0, z1, paños):
         m.caja("WEB_Metal_Negro", (x0, x1), (VIDRIO_Y - 0.05, VIDRIO_Y), (z - 0.03, z + 0.03))
 
 
+def muro_con_huecos(m, mat, x0, x1, y0, y1, z0, z1, huecos):
+    """muro a lo largo de X con ventanas (xa, xb, za, zb): queda hueco, como para verlo cortado desde arriba"""
+    x = x0
+    for xa, xb, za, zb in sorted(huecos):
+        m.caja(mat, (x, xa), (y0, y1), (z0, z1))
+        m.caja(mat, (xa, xb), (y0, y1), (z0, za))
+        m.caja(mat, (xa, xb), (y0, y1), (zb, z1))
+        m.caja("WEB_Vidrio", (xa, xb), ((y0 + y1) / 2 - 0.01, (y0 + y1) / 2 + 0.01), (za, zb))
+        x = xb
+    m.caja(mat, (x, x1), (y0, y1), (z0, z1))
+
+
+def cascara(m, mat, y_frente, z0, z1, ventanas):
+    """medianeras y contrafrente con espesor (el interior queda libre para los renders de plantas)"""
+    m.caja(mat, (X0, X0 + 0.15), (y_frente, FONDO), (z0, z1))
+    m.caja(mat, (X1 - 0.15, X1), (y_frente, FONDO), (z0, z1))
+    muro_con_huecos(m, mat, X0 + 0.15, X1 - 0.15, FONDO - 0.2, FONDO, z0, z1, ventanas)
+
+
 def spots(m, x0, x1, y, z, n):
     for i in range(n):
         x = x0 + (x1 - x0) * (i + 0.5) / n
@@ -215,7 +244,15 @@ def spots(m, x0, x1, y, z, n):
 # ---------------------------------------------------------------- edificio
 def planta_baja(col):
     m = Malla()
-    m.caja("WEB_Fachada_Crema", (X0, X1), (0.6, FONDO), (0, ALTO_PB))
+    # platea bajo el piso terminado: así el nivel más bajo de Piso_00 queda 0,5 m por debajo, como en los pisos
+    # (la losa de cada piso baja 0,25 de su nivel nominal y su piso terminado está 0,25 arriba)
+    m.caja("WEB_Revoque_Claro", (X0, X1), (0.0, FONDO), (-0.5, 0.0))
+    # contrafrente: puerta-ventana del estar al patio y ventana del dormitorio 3
+    cascara(m, "WEB_Fachada_Crema", 0.6, 0, ALTO_PB, [(X0 + 0.4, X0 + 3.2, 0.05, 2.4), (X1 - 2.6, X1 - 0.6, 0.9, 2.4)])
+    # cierres del frente entre ventanal, columna y acceso
+    m.caja("WEB_Fachada_Crema", (0.05, 0.15), (0.45, 0.6), (0, ALTO_PB))
+    m.caja("WEB_Fachada_Crema", (0.98, 1.05), (0.6, 2.3), (0, ALTO_PB))
+    m.caja("WEB_Fachada_Crema", (2.35, 2.45), (0.6, 2.3), (0, ALTO_PB))
     # izquierda: ventanal de los dormitorios detrás de listones negros, con jardinera baja
     m.caja("WEB_Vidrio", (X0 + 0.25, 0.05), (0.55, 0.6), (0.45, ALTO_PB - 0.3))
     m.caja("WEB_Revoque_Gris", (X0 + 0.15, 0.15), (0.05, 0.6), (0, 0.4))
@@ -235,8 +272,6 @@ def planta_baja(col):
     m.caja("WEB_Revoque_Gris", (2.35, X1 - 0.4), (0.0, 0.6), (0, ALTO_PB))
     listones(m, "WEB_Madera_Listones", 2.4, X1 - 0.45, -0.05, 0.0, 0.0, ALTO_PB - 0.25)
     m.caja("WEB_Fachada_Crema", (X1 - 0.4, X1), (-0.1, 0.6), (0, ALTO_PB))
-    # contrafrente: ventanal al patio
-    m.caja("WEB_Vidrio", (X0 + 0.8, X1 - 0.8), (FONDO, FONDO + 0.02), (0.1, 2.5))
     return m.objeto("Piso_00", col, {"tipo": "piso", "piso": 0})
 
 
@@ -244,7 +279,14 @@ def piso(col, n):
     z0 = ALTO_PB + (n - 1) * ALTO_PISO
     z1 = z0 + ALTO_PISO
     m = Malla()
-    m.caja("WEB_Revoque_Claro", (X0, X1), (VIDRIO_Y + 0.02, FONDO), (z0 + LOSA, z1 - LOSA))
+    # contrafrente: una ventana por dormitorio (principal y 2 del 3 ambientes, el del 2 ambientes)
+    cascara(m, "WEB_Revoque_Claro", VIDRIO_Y + 0.02, z0 + LOSA, z1 - LOSA,
+            [(X0 + 0.6, X0 + 2.6, z0 + 0.9, z1 - 0.4), (X0 + 3.6, X0 + 5.2, z0 + 0.9, z1 - 0.4),
+             (X1 - 2.4, X1 - 0.6, z0 + 0.9, z1 - 0.4)])
+    for x0, x1 in ((X0 + 0.15, X0 + 0.25), (MAD_I - 0.1, MAD_I), (MAD_D, MAD_D + 0.25), (X1 - 0.3, X1 - 0.15)):
+        m.caja("WEB_Revoque_Claro", (x0, x1), (VIDRIO_Y - 0.05, VIDRIO_Y + 0.2), (z0 + LOSA, z1 - LOSA))
+    # losa en todo el fondo: cierra el canto en los laterales (si no, se ve la caja de la unidad por la rendija)
+    m.caja("WEB_Revoque_Claro", (X0, X1), (VIDRIO_Y + 0.1, FONDO), (z0 - LOSA, z0 + LOSA))
     # losa: canto gris del lado del 3 ambientes, con cielorraso claro y spots
     m.caja("WEB_Revoque_Gris", (X0, MAD_I), (-BALCON, VIDRIO_Y + 0.1), (z0 - LOSA, z0 + LOSA))
     m.caja("WEB_Cielorraso", (X0 + 0.05, MAD_I), (-BALCON + 0.05, VIDRIO_Y), (z0 - LOSA - 0.005, z0 - LOSA))
@@ -268,9 +310,6 @@ def piso(col, n):
     spots(m, MAD_D + 0.3, X1 - 0.3, -BALCON / 2, z0 - LOSA - 0.005, 2)
     carpinteria(m, MAD_D + 0.25, X1 - 0.3, z0 + LOSA, z1 - LOSA, 2)
     m.esfera("WEB_Planta", X1 - 0.6, -BALCON + 0.2, z0 + LOSA + 1.05, 0.25, 0.7)
-    # contrafrente: una ventana por dormitorio
-    for x0, x1 in ((X0 + 0.6, X0 + 2.6), (X0 + 4.6, X0 + 6.2), (X1 - 2.4, X1 - 0.6)):
-        m.caja("WEB_Vidrio", (x0, x1), (FONDO, FONDO + 0.02), (z0 + 0.9, z1 - 0.4))
     # spots del cielorraso del 3 ambientes
     spots(m, X0 + 0.4, MAD_I - 0.4, -BALCON / 2, z0 - LOSA - 0.005, 3)
     return m.objeto(f"Piso_0{n}", col, {"tipo": "piso", "piso": n})
@@ -310,23 +349,31 @@ def numero_931(col):
 
 
 def unidades(col):
-    """cajas invisibles en la web; llegan hasta el filo del balcón para que la máscara cubra el frente"""
-    def caja(codigo, n, x, y, z, orientacion):
+    """
+    Cajas invisibles en la web. Siguen la planta del cliente (en L, sin el núcleo común: palier, ascensor,
+    escalera, hall y portería), así la máscara de las plantas calza, y llegan hasta el filo del balcón para que la de
+    Disponibilidad cubra el frente. Piezas en coordenadas de plano: (d0, d1, a0, a1), d desde la línea municipal y
+    a desde la medianera izquierda (ver interior_ca931.py).
+    """
+    def caja(codigo, n, piezas, z, orientacion):
         m = Malla()
-        m.caja("WEB_Vidrio", x, y, z)
+        for d0, d1, a0, a1 in piezas:
+            m.caja("WEB_Vidrio", (X0 + a0, X0 + a1), (d0, d1), z)
         extras = {"tipo": "unidad", "unidad": codigo, "piso": n, "orientacion": orientacion, "estado": "Disponible"}
         o = m.objeto(f"Unidad_{codigo}", col, extras)
         o.display_type = "WIRE"
         o.hide_render = True
         return o
 
-    caja("PB", 0, (X0 + 0.15, X1 - 0.15), (0.65, FONDO - 0.15), (0.05, ALTO_PB - 0.05), "Contrafrente")
+    # PB: dormitorios al frente (por delante de los listones, para la máscara de fachada), pasillo y baño, estar,
+    # cocina y dormitorio 3 al fondo
+    caja("PB", 0, [(-0.15, 3.95, 0.15, 5.33), (3.95, 11.45, 0.15, 3.32), (11.45, 15.55, 0.15, 8.51),
+                   (8.75, 11.45, 5.45, 8.51)], (0.05, ALTO_PB - 0.3), "Contrafrente")
+    f = FONDO - 0.15
     for n in range(1, PISOS + 1):
         z = (ALTO_PB + (n - 1) * ALTO_PISO + LOSA + 0.02, ALTO_PB + n * ALTO_PISO - LOSA - 0.02)
-        # A y B se separan en el borde izquierdo de la franja de madera: deja anchos en la proporción de las
-        # superficies del plano (69,5 / 49 m²)
-        caja(f"{n}A", n, (X0 + 0.15, MAD_I - 0.05), (-BALCON + 0.05, FONDO - 0.15), z, "Frente")
-        caja(f"{n}B", n, (MAD_I + 0.05, X1 - 0.15), (-BALCON + 0.05, FONDO - 0.15), z, "Frente")
+        caja(f"{n}A", n, [(-BALCON + 0.05, 3.0, 0.15, 5.33), (3.0, 11.2, 0.15, 3.08), (11.2, f, 0.15, 5.62)], z, "Frente")
+        caja(f"{n}B", n, [(-BALCON + 0.05, 6.85, 5.38, 8.51), (6.85, f, 5.68, 8.51)], z, "Frente")
 
 
 # ---------------------------------------------------------------- entorno (como en los renders)
@@ -434,6 +481,33 @@ def camaras(web, refs):
            fondo="fachada-dia-desde-izquierda.jpg", resolucion=(1600, 1563))
     camara("Ref_Derecha", refs, (12.39, -26.87, 1.80), lente=51.0, shift_y=0.266, rumbo=26.8, etiqueta="Frente derecha",
            fondo="fachada-dia-desde-derecha.jpg", resolucion=(1570, 1600))
+    # Disponibilidad (scripts/blender/renders_fachadas.py): las mismas tomas, para calcular la máscara de unidades
+    # sobre las fotos del cliente. Se corre una por vez con la resolución de su foto (propiedad "resolucion").
+    for n, ref in ((1, "Ref_Izquierda"), (2, "Ref_Derecha")):
+        r = bpy.data.objects[ref]
+        o = bpy.data.objects.new(f"Render_Fachada_{n}", r.data.copy())
+        refs.objects.link(o)
+        o.location, o.rotation_euler = r.location.copy(), r.rotation_euler.copy()  # matrix_world aún no está al día
+        o.data.background_images.clear()
+        for k in ("etiqueta", "resolucion"):
+            o[k] = r[k]
+        o["colecciones"] = "WEB_Edificio"
+        # las cajas van por delante de vidrios y barandas, así que alcanza con poco margen; con el de defecto
+        # (1,2 m) se ven a través de las medianeras, que están a 0,15 m. Va en las dos: se corren de a una
+        o["escala"] = 1.0
+        o["tolerancia"] = 0.1
+    # plantas (renders_plantas.py, docs/renders-plantas.md): encuadrada sobre el piso 2, 25° desde la vertical, con el
+    # frente abajo; a 60 m con 50 mm la planta (~17 m con el balcón) ocupa ~60 % del alto
+    inclinacion, distancia = math.radians(25), 60.0
+    objetivo = Vector((0, FONDO / 2 - 0.6, ALTO_PB + ALTO_PISO + LOSA))
+    o = camara("Render_Planta", refs, objetivo + distancia * Vector((0, -math.sin(inclinacion), math.cos(inclinacion))),
+               lente=50, rumbo=0, resolucion=(2560, 1440))
+    o.rotation_euler = (inclinacion, 0, 0)
+    # el nivel de cada Piso_NN es su punto más bajo (el fondo de la losa): 2,0 m desde ahí = 1,5 m sobre el piso
+    # terminado (en PB, la platea baja lo mismo)
+    for k, v in (("piso", 2), ("escala", 1.0), ("colecciones", "WEB_Edificio, Interiores"), ("altura_corte", 2.0),
+                 ("fondo", "blanco")):
+        o[k] = v
     # el atardecer es casi la misma toma que la izquierda, un poco más abierta (sin calce propio)
     camara("Ref_Atardecer", refs, (-13.50, -25.30, 0.30), lente=46.0, shift_y=0.34, rumbo=-24.2, etiqueta="Atardecer",
            fondo="fachada-atardecer.jpg", resolucion=(1269, 1240))
@@ -472,13 +546,14 @@ def luz_render(col):
     sol.angle = math.radians(1.5)
     o = bpy.data.objects.new("Sol", sol)
     col.objects.link(o)
-    # sol de la mañana desde el este-noreste: rasante sobre el frente, como en las referencias de día
-    o.rotation_euler = (math.radians(50), 0, math.radians(-35))
+    # sol alto (55° de elevación) desde el sudoeste: ilumina el frente como en las referencias de día y, desde
+    # arriba, no llena las plantas de sombras de muros (docs/renders-plantas.md §4)
+    o.rotation_euler = (math.radians(35), 0, math.radians(-35))
     esc.render.resolution_x, esc.render.resolution_y = 1600, 1563
 
 
 def main():
-    for n in ("WEB", "Referencias", "Render"):
+    for n in ("WEB", "Referencias", "Render", "Interiores"):
         borrar_coleccion(n)
     web = coleccion("WEB")
     edificio = coleccion("WEB_Edificio", web)
@@ -497,6 +572,14 @@ def main():
     entorno(col_entorno)
     camaras(col_camaras, refs)
     luz_render(render)
+    # interiores para los renders de plantas (fuera de WEB): comparten Malla, materiales y medidas
+    ruta = os.path.join(os.path.dirname(globals().get("__file__", REPO + "/scripts/blender/x.py")), "interior_ca931.py")
+    exec(open(ruta, encoding="utf-8").read(), globals())
+    col_interiores = coleccion("Interiores")
+    interiores(col_interiores)
+    if VESTIR and os.path.isdir("C:/Renders/_assets/polyhaven"):
+        exec(open(ruta.replace("interior_ca931.py", "vestir_ca931.py"), encoding="utf-8").read(), globals())
+        vestir(col_interiores)
     bpy.context.scene.camera = bpy.data.objects["Ref_Izquierda"]
     print(f"Cañada de Gómez 931: {len(bpy.data.collections['WEB'].all_objects)} objetos en WEB")
 
