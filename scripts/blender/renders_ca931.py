@@ -63,6 +63,30 @@ def textura_web(nombre, carpeta, lado, tinte=(1, 1, 1), rugosidad=(0.5, 0.95), r
     return m
 
 
+def teja(nombre):
+    """tejas esmaltadas negras: hiladas con relieve y brillo (procedural; sólo Cycles)"""
+    m, nt, bsdf = vi["arbol_limpio"](nombre)
+    uv = nt.nodes.new("ShaderNodeTexCoord")
+    ladrillo = nt.nodes.new("ShaderNodeTexBrick")
+    ladrillo.offset, ladrillo.squash = 0.5, 1.0
+    ladrillo.inputs["Scale"].default_value = 1.0       # UV en metros: tejas de 25 × 30 cm
+    ladrillo.inputs["Mortar Size"].default_value = 0.012
+    ladrillo.inputs["Brick Width"].default_value = 0.25
+    ladrillo.inputs["Row Height"].default_value = 0.3
+    ladrillo.inputs["Color1"].default_value = (0.02, 0.025, 0.028, 1)
+    ladrillo.inputs["Color2"].default_value = (0.035, 0.045, 0.05, 1)
+    ladrillo.inputs["Mortar"].default_value = (0.01, 0.01, 0.01, 1)
+    nt.links.new(uv.outputs["UV"], ladrillo.inputs["Vector"])
+    nt.links.new(ladrillo.outputs["Color"], bsdf.inputs["Base Color"])
+    relieve = nt.nodes.new("ShaderNodeBump")
+    relieve.inputs["Strength"].default_value = 1.0
+    nt.links.new(ladrillo.outputs["Fac"], relieve.inputs["Height"])
+    nt.links.new(relieve.outputs["Normal"], bsdf.inputs["Normal"])
+    bsdf.inputs["Roughness"].default_value = 0.5
+    bsdf.inputs["Coat Weight"].default_value = 0.15
+    return m
+
+
 def invisible(nombre):
     m, nt, bsdf = vi["arbol_limpio"](nombre)
     salida = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL")
@@ -79,7 +103,19 @@ def materiales_render():
         "WEB_Revoque_Muro": tw("R_Revoque_Muro", "revoque", 2.0, (0.62, 0.59, 0.55), (0.7, 0.95), 1.4),
         "WEB_Revoque_Claro": tw("R_Revoque_Claro", "revoque", 2.0, (0.62, 0.6, 0.56), (0.7, 0.95), 1.2),
         "WEB_Fachada_Crema": tw("R_Revoque_Crema", "revoque", 2.0, (0.95, 0.86, 0.68), (0.7, 0.95), 1.4),
-        "WEB_Fachada_Vecinos": tw("R_Vecinos", "revoque", 2.5, (0.85, 0.8, 0.68), (0.75, 0.95), 1.0),
+        "WEB_Fachada_Vecinos": tw("R_Vecinos", "revoque", 2.5, (0.92, 0.84, 0.7), (0.75, 0.95), 1.4),
+        "WEB_Vecinos_Claro": tw("R_Vecinos_Claro", "revoque", 2.0, (1.0, 0.97, 0.9), (0.7, 0.95), 1.0),
+        "WEB_Balaustrada": tw("R_Balaustrada", "revoque", 1.5, (1.05, 1.03, 1.0), (0.6, 0.9), 0.8),
+        "WEB_Teja": teja("R_Teja"),
+        "WEB_Madera_Oscura": vi["pbr"]("R_Madera_Oscura", "nogal", tinte=(0.45, 0.25, 0.12), rugosidad=(0.4, 0.7),
+                                       normal=0.5),
+        "WEB_Porton_Madera": vi["pbr"]("R_Porton_Madera", "nogal", tinte=(0.75, 0.42, 0.22), rugosidad=(0.35, 0.6),
+                                       normal=0.6),
+        "WEB_Porton_Negro": vi["liso"]("R_Porton_Negro", (0.015, 0.015, 0.016), 0.35, **{"Coat Weight": 0.3}),
+        "WEB_Reja": vi["liso"]("R_Reja", (0.01, 0.01, 0.01), 0.4, Metallic=0.7),
+        "WEB_Vidrio_Vecinos": vi["liso"]("R_Vidrio_Vecinos", (0.02, 0.025, 0.03), 0.04, **{"Coat Weight": 1.0}),
+        "WEB_Jardin": vi["pbr"]("R_Jardin", "alfombra", color_fijo=(0.06, 0.13, 0.03), rugosidad=(0.8, 1.0), normal=1.5),
+        "WEB_Tierra": vi["liso"]("R_Tierra", (0.08, 0.055, 0.035), 0.95),
         "WEB_Madera_Listones": vi["pbr"]("R_Madera", "roble", tinte=(0.55, 0.36, 0.2), rugosidad=(0.45, 0.7),
                                          normal=0.6),
         "WEB_Piedra_Negra": vi["pbr"]("R_Piedra_Negra", "marmol", color_fijo=(0.03, 0.03, 0.03),
@@ -97,6 +133,7 @@ def materiales_render():
         "WEB_Farol_Spot": vi["emisor"]("R_Spot", (1.0, 0.82, 0.6), 30.0),
         # las esferas de los balcones: se reemplazan por plantas de Poly Haven
         "WEB_Planta": invisible("R_Invisible"),
+        "WEB_Arbusto": invisible("R_Invisible_Arbusto"),  # en su lugar, los arbustos de la plantilla
     }
 
 
@@ -138,7 +175,7 @@ def plantas(col):
     g = medidas()
     for n in range(1, g["PISOS"] + 1):
         z = g["ALTO_PB"] + (n - 1) * g["ALTO_PISO"] + g["LOSA"]
-        colocar("potted_plant_04", col, g["X0"] + 0.45, -g["BALCON"] + 0.4, 0, z)
+        colocar("potted_plant_04", col, g["X0"] + g["ALETA"] + 0.4, -g["BALCON"] + 0.4, 0, z)
         colocar("potted_plant_01", col, g["MAD_I"] - 0.45, -g["BALCON"] + 0.4, 40, z)
         colocar("potted_plant_02", col, g["X1"] - 0.6, -g["BALCON"] + 0.25, 25, z + 1.0)
     for x in (g["X0"] + 1.5, g["X0"] + 3.0):

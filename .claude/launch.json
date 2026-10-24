@@ -6,6 +6,13 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["dev"],
       "port": 3000
+    },
+    {
+      "name": "dev-3002",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["exec", "cross-env", "NEXT_PUBLIC_SITE_URL=http://localhost:3002", "NODE_OPTIONS=--no-deprecation", "next", "dev", "-p", "3002"],
+      "port": 3002,
+      "autoPort": false
     }
   ]
 }

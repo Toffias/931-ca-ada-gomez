@@ -48,14 +48,14 @@ export const REGLAS_EMISION: { patron: RegExp; dia: number; noche: number; color
 export const TEXTURAS: ReglaTextura[] = [
   // revoque: painted_plaster_wall (2 m); color calibrado a neutro, el tinte da el tono final
   { patron: /Fachada_Vecinos/i, carpeta: '/texturas/revoque', escala: 2, normal: 1.2, modo: 'detalle', desgaste: true },
-  { patron: /Fachada_Crema/i, carpeta: '/texturas/revoque', escala: 2, normal: 2, tinte: '#fff8ea', desgaste: true },
+  { patron: /Fachada_Crema/i, carpeta: '/texturas/revoque', escala: 2, normal: 2, tinte: '#fff8ea', desgaste: true, girar: true },
   { patron: /Fachada/i, carpeta: '/texturas/revoque', escala: 2, normal: 2, tinte: '#ebe6dd', desgaste: true },
   // revoques de color: el tinte lleva el promedio neutro de la foto al tono de cada uno
-  { patron: /Revoque_Gris/i, carpeta: '/texturas/revoque', escala: 2, normal: 2.2, tinte: '#cdc6bc', desgaste: true },
-  { patron: /Revoque_Muro/i, carpeta: '/texturas/revoque', escala: 2, normal: 2, tinte: '#ddd6cc', desgaste: true },
-  { patron: /Revoque_Claro/i, carpeta: '/texturas/revoque', escala: 2, normal: 1.6, tinte: '#e6e1d8', desgaste: true },
+  { patron: /Revoque_Gris/i, carpeta: '/texturas/revoque', escala: 2, normal: 2.2, tinte: '#cdc6bc', desgaste: true, girar: true },
+  { patron: /Revoque_Muro/i, carpeta: '/texturas/revoque', escala: 2, normal: 2, tinte: '#ddd6cc', desgaste: true, girar: true },
+  { patron: /Revoque_Claro/i, carpeta: '/texturas/revoque', escala: 2, normal: 1.6, tinte: '#e6e1d8', desgaste: true, girar: true },
   // madera: oak_veneer_02 (1 m), para listones y revestimientos
-  { patron: /Madera/i, carpeta: '/texturas/madera', escala: 1, normal: 1, tinte: '#e0a774' },
+  { patron: /Madera/i, carpeta: '/texturas/madera', escala: 1, normal: 1, tinte: '#e0a774', girar: true },
   // hormigón: concrete_wall_008 (2,71 m)
   { patron: /Losa|Cornisa/i, carpeta: '/texturas/hormigon', escala: 2.71, normal: 2, desgaste: true },
   // piedra: granite_tile (2,3 m)

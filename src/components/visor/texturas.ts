@@ -22,6 +22,8 @@ export type ReglaTextura = {
   modo?: 'completo' | 'detalle'
   tinte?: string
   desgaste?: boolean
+  /** gira la textura 90° en las caras verticales (vetas o manchas de la foto que tienen que ir de arriba a abajo) */
+  girar?: boolean
 }
 
 export type Desgaste = {
@@ -54,7 +56,7 @@ function cargar(carpeta: string, anisotropia: number) {
 
 const GLSL_COMUN = /* glsl */ `
 uniform sampler2D tTriColor, tTriNormal, tTriRug;
-uniform float uTriEscala, uTriNormal, uTriDetalle, uTriDesgaste;
+uniform float uTriEscala, uTriNormal, uTriDetalle, uTriDesgaste, uTriGirar;
 uniform vec3 uTriTinte;
 uniform float uSuelo, uAltSuciedad, uZ0, uFH;
 varying vec3 vTriPos;
@@ -68,6 +70,7 @@ vec4 triMuestra(sampler2D t, vec3 p, vec3 n) {
   vec2 uvX = vec2(p.z * s.x, p.y) / uTriEscala;
   vec2 uvY = vec2(p.x * s.y, p.z) / uTriEscala;
   vec2 uvZ = vec2(-p.x * s.z, p.y) / uTriEscala;
+  if (uTriGirar > 0.5) { uvX = uvX.yx; uvZ = uvZ.yx; }
   return texture2D(t, uvX) * w.x + texture2D(t, uvY) * w.y + texture2D(t, uvZ) * w.z;
 }
 
@@ -105,6 +108,7 @@ export function aplicarTextura(
     tTriNormal: { value: set.normal },
     tTriRug: { value: set.rug },
     uTriEscala: { value: regla.escala },
+    uTriGirar: { value: regla.girar ? 1 : 0 },
     uTriNormal: { value: regla.normal ?? 1 },
     uTriDetalle: { value: detalle ? 1 : 0 },
     uTriDesgaste: { value: regla.desgaste && desgaste ? desgaste.intensidad : 0 },
@@ -168,6 +172,7 @@ export function aplicarTextura(
           vec2 uvX = vec2(vTriPos.z * s.x, vTriPos.y) / uTriEscala;
           vec2 uvY = vec2(vTriPos.x * s.y, vTriPos.z) / uTriEscala;
           vec2 uvZ = vec2(-vTriPos.x * s.z, vTriPos.y) / uTriEscala;
+          if (uTriGirar > 0.5) { uvX = uvX.yx; uvZ = uvZ.yx; }
           vec3 tX = texture2D(tTriNormal, uvX).xyz * 2.0 - 1.0;
           vec3 tY = texture2D(tTriNormal, uvY).xyz * 2.0 - 1.0;
           vec3 tZ = texture2D(tTriNormal, uvZ).xyz * 2.0 - 1.0;

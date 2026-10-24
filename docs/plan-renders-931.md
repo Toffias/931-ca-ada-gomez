@@ -147,6 +147,24 @@ noche. Renders de Cycles con `scripts/blender/renders_ca931.py`: durante el rend
 plantas de Poly Haven, luces reales en spots e interiores, y separa la luz (HDRI) del cielo que ve la cámara
 (degradado azul de día, naranja y azul al atardecer); al terminar restaura todo, el `.glb` no cambia.
 
+**Correcciones de fachada (revisión con el usuario).** El frente detrás de los balcones es pared y vidrio
+(`frente()`: ventanal, pared, ventana de cocina y pared en el 3 ambientes; pared y ventanal en el 2 ambientes, en
+`WEB_Revoque_Muro`). En la esquina izquierda, balcones y voladizo del remate no llegan al borde: dejan 50 cm de pared
+al ras (`ALETA`) y esa esquina va en gris oscuro de arriba a abajo, en el frente y en una franja del lateral
+(`esquina()`); en la esquina derecha, lo mismo con 35 cm (`ALETA_DER`) para el balcón crema del 2 ambientes y el
+remate. Los dos laterales llevan franjas gris oscuro verticales en la esquina del frente y en la del
+contrafrente, con gris claro en el medio (`laterales()`, de piso a piso para que las losas no las corten); el resto
+del remate toma el gris claro del lateral. Las cajas no se enciman en caras coplanares: en Cycles salían manchas. Las vetas del revoque y de la madera van
+verticales (UV de caras verticales con la U hacia arriba; en el visor, `girar` en la regla de textura).
+
+**Entorno calcado de las fotos** (`scripts/blender/entorno_ca931.py`, en WEB y liviano también para el visor): casa
+izquierda con garaje de portón negro, alero de tejas, terraza con balaustrada y jardín con muro, pilares y reja;
+casa derecha con portón de madera, ventanas con arco y postigos, balcón con balaustrada y techo de tejas a cuatro
+aguas; resto de la cuadra con cornisas y ventanas; tazas de árboles en la vereda. En los renders, árboles con hojas,
+arbustos y faroles de las plantillas de la Torre Cityh (`C:/Renders/Ejemplos/Edificio 3`), con las hojas llevadas a
+tamaño real, y materiales propios (tejas con hiladas, nogal, revoques crema y blanco). Falta: árboles más
+irregulares y autos (no hay modelos en la máquina).
+
 **Control de calidad de cada render:** ponerlo al lado (o encima, en diferencia) de la referencia con la misma
 cámara y revisar: proporciones, colores de cada material, cantidad de listones, ubicación del número 931, plantas y
 luces. Se guarda la comparación en `docs/referencias/comparaciones/` para mostrársela al cliente.

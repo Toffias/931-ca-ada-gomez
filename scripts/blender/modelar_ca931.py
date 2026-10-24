@@ -37,7 +37,13 @@ LOSA = 0.25            # media losa (el canto se ve de ~0,5 m en los renders)
 # franja de listones: en la foto cae a la derecha del centro (x 0,7–1,7 proyectando sus bordes sobre la fachada);
 # el plano dice 3,50 + 1,36 + 3,50 simétrico. Se sigue la imagen, a confirmar con el cliente.
 MAD_I, MAD_D = 0.70, 1.70
+# esquina izquierda: el balcón del 3 ambientes y el voladizo del remate no llegan al borde, dejan 50 cm de pared de
+# fachada al ras; esa esquina va en gris oscuro de arriba a abajo, en el frente y en una franja del lateral (fotos)
+ALETA = 0.5
+ALETA_DER = 0.35   # lo mismo en la esquina derecha: el balcón crema del 2 ambientes y el remate terminan 35 cm antes
 VIDRIO_Y = 0.40        # retiro de los ventanales detrás de la línea municipal
+ESQUINA_FONDO = VIDRIO_Y + 1.2   # hasta dónde llega el gris oscuro de la esquina por el lateral
+BANDA_FONDO = 1.2                # lo mismo en la esquina del contrafrente (las fotos lo muestran en los dos laterales)
 TECHO = ALTO_PB + PISOS * ALTO_PISO
 # interiores fotorrealistas para los renders (vestir_ca931.py: texturas y muebles de Poly Haven, fuera del repo, con
 # scripts/blender/bajar_assets_interior.py). Sin los assets queda el interior en cajas
@@ -181,12 +187,14 @@ class Malla:
     def objeto(self, nombre, col, extras=None):
         bmesh.ops.recalc_face_normals(self.bm, faces=self.bm.faces)
         # UV por proyección de caja en metros: las texturas de vestir_ca931.py calzan a escala real
+        # en las caras verticales la U va hacia arriba: las vetas del revoque y de la madera quedan verticales
         uv = self.bm.loops.layers.uv.new("UVMap")
         for f in self.bm.faces:
             eje = max(range(3), key=lambda i: abs(f.normal[i]))
             a, b = [(1, 2), (0, 2), (0, 1)][eje]
             for loop in f.loops:
-                loop[uv].uv = (loop.vert.co[a], loop.vert.co[b])
+                co = loop.vert.co
+                loop[uv].uv = (co[b], co[a]) if eje != 2 else (co[a], co[b])
         me = bpy.data.meshes.new(nombre)
         self.bm.to_mesh(me)
         self.bm.free()
@@ -246,10 +254,26 @@ def muro_con_huecos(m, mat, x0, x1, y0, y1, z0, z1, huecos):
     m.caja(mat, (x, x1), (y0, y1), (z0, z1))
 
 
-def cascara(m, mat, y_frente, z0, z1, ventanas):
+def esquina(m, z0, z1):
+    """frente del tramo sin balcón de la esquina izquierda, en gris oscuro"""
+    # arranca en la cara de la medianera: las cajas no se enciman (dos caras coplanares salen manchadas en Cycles)
+    m.caja("WEB_Revoque_Gris", (X0 + 0.15, X0 + ALETA), (VIDRIO_Y - 0.05, VIDRIO_Y + 0.2), (z0, z1))
+    m.caja("WEB_Revoque_Gris", (X1 - ALETA_DER, X1 - 0.15), (VIDRIO_Y - 0.05, VIDRIO_Y + 0.2), (z0, z1))
+
+
+def laterales(m, z0, z1):
+    """medianeras de piso a piso: gris oscuro en las cuatro esquinas (franjas verticales), gris claro en el medio"""
+    for x in ((X0, X0 + 0.15), (X1 - 0.15, X1)):
+        m.caja("WEB_Revoque_Gris", x, (VIDRIO_Y - 0.05, ESQUINA_FONDO), (z0, z1))
+        m.caja("WEB_Revoque_Claro", x, (ESQUINA_FONDO, FONDO - BANDA_FONDO), (z0, z1))
+        m.caja("WEB_Revoque_Gris", x, (FONDO - BANDA_FONDO, FONDO), (z0, z1))
+
+
+def cascara(m, mat, y_frente, z0, z1, ventanas, con_laterales=True):
     """medianeras y contrafrente con espesor (el interior queda libre para los renders de plantas)"""
-    m.caja(mat, (X0, X0 + 0.15), (y_frente, FONDO), (z0, z1))
-    m.caja(mat, (X1 - 0.15, X1), (y_frente, FONDO), (z0, z1))
+    if con_laterales:
+        m.caja(mat, (X0, X0 + 0.15), (y_frente, FONDO), (z0, z1))
+        m.caja(mat, (X1 - 0.15, X1), (y_frente, FONDO), (z0, z1))
     muro_con_huecos(m, mat, X0 + 0.15, X1 - 0.15, FONDO - 0.2, FONDO, z0, z1, ventanas)
 
 
@@ -300,48 +324,65 @@ def piso(col, n):
     # contrafrente: una ventana por dormitorio (principal y 2 del 3 ambientes, el del 2 ambientes)
     cascara(m, "WEB_Revoque_Claro", VIDRIO_Y + 0.02, z0 + LOSA, z1 - LOSA,
             [(X0 + 0.6, X0 + 2.6, z0 + 0.9, z1 - 0.4), (X0 + 3.6, X0 + 5.2, z0 + 0.9, z1 - 0.4),
-             (X1 - 2.4, X1 - 0.6, z0 + 0.9, z1 - 0.4)])
-    # losa en todo el fondo: cierra el canto en los laterales (si no, se ve la caja de la unidad por la rendija)
-    m.caja("WEB_Revoque_Claro", (X0, X1), (VIDRIO_Y + 0.1, FONDO), (z0 - LOSA, z0 + LOSA))
+             (X1 - 2.4, X1 - 0.6, z0 + 0.9, z1 - 0.4)], con_laterales=False)
+    # los laterales van de piso a piso (cubren el canto de la losa): así las franjas grises de las esquinas son
+    # continuas de arriba a abajo
+    laterales(m, z0 - LOSA, z1 - LOSA)
+    esquina(m, z0 - LOSA, z1 - LOSA)
+    # losa en todo el fondo, entre medianeras (si no, se ve la caja de la unidad por la rendija)
+    m.caja("WEB_Revoque_Claro", (X0 + 0.15, X1 - 0.15), (VIDRIO_Y + 0.1, FONDO), (z0 - LOSA, z0 + LOSA))
     # losa: canto gris del lado del 3 ambientes, con cielorraso claro y spots
-    m.caja("WEB_Revoque_Gris", (X0, MAD_I), (-BALCON, VIDRIO_Y + 0.1), (z0 - LOSA, z0 + LOSA))
-    m.caja("WEB_Cielorraso", (X0 + 0.05, MAD_I), (-BALCON + 0.05, VIDRIO_Y), (z0 - LOSA - 0.005, z0 - LOSA))
-    m.caja("WEB_Farol_LED", (X0, MAD_I), (-BALCON - 0.005, -BALCON), (z0 - LOSA + 0.02, z0 - LOSA + 0.05))
+    xa = X0 + ALETA
+    m.caja("WEB_Revoque_Gris", (xa, MAD_I), (-BALCON, VIDRIO_Y + 0.1), (z0 - LOSA, z0 + LOSA))
+    m.caja("WEB_Cielorraso", (xa, MAD_I), (-BALCON + 0.05, VIDRIO_Y), (z0 - LOSA - 0.005, z0 - LOSA))
+    m.caja("WEB_Farol_LED", (xa, MAD_I), (-BALCON - 0.005, -BALCON), (z0 - LOSA + 0.02, z0 - LOSA + 0.05))
     # frente del 3 ambientes, medido en las fotos (y coincide con el plano): ventanal corredizo del estar, pared,
     # ventana angosta de la cocina y pared hasta la franja de madera
-    paños_a = [(X0 + 0.25, -1.85, 2), (-0.85, -0.25, 1)]
-    frente(m, X0 + 0.15, MAD_I, paños_a, z0 + LOSA, z1 - LOSA)
+    # proporciones de la foto sobre el tramo con balcón: ventanal 45 %, pared 22 %, ventana 12 %, pared 19 %
+    paños_a = [(xa + 0.1, -1.45, 2), (-0.55, -0.05, 1)]
+    frente(m, xa, MAD_I, paños_a, z0 + LOSA, z1 - LOSA)
     # baranda de vidrio con pasamanos y parantes negros, macetas en los extremos
     yb = -BALCON + 0.06
-    m.caja("WEB_Vidrio_Baranda", (X0 + 0.08, MAD_I - 0.05), (yb - 0.01, yb + 0.01), (z0 + LOSA, z0 + LOSA + 1.0))
-    m.caja("WEB_Metal_Negro", (X0 + 0.05, MAD_I - 0.05), (yb - 0.025, yb + 0.025), (z0 + LOSA + 0.98, z0 + LOSA + 1.03))
+    m.caja("WEB_Vidrio_Baranda", (xa + 0.03, MAD_I - 0.05), (yb - 0.01, yb + 0.01), (z0 + LOSA, z0 + LOSA + 1.0))
+    m.caja("WEB_Metal_Negro", (xa, MAD_I - 0.05), (yb - 0.025, yb + 0.025), (z0 + LOSA + 0.98, z0 + LOSA + 1.03))
     for i in range(5):
-        x = X0 + 0.08 + (MAD_I - 0.13 - X0) * i / 4
+        x = xa + 0.03 + (MAD_I - 0.08 - xa) * i / 4
         m.caja("WEB_Metal_Negro", (x - 0.02, x + 0.02), (yb - 0.02, yb + 0.02), (z0 + LOSA, z0 + LOSA + 1.0))
-    maceta_con_planta(m, X0 + 0.45, -BALCON + 0.4, z0 + LOSA)
+    maceta_con_planta(m, xa + 0.4, -BALCON + 0.4, z0 + LOSA)
     maceta_con_planta(m, MAD_I - 0.45, -BALCON + 0.4, z0 + LOSA)
     # franja de listones de madera
     m.caja("WEB_Revoque_Gris", (MAD_I, MAD_D), (0.1, VIDRIO_Y + 0.1), (z0 - LOSA, z1 - LOSA))
     listones(m, "WEB_Madera_Listones", MAD_I + 0.02, MAD_D - 0.02, -0.2, 0.1, z0 - LOSA, z1 - LOSA)
     # 2 ambientes: antepecho macizo crema que vuela sobre la vereda
-    m.caja("WEB_Fachada_Crema", (MAD_D, X1), (-BALCON, VIDRIO_Y + 0.1), (z0 - LOSA, z0 + LOSA + 1.0))
-    m.caja("WEB_Cielorraso", (MAD_D + 0.05, X1 - 0.05), (-BALCON + 0.05, VIDRIO_Y), (z0 - LOSA - 0.005, z0 - LOSA))
-    spots(m, MAD_D + 0.3, X1 - 0.3, -BALCON / 2, z0 - LOSA - 0.005, 2)
+    # (termina 35 cm antes de la esquina derecha, como en las fotos: ahí sigue la pared gris oscuro)
+    xb = X1 - ALETA_DER
+    m.caja("WEB_Fachada_Crema", (MAD_D, xb), (-BALCON, VIDRIO_Y + 0.1), (z0 - LOSA, z0 + LOSA + 1.0))
+    m.caja("WEB_Cielorraso", (MAD_D + 0.05, xb - 0.05), (-BALCON + 0.05, VIDRIO_Y), (z0 - LOSA - 0.005, z0 - LOSA))
+    spots(m, MAD_D + 0.3, xb - 0.3, -BALCON / 2, z0 - LOSA - 0.005, 2)
     # frente del 2 ambientes: pared junto a la madera y ventanal de dos hojas del estar
-    frente(m, MAD_D, X1 - 0.15, [(2.45, X1 - 0.3, 2)], z0 + LOSA, z1 - LOSA)
+    frente(m, MAD_D, xb, [(2.45, xb - 0.1, 2)], z0 + LOSA, z1 - LOSA)
     m.esfera("WEB_Planta", X1 - 0.6, -BALCON + 0.2, z0 + LOSA + 1.05, 0.25, 0.7)
     # spots del cielorraso del 3 ambientes
-    spots(m, X0 + 0.4, MAD_I - 0.4, -BALCON / 2, z0 - LOSA - 0.005, 3)
+    spots(m, xa + 0.3, MAD_I - 0.4, -BALCON / 2, z0 - LOSA - 0.005, 3)
     return m.objeto(f"Piso_0{n}", col, {"tipo": "piso", "piso": n})
 
 
 def remate(col):
     m = Malla()
-    m.caja("WEB_Revoque_Gris", (X0, X1), (-BALCON - 0.1, FONDO), (TECHO - LOSA, TECHO + PRETIL))
-    m.caja("WEB_Cielorraso", (X0 + 0.05, X1 - 0.05), (-BALCON - 0.05, VIDRIO_Y), (TECHO - LOSA - 0.005, TECHO - LOSA))
-    m.caja("WEB_Farol_LED", (X0, MAD_I), (-BALCON - 0.105, -BALCON - 0.1), (TECHO - LOSA + 0.02, TECHO - LOSA + 0.05))
-    spots(m, X0 + 0.4, MAD_I - 0.4, -BALCON / 2, TECHO - LOSA - 0.005, 3)
-    spots(m, MAD_D + 0.3, X1 - 0.3, -BALCON / 2, TECHO - LOSA - 0.005, 2)
+    xa, z = X0 + ALETA, (TECHO - LOSA, TECHO + PRETIL)
+    # voladizo gris (deja libre la esquina, como los balcones), la esquina en gris y el resto del bloque en el gris
+    # claro del lateral: si no, arriba del lateral se lee una banda oscura horizontal
+    xb = X1 - ALETA_DER
+    m.caja("WEB_Revoque_Gris", (xa, xb), (-BALCON - 0.1, VIDRIO_Y - 0.05), z)
+    m.caja("WEB_Revoque_Gris", (X0 + 0.15, X1 - 0.15), (VIDRIO_Y + 0.2, ESQUINA_FONDO), z)
+    esquina(m, *z)
+    laterales(m, *z)
+    m.caja("WEB_Revoque_Claro", (X0 + 0.15, X1 - 0.15), (ESQUINA_FONDO, FONDO), z)
+    m.caja("WEB_Revoque_Gris", (xa, xb), (VIDRIO_Y - 0.05, VIDRIO_Y + 0.2), z)
+    m.caja("WEB_Cielorraso", (xa, xb), (-BALCON - 0.05, VIDRIO_Y - 0.05), (TECHO - LOSA - 0.005, TECHO - LOSA))
+    m.caja("WEB_Farol_LED", (xa, MAD_I), (-BALCON - 0.105, -BALCON - 0.1), (TECHO - LOSA + 0.02, TECHO - LOSA + 0.05))
+    spots(m, xa + 0.3, MAD_I - 0.4, -BALCON / 2, TECHO - LOSA - 0.005, 3)
+    spots(m, MAD_D + 0.3, xb - 0.3, -BALCON / 2, TECHO - LOSA - 0.005, 2)
     # entre medianeras: los laterales no van como fachadas en Disponibilidad
     # sin bañadores de noche en el visor: alumbrarían de abajo los cielorrasos de los balcones (en las fotos del
     # cliente la fachada se ve por sus spots y tiras LED)
@@ -394,8 +435,10 @@ def unidades(col):
     f = FONDO - 0.15
     for n in range(1, PISOS + 1):
         z = (ALTO_PB + (n - 1) * ALTO_PISO + LOSA + 0.02, ALTO_PB + n * ALTO_PISO - LOSA - 0.02)
-        caja(f"{n}A", n, [(-BALCON + 0.05, 3.0, 0.15, 5.33), (3.0, 11.2, 0.15, 3.08), (11.2, f, 0.15, 5.62)], z, "Frente")
-        caja(f"{n}B", n, [(-BALCON + 0.05, 6.85, 5.38, 8.51), (6.85, f, 5.68, 8.51)], z, "Frente")
+        caja(f"{n}A", n, [(-BALCON + 0.05, VIDRIO_Y, ALETA + 0.03, 5.33), (VIDRIO_Y, 3.0, 0.15, 5.33),
+                          (3.0, 11.2, 0.15, 3.08), (11.2, f, 0.15, 5.62)], z, "Frente")
+        caja(f"{n}B", n, [(-BALCON + 0.05, VIDRIO_Y, 5.38, ANCHO - ALETA_DER - 0.03), (VIDRIO_Y, 6.85, 5.38, 8.51),
+                          (6.85, f, 5.68, 8.51)], z, "Frente")
 
 
 # ---------------------------------------------------------------- entorno (como en los renders)
@@ -591,9 +634,13 @@ def main():
     remate(edificio)
     numero_931(edificio)
     unidades(col_unidades)
+    # entorno calcado de las fotos (entorno_ca931.py reemplaza a entorno() de acá); árboles con hojas para Cycles
+    aqui = os.path.dirname(globals().get("__file__", REPO + "/scripts/blender/x.py"))
+    exec(open(os.path.join(aqui, "entorno_ca931.py"), encoding="utf-8").read(), globals())
     entorno(col_entorno)
     camaras(col_camaras, refs)
     luz_render(render)
+    arboles_render(render)
     # interiores para los renders de plantas (fuera de WEB): comparten Malla, materiales y medidas
     ruta = os.path.join(os.path.dirname(globals().get("__file__", REPO + "/scripts/blender/x.py")), "interior_ca931.py")
     exec(open(ruta, encoding="utf-8").read(), globals())
@@ -604,7 +651,7 @@ def main():
         vestir(col_interiores)
     # para renders_ca931.py
     bpy.app.driver_namespace["ca931_medidas"] = {k: globals()[k] for k in (
-        "X0", "X1", "FONDO", "BALCON", "ALTO_PB", "ALTO_PISO", "PISOS", "LOSA", "MAD_I", "MAD_D")}
+        "X0", "X1", "FONDO", "BALCON", "ALTO_PB", "ALTO_PISO", "PISOS", "LOSA", "MAD_I", "MAD_D", "ALETA")}
     bpy.context.scene.camera = bpy.data.objects["Ref_Izquierda"]
     print(f"Cañada de Gómez 931: {len(bpy.data.collections['WEB'].all_objects)} objetos en WEB")
 
