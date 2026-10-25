@@ -27,12 +27,8 @@ type Props = {
   onCambio?: (clave: string) => void
 }
 
-// Si todos los puntos tienen posición en el plano, se usa como "GPS" local: el plugin calcula solo hacia dónde
-// apunta cada flecha. Si no, las flechas se reparten alrededor. El plano tiene que estar con el norte arriba y ser
-// cuadrado (x e y en % valen lo mismo), como el que genera scripts/blender/renders_recorrido.py.
-const ESCALA_GPS = 0.00001
-
-// Recorrido 360 propio (spec L): panoramas equirectangulares con saltos entre puntos y plano con los puntos.
+// Recorrido 360 propio (spec L): panoramas equirectangulares. Se pasa de un punto a otro con la lista de ambientes
+// o con los puntos del plano, no con flechas en el piso: según dónde quedaba la cámara se superponían.
 export function VisorRecorrido({ puntos, inicial, plano, onCambio }: Props) {
   const t = useTextos()
   const textos = useRef(t)
@@ -47,7 +43,6 @@ export function VisorRecorrido({ puntos, inicial, plano, onCambio }: Props) {
     if (!caja.current || !puntos.length) return
     let viewer: Viewer | null = null
     let vivo = true
-    const conGps = puntos.every((p) => p.x != null && p.y != null)
 
     Promise.all([
       import('@photo-sphere-viewer/core'),
@@ -61,12 +56,9 @@ export function VisorRecorrido({ puntos, inicial, plano, onCambio }: Props) {
         panorama: p.panorama,
         name: p.titulo,
         caption: p.titulo,
-        // rumbo = hacia dónde mira el centro de la panorámica; girándola al revés, el norte queda en yaw 0 como las flechas
+        // rumbo = hacia dónde mira el centro de la panorámica; girándola al revés, el norte queda en yaw 0
         sphereCorrection: { pan: `${-p.rumbo}deg` },
-        gps: conGps ? [p.x! * ESCALA_GPS, -p.y! * ESCALA_GPS] : undefined,
-        links: p.enlaces
-          .filter((e) => puntos.some((q) => q.clave === e))
-          .map((e, i, todos) => (conGps ? { nodeId: e } : { nodeId: e, position: { yaw: (2 * Math.PI * i) / todos.length, pitch: -0.2 } })),
+        links: [],
       }))
       viewer = new Viewer({
         container: caja.current,
@@ -77,7 +69,7 @@ export function VisorRecorrido({ puntos, inicial, plano, onCambio }: Props) {
         lang: textos.current.recorridos.visor,
         plugins: [
           MarkersPlugin,
-          [VirtualTourPlugin, { positionMode: conGps ? 'gps' : 'manual', renderMode: '3d', nodes: nodos, startNodeId: inicio.clave, preload: true }],
+          [VirtualTourPlugin, { positionMode: 'manual', renderMode: '3d', nodes: nodos, startNodeId: inicio.clave }],
         ],
       })
       const vt = viewer.getPlugin<VirtualTourPlugin>(VirtualTourPlugin)
@@ -97,26 +89,43 @@ export function VisorRecorrido({ puntos, inicial, plano, onCambio }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puntos])
 
+  const ir = (clave: string) => tour.current?.setCurrentNode(clave)
   return (
     <div className="recorrido">
       <div ref={caja} className="recorrido-visor" />
-      {plano && puntos.some((p) => p.x != null) && (
-        <div className="recorrido-plano">
-          <img src={plano.url} alt={plano.alt} />
-          {puntos
-            .filter((p) => p.x != null && p.y != null)
-            .map((p) => (
+      <div className="recorrido-panel">
+        {puntos.length > 1 && (
+          <nav className="recorrido-lista" aria-label={t.recorridos.ambientes}>
+            {puntos.map((p) => (
               <button
                 key={p.clave}
-                className={`recorrido-punto${p.clave === actual ? ' activo' : ''}`}
-                style={{ left: `${p.x}%`, top: `${p.y}%` }}
-                aria-label={p.titulo}
-                title={p.titulo}
-                onClick={() => tour.current?.setCurrentNode(p.clave)}
-              />
+                className={p.clave === actual ? 'activo' : undefined}
+                aria-current={p.clave === actual ? 'location' : undefined}
+                onClick={() => ir(p.clave)}
+              >
+                {p.titulo}
+              </button>
             ))}
-        </div>
-      )}
+          </nav>
+        )}
+        {plano && puntos.some((p) => p.x != null) && (
+          <div className="recorrido-plano">
+            <img src={plano.url} alt={plano.alt} />
+            {puntos
+              .filter((p) => p.x != null && p.y != null)
+              .map((p) => (
+                <button
+                  key={p.clave}
+                  className={`recorrido-punto${p.clave === actual ? ' activo' : ''}`}
+                  style={{ left: `${p.x}%`, top: `${p.y}%` }}
+                  aria-label={p.titulo}
+                  title={p.titulo}
+                  onClick={() => ir(p.clave)}
+                />
+              ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

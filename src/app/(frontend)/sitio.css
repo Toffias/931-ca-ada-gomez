@@ -446,7 +446,15 @@ a.chip.activo { border-color: var(--acento); background: color-mix(in srgb, var(
 /* ---------- recorridos 360 ---------- */
 .pantalla-recorridos { background: #000; }
 .recorrido, .recorrido-visor, .recorrido-externo { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.recorrido-plano { position: absolute; right: 16px; bottom: 56px; z-index: 5; width: min(260px, 40vw); border-radius: 12px; overflow: hidden; border: 1px solid var(--borde); background: color-mix(in srgb, var(--superficie) 88%, transparent); }
+/* abajo a la derecha: la lista de ambientes (para pasar de uno a otro) y, debajo, el plano con los puntos */
+.recorrido-panel { position: absolute; right: 16px; bottom: 56px; z-index: 5; width: min(260px, 40vw); display: flex; flex-direction: column; gap: 8px; }
+.recorrido-lista { display: flex; flex-direction: column; gap: 2px; max-height: 38vh; overflow-y: auto; padding: 6px; border-radius: 12px; border: 1px solid var(--borde); background: var(--tarjeta); backdrop-filter: blur(8px); }
+.recorrido-lista button { display: flex; align-items: center; justify-content: flex-start; gap: 8px; border: 0; padding: 7px 10px; border-radius: 8px; text-align: left; font-size: .85rem; color: var(--texto-2); background: transparent; }
+.recorrido-lista button::before { content: ''; flex: none; width: 7px; height: 7px; border-radius: 50%; background: rgb(var(--tinta) / .3); }
+.recorrido-lista button:hover { color: var(--texto); background: rgb(var(--tinta) / .06); }
+.recorrido-lista button.activo { color: var(--texto); font-weight: 600; background: color-mix(in srgb, var(--acento) 20%, transparent); }
+.recorrido-lista button.activo::before { background: var(--acento); }
+.recorrido-plano { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--borde); background: color-mix(in srgb, var(--superficie) 88%, transparent); }
 .recorrido-plano img { width: 100%; opacity: .85; }
 .recorrido-punto { position: absolute; width: 14px; height: 14px; padding: 0; transform: translate(-50%, -50%); border-radius: 50%; background: #fff; border: 3px solid rgba(0,0,0,.5); }
 .recorrido-punto.activo { background: var(--acento); box-shadow: 0 0 0 4px color-mix(in srgb, var(--acento) 35%, transparent); }
@@ -505,7 +513,7 @@ a.chip.activo { border-color: var(--acento); background: color-mix(in srgb, var(
 .ficha-planta .escena-svg { padding-inline: 130px; }
 .ficha-media .controles-zoom { left: 16px; right: auto; bottom: 16px; }
 /* abajo a la derecha va la miniatura de ubicación: el plano del recorrido pasa a la izquierda */
-.ficha-media .recorrido-plano { right: auto; left: 16px; width: min(200px, 34vw); }
+.ficha-media .recorrido-panel { right: auto; left: 16px; width: min(200px, 34vw); }
 .ficha-huella .medidas { position: absolute; left: 0; right: 0; bottom: 20px; margin: 0; text-align: center; color: var(--muted); font-size: 13px; pointer-events: none; }
 /* selector Planta 2D / 3D: abajo al centro, entre el zoom y la miniatura de ubicación; la planta le deja lugar */
 .ficha-tipo-planta { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 7; display: flex; gap: 2px; padding: 3px; border-radius: 99px;
@@ -590,7 +598,16 @@ a.chip.activo { border-color: var(--acento); background: color-mix(in srgb, var(
   .ficha-selector a.activo span { max-width: 0; margin-right: 0; opacity: 0; }
   /* en celular tapa los botones del selector y del video: se llega a la planta desde el modo Planta */
   .ficha-ubicacion { display: none; }
-  .ficha-media .recorrido-plano { width: 96px; left: 10px; bottom: 48px; }
+  /* encima de las pestañas de recorridos, que van abajo a la izquierda */
+  .recorrido-panel { right: 10px; bottom: 104px; width: min(190px, 52vw); }
+  .recorrido-lista { max-height: 32vh; }
+  .recorrido-lista button { padding: 5px 8px; font-size: .78rem; }
+  .recorrido-plano { width: 110px; align-self: flex-end; }
+  /* en la ficha la panorámica es chica: los ambientes van en una fila que se desliza, con el plano encima */
+  .ficha-media .recorrido-panel { width: auto; left: 10px; right: 10px; bottom: 48px; flex-direction: column-reverse; }
+  .ficha-media .recorrido-lista { flex-direction: row; overflow-x: auto; max-height: none; padding: 4px; }
+  .ficha-media .recorrido-lista button { flex: none; white-space: nowrap; }
+  .ficha-media .recorrido-plano { width: 96px; align-self: flex-start; }
   .ficha-media .recorrido-punto { width: 9px; height: 9px; border-width: 2px; }
   .ficha-planta .escena-svg, .ficha-huella .escena-svg, .ficha-video { padding: calc(var(--barra) + 40px) 56px 24px 12px; }
   .ficha-media:has(.ficha-tipo-planta) .ficha-planta .escena-svg { padding-bottom: 24px; padding-top: calc(var(--barra) + 100px); }

@@ -1,8 +1,9 @@
 # Recorrido 360 de las unidades (Blender → web)
 
-Recorrido tipo Street View por el interior de una tipología: una panorámica por ambiente, que se gira con el mouse
-o el dedo, y flechas en el piso para pasar al ambiente de al lado. Abajo, un plano con los puntos que también sirve
-para saltar. Se ve en la ficha (pestaña *Recorrido*) y en `/recorridos/<recorrido>/<punto>`. Lo muestra
+Recorrido por el interior de una tipología: una panorámica por ambiente, que se gira con el mouse o el dedo. Abajo
+a la derecha, la lista de ambientes y el plano con los puntos: un click en cualquiera de los dos lleva ahí. (Antes
+había flechas en el piso hacia los puntos enlazados; según dónde quedaba la cámara se superponían. Los `enlaces` se
+siguen calculando y cargando, pero el visor no los dibuja.) Se ve en la ficha (pestaña *Recorrido*) y en `/recorridos/<recorrido>/<punto>`. Lo muestra
 `components/proyecto/VisorRecorrido.tsx` (Photo Sphere Viewer + Virtual Tour).
 
 La meta es **imagen hiperrealista**: es la pantalla donde el comprador "entra" a la unidad. Un interior de cajas
@@ -29,7 +30,7 @@ En `//web/recorridos/<recorrido>/`, junto al `.blend`:
 - `<punto>.webp` por cámara: panorámica equirectangular 2:1 (6144×3072) en Cycles, con denoise.
 - `plano.webp`: la unidad vista desde arriba, cortada apenas por debajo de las cámaras, con el norte arriba y fondo
   transparente. Lo que se ve por las ventanas pero no va en el plano (techos vecinos más bajos que el corte,
-  vereda, árboles) se saca con `OCULTAR_PLANO` (colecciones o prefijos de objetos). Es **cuadrado** porque la web calcula hacia dónde apunta cada flecha con las posiciones x/y en %.
+  vereda, árboles) se saca con `OCULTAR_PLANO` (colecciones o prefijos de objetos). Es **cuadrado**: la web ubica los puntos con las posiciones x/y en %.
 - `recorrido.json`: por punto, `rumbo` (hacia dónde mira el centro de la panorámica, en grados desde el norte),
   `x`/`y` en el plano y `enlaces`.
 

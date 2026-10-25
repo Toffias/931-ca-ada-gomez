@@ -124,6 +124,7 @@ def materiales_render():
         "WEB_Vereda": tw("R_Vereda", "hormigon", 0.6, (1.0, 0.98, 0.95), (0.7, 0.95), 1.2),
         "WEB_Cordon": tw("R_Cordon", "hormigon", 2.7, (0.85, 0.85, 0.83), (0.7, 0.95), 1.0),
         "WEB_Asfalto": tw("R_Asfalto", "asfalto", 3.0, (0.55, 0.55, 0.55), (0.85, 1.0), 1.0),
+        "WEB_Piso_Balcon": tw("R_Piso_Balcon", "hormigon", 0.6, (0.8, 0.79, 0.76), (0.6, 0.9), 1.0),
         "WEB_Vidrio": vi["vidrio"]("R_Vidrio", (0.92, 0.96, 0.96)),
         "WEB_Vidrio_Local": vi["vidrio"]("R_Vidrio_Local", (0.92, 0.96, 0.96)),
         "WEB_Vidrio_Baranda": vi["vidrio"]("R_Vidrio_Baranda", (0.9, 0.95, 0.95)),
@@ -177,7 +178,7 @@ def plantas(col):
         z = g["ALTO_PB"] + (n - 1) * g["ALTO_PISO"] + g["LOSA"]
         colocar("potted_plant_01", col, g["X0"] + g["ALETA"] + 0.4, -g["BALCON"] + 0.4, -60, z)
         colocar("potted_plant_01", col, g["MAD_I"] - 0.45, -g["BALCON"] + 0.4, 40, z)
-        colocar("potted_plant_02", col, g["X1"] - 0.6, -g["BALCON"] + 0.25, 25, z + 1.0)
+        colocar("potted_plant_02", col, g["X1"] - 0.6, -g["BALCON"] + 0.06, 25, z + 1.0)  # sobre el antepecho
     for x in (g["X0"] + 1.5, g["X0"] + 3.0):
         colocar("potted_plant_01", col, x, 0.3, 0, 0.4)
 

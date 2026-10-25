@@ -33,7 +33,7 @@
     {
       "clave": "pasillo",
       "titulo": "Pasillo",
-      "rumbo": 0.0,
+      "rumbo": 270.0,
       "panorama": "pasillo.webp",
       "x": 48.33,
       "y": 45.07,
@@ -87,7 +87,31 @@
       "x": 45.15,
       "y": 18.5,
       "enlaces": [
-        "hall"
+        "hall",
+        "vestidor"
+      ]
+    },
+    {
+      "clave": "vestidor",
+      "titulo": "Vestidor",
+      "rumbo": 180.0,
+      "panorama": "vestidor.webp",
+      "x": 40.33,
+      "y": 25.07,
+      "enlaces": [
+        "principal",
+        "bano-suite"
+      ]
+    },
+    {
+      "clave": "bano-suite",
+      "titulo": "Baño en suite",
+      "rumbo": 180.0,
+      "panorama": "bano-suite.webp",
+      "x": 40.33,
+      "y": 33.56,
+      "enlaces": [
+        "vestidor"
       ]
     }
   ]

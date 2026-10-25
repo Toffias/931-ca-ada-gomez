@@ -44,6 +44,7 @@ MAD_I, MAD_D = 0.70, 1.70
 # fachada al ras; esa esquina va en gris oscuro de arriba a abajo, en el frente y en una franja del lateral (fotos)
 ALETA = 0.5
 ALETA_DER = 0.35   # lo mismo en la esquina derecha: el balcón crema del 2 ambientes y el remate terminan 35 cm antes
+ANTEPECHO = 0.12   # espesor del antepecho macizo crema del balcón del 2 ambientes
 VIDRIO_Y = 0.40        # retiro de los ventanales detrás de la línea municipal
 ESQUINA_FONDO = VIDRIO_Y + 1.2   # hasta dónde llega el gris oscuro de la esquina por el lateral
 BANDA_FONDO = 1.2                # lo mismo en la esquina del contrafrente (las fotos lo muestran en los dos laterales)
@@ -61,6 +62,8 @@ MATERIALES = {
     "WEB_Revoque_Muro": dict(color=(0.3, 0.285, 0.265), rug=0.85),
     # laterales y medianeras: gris claro
     "WEB_Revoque_Claro": dict(color=(0.36, 0.34, 0.31), rug=0.9),
+    # piso del balcón del 2 ambientes (cerámico gris claro)
+    "WEB_Piso_Balcon": dict(color=(0.42, 0.41, 0.39), rug=0.7),
     # antepechos del 2 ambientes y PB: crema (el visor le aplica revoque triplanar)
     "WEB_Fachada_Crema": dict(color=(0.70, 0.62, 0.48), rug=0.85),
     "WEB_Cielorraso": dict(color=(0.66, 0.63, 0.58), rug=0.9),
@@ -366,12 +369,19 @@ def piso(col, n):
     # 2 ambientes: antepecho macizo crema que vuela sobre la vereda
     # (termina 35 cm antes de la esquina derecha, como en las fotos: ahí sigue la pared gris oscuro)
     xb = X1 - ALETA_DER
-    m.caja("WEB_Fachada_Crema", (MAD_D, xb), (-BALCON, VIDRIO_Y + 0.1), (z0 - LOSA, z0 + LOSA + 1.0))
+    # losa con antepecho de 12 cm al frente y a los costados: el balcón es transitable (desde la calle se ve igual)
+    m.caja("WEB_Fachada_Crema", (MAD_D, xb), (-BALCON, VIDRIO_Y + 0.1), (z0 - LOSA, z0 + LOSA - 0.02))
+    m.caja("WEB_Piso_Balcon", (MAD_D + ANTEPECHO, xb - ANTEPECHO), (-BALCON + ANTEPECHO, VIDRIO_Y - 0.05),
+           (z0 + LOSA - 0.02, z0 + LOSA))
+    ante = z0 + LOSA + 1.0
+    m.caja("WEB_Fachada_Crema", (MAD_D, xb), (-BALCON, -BALCON + ANTEPECHO), (z0 + LOSA - 0.02, ante))
+    for x in ((MAD_D, MAD_D + ANTEPECHO), (xb - ANTEPECHO, xb)):
+        m.caja("WEB_Fachada_Crema", x, (-BALCON + ANTEPECHO, VIDRIO_Y - 0.05), (z0 + LOSA - 0.02, ante))
     m.caja("WEB_Cielorraso", (MAD_D + 0.05, xb - 0.05), (-BALCON + 0.05, VIDRIO_Y), (z0 - LOSA - 0.005, z0 - LOSA))
     spots(m, MAD_D + 0.3, xb - 0.3, -BALCON / 2, z0 - LOSA - 0.005, 2)
     # frente del 2 ambientes: pared junto a la madera y ventanal de dos hojas del estar
     frente(m, MAD_D, xb, [(2.45, xb - 0.1, 2)], z0 + LOSA, z1 - LOSA)
-    m.esfera("WEB_Planta", X1 - 0.6, -BALCON + 0.2, z0 + LOSA + 1.05, 0.25, 0.7)
+    m.esfera("WEB_Planta", X1 - 0.6, -BALCON + ANTEPECHO / 2, z0 + LOSA + 1.05, 0.25, 0.7)
     # spots del cielorraso del 3 ambientes
     spots(m, xa + 0.3, MAD_I - 0.4, -BALCON / 2, z0 - LOSA - 0.005, 3)
     return m.objeto(f"Piso_0{n}", col, {"tipo": "piso", "piso": n})

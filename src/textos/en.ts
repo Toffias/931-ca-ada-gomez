@@ -347,6 +347,7 @@ export const en: Textos = {
     kicker: '360 tour',
     sinPanoramas: "This tour doesn't have any panoramas yet.",
     recorridos: 'Tours',
+    ambientes: 'Rooms in the tour',
     visor: {
       zoom: 'Zoom',
       zoomOut: 'Zoom out',

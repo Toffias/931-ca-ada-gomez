@@ -14,8 +14,20 @@
       "x": 46.47,
       "y": 72.46,
       "enlaces": [
+        "balcon",
         "cocina",
         "pasillo"
+      ]
+    },
+    {
+      "clave": "balcon",
+      "titulo": "Balcón",
+      "rumbo": 180.0,
+      "panorama": "balcon.webp",
+      "x": 51.4,
+      "y": 92.19,
+      "enlaces": [
+        "estar"
       ]
     },
     {

@@ -362,6 +362,7 @@ export const es = {
     kicker: 'Recorrido 360',
     sinPanoramas: 'Este recorrido todavía no tiene panoramas.',
     recorridos: 'Recorridos',
+    ambientes: 'Ambientes del recorrido',
     // botones del visor de panoramas (Photo Sphere Viewer)
     visor: {
       zoom: 'Zoom',

@@ -483,11 +483,14 @@ def tres_ambientes(col, mats):
     r = "3-ambientes"
     camara_pano(col, r, "estar", "Estar comedor", 1, 2.3, 3.6, zf, (1.3, 0.6), nombre="3 ambientes", **LUZ)
     camara_pano(col, r, "cocina", "Cocina", 2, 4.14, 1.6, zf, (4.0, 0.6))
-    camara_pano(col, r, "pasillo", "Pasillo", 3, 2.58, 8.0, zf, (2.58, 12.0))
+    camara_pano(col, r, "pasillo", "Pasillo", 3, 2.58, 8.0, zf, (1.5, 8.0))   # arranca mirando la puerta del baño
     camara_pano(col, r, "bano", "Baño", 4, 1.55, 7.95, zf, (1.6, 6.9))
     camara_pano(col, r, "hall", "Hall de dormitorios", 5, 2.6, 11.75, zf, (2.6, 15.0))
     camara_pano(col, r, "dormitorio", "Dormitorio", 6, 4.4, 12.9, zf, (4.4, 15.5))
-    camara_pano(col, r, "principal", "Dormitorio principal", 7, 2.0, 12.85, zf, (0.5, 14.0))
+    # el vestidor y el baño en suite quedan en diagonal a la puerta del principal: esos enlaces van a mano
+    camara_pano(col, r, "principal", "Dormitorio principal", 7, 2.0, 12.85, zf, (0.5, 14.0), enlaces="hall,vestidor")
+    camara_pano(col, r, "vestidor", "Vestidor", 8, 1.12, 11.65, zf, (1.12, 10.0), enlaces="principal,bano-suite")
+    camara_pano(col, r, "bano-suite", "Baño en suite", 9, 1.12, 10.1, zf, (1.12, 8.9))
 
 
 # ---------------------------------------------------------------- 2 ambientes (B), en el piso 3
@@ -561,11 +564,13 @@ def dos_ambientes(col, mats):
     r = "2-ambientes"
     # el ventanal es angosto y el antepecho del balcón, macizo: entra menos luz que en el 3 ambientes
     camara_pano(col, r, "estar", "Estar comedor", 1, 6.3, 3.0, zf, (7.5, 0.6), nombre="2 ambientes",
-                **dict(LUZ, exposicion=2.6))
-    camara_pano(col, r, "cocina", "Cocina", 2, 7.0, 7.6, zf, (8.3, 7.6))
-    camara_pano(col, r, "pasillo", "Pasillo", 3, 6.17, 10.5, zf, (6.17, 15.0))
-    camara_pano(col, r, "bano", "Baño", 4, 7.15, 10.4, zf, (7.15, 9.35))
-    camara_pano(col, r, "dormitorio", "Dormitorio", 5, 6.3, 12.85, zf, (7.5, 14.0))
+                enlaces="balcon,cocina,pasillo", **dict(LUZ, exposicion=2.6))
+    # el vidrio del ventanal corta la vista a la altura de los ojos: el balcón se enlaza a mano
+    camara_pano(col, r, "balcon", "Balcón", 2, 7.2, -0.6, zf, (7.2, -1.4), enlaces="estar")
+    camara_pano(col, r, "cocina", "Cocina", 3, 7.0, 7.6, zf, (8.3, 7.6))
+    camara_pano(col, r, "pasillo", "Pasillo", 4, 6.17, 10.5, zf, (6.17, 15.0))
+    camara_pano(col, r, "bano", "Baño", 5, 7.15, 10.4, zf, (7.15, 9.35))
+    camara_pano(col, r, "dormitorio", "Dormitorio", 6, 6.3, 12.85, zf, (7.5, 14.0))
 
 
 # ---------------------------------------------------------------- 4 ambientes con patio (PB)
