@@ -1,7 +1,7 @@
 /**
  * Carga el proyecto Cañada de Gómez 931 (Male Group S.A.): usuario admin, datos del proyecto, el edificio con la
- * modelo de Blender (scripts/blender/modelar_ca931.py), los renders del cliente, 3 tipologías y las 9 unidades
- * leídas del propio .glb.
+ * modelo de Blender (scripts/blender/modelar_ca931.py), los renders del cliente, 3 tipologías con su recorrido 360
+ * (si está en seed/assets/ca931/recorridos/) y las 9 unidades leídas del propio .glb.
  * Material de origen en docs/referencias/ y plan en docs/plan-renders-931.md.
  *
  *   pnpm seed         → sólo crea lo que falta
@@ -91,6 +91,16 @@ const TIPOLOGIAS = {
   },
 }
 const tipologiaDe = (codigo: string): keyof typeof TIPOLOGIAS => (codigo === 'PB' ? 'PB' : codigo.endsWith('A') ? 'A' : 'B')
+
+// Recorridos 360 por tipología (scripts/blender/recorrido_ca931.py → renders_recorrido.py): cada carpeta de
+// assets/ca931/recorridos/ trae las panorámicas, el plano y su recorrido.json. Sin carpeta, la tipología queda sin tour.
+const RECORRIDOS: Record<string, keyof typeof TIPOLOGIAS> = { '3-ambientes': 'A', '2-ambientes': 'B', 'planta-baja': 'PB' }
+
+type ManifestRecorrido = {
+  nombre: string
+  plano: string | null
+  puntos: { clave: string; titulo: string; rumbo: number; panorama: string; x: number; y: number; enlaces: string[] }[]
+}
 
 const ESTADO: Record<string, 'disponible' | 'reservada' | 'vendida'> = {
   Disponible: 'disponible',
@@ -186,6 +196,20 @@ async function main() {
       mascara: (await subir(`plantas/piso-${n}.svg`, `Máscara de unidades · ${nombre}`)).id,
     })
   }
+  const recorridos = new Map<keyof typeof TIPOLOGIAS, number>()
+  for (const [slug, tipologia] of Object.entries(RECORRIDOS)) {
+    const carpeta = `recorridos/${slug}`
+    if (!fs.existsSync(asset(`${carpeta}/recorrido.json`))) continue
+    const m: ManifestRecorrido = JSON.parse(fs.readFileSync(asset(`${carpeta}/recorrido.json`), 'utf8'))
+    const puntos = []
+    for (const p of m.puntos) {
+      const panorama = await subir(`${carpeta}/${p.panorama}`, `${m.nombre} · ${p.titulo} (360°)`)
+      puntos.push({ clave: p.clave, titulo: p.titulo, rumbo: p.rumbo, x: p.x, y: p.y, enlaces: p.enlaces, panorama: panorama.id })
+    }
+    const plano = m.plano ? (await subir(`${carpeta}/${m.plano}`, `Plano del recorrido · ${m.nombre}`)).id : undefined
+    const doc = await payload.create({ collection: 'recorridos', data: { nombre: m.nombre, slug, tipo: 'propio', plano, puntos } })
+    recorridos.set(tipologia, doc.id)
+  }
   log('Archivos subidos')
 
   // Proyecto. Contacto, ubicación y logo quedan vacíos hasta que los pase el cliente.
@@ -202,7 +226,7 @@ async function main() {
       secciones: {
         disponibilidad: true,
         amenities: false,
-        recorridos: false,
+        recorridos: recorridos.size > 0,
         galeria: true,
         video: false,
         obra: false,
@@ -253,6 +277,7 @@ async function main() {
         foto: izquierda.id,
         planta2d: (await subir(archivo, alt)).id,
         galeria,
+        recorrido: recorridos.get(codigo as keyof typeof TIPOLOGIAS),
       },
     })
     tipologias.set(codigo, doc.id)

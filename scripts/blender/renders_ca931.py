@@ -175,7 +175,7 @@ def plantas(col):
     g = medidas()
     for n in range(1, g["PISOS"] + 1):
         z = g["ALTO_PB"] + (n - 1) * g["ALTO_PISO"] + g["LOSA"]
-        colocar("potted_plant_04", col, g["X0"] + g["ALETA"] + 0.4, -g["BALCON"] + 0.4, 0, z)
+        colocar("potted_plant_01", col, g["X0"] + g["ALETA"] + 0.4, -g["BALCON"] + 0.4, -60, z)
         colocar("potted_plant_01", col, g["MAD_I"] - 0.45, -g["BALCON"] + 0.4, 40, z)
         colocar("potted_plant_02", col, g["X1"] - 0.6, -g["BALCON"] + 0.25, 25, z + 1.0)
     for x in (g["X0"] + 1.5, g["X0"] + 3.0):

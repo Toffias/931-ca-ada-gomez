@@ -37,19 +37,20 @@ MUROS_TIPO = [
     (4.65, 4.80, 3.20, 3.80), (4.65, 4.80, 4.70, 5.13),
     # medianera entre A y B adelante, con la puerta de B desde el palier
     (0.42, 3.00, 5.28, 5.43), (4.80, 5.40, 5.28, 5.43), (6.30, 6.90, 5.28, 5.43),
-    # estar de A / palier, con la puerta de A
-    (4.80, 5.50, 3.05, 3.20), (6.40, 6.90, 3.05, 3.20),
+    # estar de A / palier: muro ciego (el rack del estar va contra él). Se entra a A por el hall, entre 6,90 y 7,90
+    (4.80, 6.90, 3.05, 3.20),
     # fondo del palier y medianera A|B de atrás (cocina, baño y dormitorio de B)
     (6.75, 6.90, 5.28, 5.73), (6.90, 15.50, 5.58, 5.73),
     # escalera: lateral hacia el pasillo de A y fondo (frente del dormitorio 2 de A)
     (7.90, 11.30, 3.05, 3.20), (11.10, 11.25, 3.20, 5.58),
     # dormitorio 2 de A: puerta desde el pasillo; muro con el principal
     (12.20, 15.50, 3.05, 3.20),
-    # A: estar / baños; pasillo con puertas a los dos baños; divisiones de baños y vestidor
+    # A: estar / baños; pasillo con la puerta del baño 1. El baño 2 es en suite: se entra por el vestidor, que
+    # abre al dormitorio principal
     (6.80, 6.90, 0.15, 2.10),
-    (6.90, 7.60, 2.00, 2.10), (8.40, 9.60, 2.00, 2.10), (10.40, 12.30, 2.00, 2.10),
-    (8.80, 8.90, 0.15, 2.00), (10.85, 10.95, 0.15, 2.00),
-    (12.30, 12.40, 0.15, 2.15),
+    (6.90, 7.60, 2.00, 2.10), (8.40, 12.30, 2.00, 2.10),
+    (8.80, 8.90, 0.15, 2.00), (10.85, 10.95, 0.15, 0.80), (10.85, 10.95, 1.45, 2.00),
+    (12.30, 12.40, 0.15, 0.80), (12.30, 12.40, 1.45, 2.15),
     # B: cocina / pasillo; baño con puerta al pasillo; baño / dormitorio
     (9.25, 9.35, 6.60, 8.51), (9.35, 10.10, 6.60, 6.70), (10.90, 11.65, 6.60, 6.70), (11.65, 11.75, 6.60, 8.51),
 ]
@@ -76,84 +77,106 @@ SOLADOS_TIPO = [
 
 def muebles_tipo(m, s):
     """m: fijos (mesadas, baños, placards, escalera); s: sueltos, que vestir_ca931.py reemplaza por los de detalle"""
-    # A: comedor para 6, estar mirando al rack, cocina con isla y desayunador
+    # A: comedor para 6, estar mirando al rack, cocina con isla (pileta) y banquetas del lado del estar
     mesa(s, 1.0, 2.6, 0.7, 1.6)
     estar(s, sofa=(4.5, 6.3, 0.25, 1.05), respaldo="a0", mesita=(4.9, 5.9, 1.45, 2.0), rack=None)
     caja(m, "INT_Mueble", 4.8, 6.2, 2.88, 3.03, 0, 0.5)                       # rack
-    mesada(m, 0.5, 2.7, 2.55, 3.15, banquetas="a0", sueltos=s)
-    mesada(m, 0.5, 2.9, 4.68, 5.26, anafe=True)
-    bano(m, 6.9, 8.8, 0.15, 2.0, ducha="d0")
-    bano(m, 8.9, 10.85, 0.15, 2.0, ducha="d1")
-    caja(m, "INT_Madera_Mueble", 11.0, 12.25, 0.15, 0.75, 0, 2.0)           # placard del vestidor
-    cama(s, 13.4, 15.45, 0.6, 2.2)                                         # principal, cabecera al contrafrente
-    cama(s, 13.5, 15.45, 3.45, 4.45, mesitas=False)
-    caja(m, "INT_Madera_Mueble", 11.4, 13.2, 5.0, 5.56, 0, 2.0)            # placard del dormitorio 2
-    # B: estar, comedor, cocina con península y desayunador
+    mesada(m, 0.65, 2.35, 3.0, 3.6, banquetas="a0", pileta=True, sueltos=s)
+    mesada(m, 0.65, 2.4, 4.68, 5.26, anafe=0.95)
+    heladera(m, 2.4, 2.98, 4.62, 5.26)
+    bano(m, 6.9, 8.8, 0.15, 2.0, ducha="d1")
+    bano(m, 8.9, 10.85, 0.15, 2.0, ducha="d0")
+    caja(m, "INT_Madera_Mueble", 10.95, 12.3, 0.15, 0.75, 0, 2.0)          # estantes del vestidor
+    caja(m, "INT_Madera_Mueble", 10.95, 12.3, 1.5, 2.0, 0, 2.0)
+    # dormitorios con la cabecera contra la medianera (el principal) o contra el muro con B (el 2), como en el plano
+    cama(s, 13.2, 14.8, 0.15, 2.15, cabecera="a0")
+    caja(m, "INT_Mueble", 13.2, 14.8, 2.6, 3.03, 0, 0.5)                      # rack del principal
+    cama(s, 14.1, 15.0, 3.58, 5.58, cabecera="a1", mesitas=False)
+    caja(m, "INT_Madera_Mueble", 11.25, 11.85, 4.15, 5.56, 0, 2.0)         # placard del dormitorio 2
+    # B: estar, comedor, cocina en L (isla con pileta y desayunador, mesada con anafe contra la medianera)
     estar(s, sofa=(0.8, 2.6, 7.65, 8.45), respaldo="a1", mesita=(1.2, 2.2, 6.9, 7.4), rack=None)
     caja(m, "INT_Mueble", 0.9, 2.5, 5.45, 5.6, 0, 0.5)                        # rack
     mesa(s, 3.5, 5.1, 6.5, 7.4)
-    mesada(m, 6.95, 9.2, 7.93, 8.5, anafe=True)
-    mesada(m, 7.2, 7.8, 5.9, 7.4, banquetas="d0", sueltos=s)
+    mesada(m, 6.85, 8.6, 7.93, 8.5, anafe=7.4)
+    heladera(m, 8.6, 9.2, 7.86, 8.5)
+    mesada(m, 5.95, 6.85, 6.6, 8.5, banquetas="d0", pileta=True, sueltos=s)
     bano(m, 9.35, 11.65, 6.7, 8.51, ducha="d0")
-    cama(s, 13.3, 15.45, 6.4, 8.0)
+    cama(s, 13.2, 14.8, 6.51, 8.51, cabecera="a1")
+    caja(m, "INT_Mueble", 13.2, 14.8, 5.73, 6.1, 0, 0.5)                      # rack del dormitorio
     caja(m, "INT_Madera_Mueble", 11.8, 12.4, 6.6, 8.5, 0, 2.0)
     escalera(m, 7.95, 11.05, 3.25, 5.53, ALTO_PISO)
 
 
 # ---------------------------------------------------------------- planta baja
 MUROS_PB = [
-    # dormitorios al frente (detrás de los listones negros) y su frente de placards
-    (0.60, 3.92, 2.47, 2.57), (3.92, 4.02, 0.15, 1.70), (3.92, 4.02, 2.57, 3.30), (3.92, 4.02, 4.10, 5.31),
-    (0.60, 4.40, 5.31, 5.43),
-    # pasadizo del ascensor
-    (2.75, 2.85, 3.30, 5.15), (4.30, 4.40, 3.30, 4.20), (2.85, 4.30, 3.30, 3.40), (2.85, 4.30, 5.05, 5.15),
+    # dormitorios al frente (detrás de los listones negros), con las puertas juntas al hall; el 2 termina contra
+    # el ascensor y se entra por un paso al lado
+    (0.60, 3.92, 2.47, 2.57), (3.92, 4.02, 0.15, 1.70), (3.92, 4.02, 2.47, 2.62),
+    (0.60, 4.80, 5.31, 5.43),
+    # pasadizo del ascensor, alineado con el de los pisos; la puerta da al hall de acceso
+    (3.00, 3.15, 3.42, 5.31), (3.15, 4.65, 3.42, 3.57), (4.65, 4.80, 3.30, 3.90), (4.65, 4.80, 4.85, 5.31),
     # baño 1, con puerta al pasillo interno
     (4.52, 4.62, 0.15, 2.00), (7.35, 7.45, 0.15, 2.00), (4.62, 5.20, 2.00, 2.10), (6.00, 7.35, 2.00, 2.10),
     # pasillo interno de la unidad / hall de acceso y núcleo
-    (4.40, 11.40, 3.30, 3.40),
+    (4.80, 11.40, 3.30, 3.40),
     # portería, toilette y fondo del hall
     (6.50, 6.60, 3.40, 5.00), (6.50, 6.60, 5.80, 8.51), (7.60, 7.70, 3.40, 8.51),
-    (7.70, 8.70, 5.90, 6.00), (8.70, 8.80, 5.90, 8.51),
+    (7.70, 8.70, 5.45, 5.55), (8.70, 8.80, 5.50, 8.51),
     # escalera y tanque de bombeo
     (8.00, 8.10, 3.40, 5.40), (8.10, 11.30, 5.40, 5.50), (11.30, 11.40, 3.40, 5.50),
-    # dormitorio 3 (puerta desde la cocina) y su baño
-    (11.40, 11.50, 5.50, 8.51), (11.50, 12.30, 5.40, 5.50), (13.10, 15.50, 5.40, 5.50),
-    (8.80, 11.40, 5.90, 6.00),
+    # cocina / sector del fondo: se pasa al lado de la heladera (11,40–12,15) a un paso con placard (1,80) que
+    # reparte al baño 2 (1,50) y al dormitorio 3 (3,20)
+    (12.15, 15.50, 5.40, 5.50), (12.15, 12.30, 4.75, 5.40),
+    (10.30, 10.40, 6.35, 8.51), (12.20, 12.30, 6.40, 8.51),
 ]
 
 SOLADOS_PB = [
     ("INT_Madera", 0.60, 3.92, 0.15, 2.47),      # dormitorio 1
-    ("INT_Madera", 0.60, 3.92, 2.57, 5.31),      # dormitorio 2
+    ("INT_Madera", 0.60, 3.00, 2.57, 5.31),      # dormitorio 2
+    ("INT_Madera", 3.00, 3.92, 2.57, 3.42),
     ("INT_Madera", 3.92, 7.45, 2.10, 3.30),      # pasillo interno
     ("INT_Madera", 4.02, 4.52, 0.15, 2.10),
     ("INT_Ceramica", 4.62, 7.35, 0.15, 2.00),    # baño 1
     ("INT_Madera", 7.45, 15.50, 0.15, 3.30),     # estar comedor
     ("INT_Madera", 11.40, 12.30, 3.30, 5.40),
     ("INT_Ceramica", 12.30, 15.50, 3.30, 5.40),  # cocina
-    ("INT_Madera", 11.50, 15.50, 5.50, 8.51),    # dormitorio 3
-    ("INT_Ceramica", 8.80, 11.40, 6.00, 8.51),   # baño 2
+    ("INT_Madera", 12.30, 15.50, 5.50, 8.51),    # dormitorio 3
+    ("INT_Madera", 10.40, 12.30, 5.50, 8.51),    # paso con placard
+    ("INT_Madera", 11.40, 12.15, 5.40, 5.50),
+    ("INT_Madera", 10.30, 10.40, 5.50, 6.35),
+    ("INT_Ceramica", 8.80, 10.30, 5.50, 8.51),   # baño 2
     ("INT_Comun", 0.60, 6.50, 5.43, 8.51),       # hall de acceso
-    ("INT_Comun", 4.40, 6.50, 3.40, 5.43),
+    ("INT_Comun", 4.80, 6.50, 3.40, 5.43),
+    ("INT_Madera", 4.02, 4.80, 3.30, 3.42),
     ("INT_Comun", 6.60, 7.60, 3.40, 8.51),       # portería
-    ("INT_Ceramica", 7.70, 8.70, 6.00, 8.51),    # toilette
+    ("INT_Ceramica", 7.70, 8.70, 5.55, 8.51),    # toilette
     ("INT_Comun", 8.10, 11.30, 3.40, 5.40),      # escalera y bombeo
-    ("INT_Pozo", 2.85, 4.30, 3.40, 5.05),        # pasadizo del ascensor
+    ("INT_Pozo", 3.15, 4.65, 3.57, 5.31),        # pasadizo del ascensor
 ]
 
 
 def muebles_pb(m, s):
-    cama(s, 0.65, 2.65, 0.45, 2.05, cabecera="d0")
-    cama(s, 0.65, 2.55, 3.4, 4.4, cabecera="d0", mesitas=False)
+    # dormitorios 1 y 2: camas de una plaza con la cabecera contra la medianera y contra el hall (plano)
+    cama(s, 0.9, 1.8, 0.15, 2.15, cabecera="a0", mesitas=False)
+    cama(s, 0.8, 1.7, 3.31, 5.31, cabecera="a1", mesitas=False)
+    caja(m, "INT_Madera_Mueble", 2.45, 3.0, 3.57, 5.31, 0, 2.0)            # placard del dormitorio 2
+    caja(m, "INT_Madera_Mueble", 0.75, 1.95, 2.57, 3.02, 0.72, 0.75)        # escritorio
     bano(m, 4.62, 7.35, 0.15, 2.0, ducha="d0")
     estar(s, sofa=(8.3, 10.1, 0.25, 1.05), respaldo="a0", mesita=(8.7, 9.7, 1.45, 2.0), rack=None)
-    caja(s, "INT_Tela", 7.6, 8.25, 1.6, 2.3, 0, 0.42)                       # sillones
-    caja(s, "INT_Tela", 10.15, 10.8, 1.6, 2.3, 0, 0.42)
+    caja(s, "INT_Tela", 7.55, 8.2, 1.1, 1.9, 0, 0.42)                       # sillones a los lados de la mesita
+    caja(s, "INT_Tela", 10.4, 11.05, 1.1, 1.9, 0, 0.42)
     mesa(s, 12.6, 14.6, 0.8, 1.8)
-    mesada(m, 12.6, 15.2, 2.15, 2.75, banquetas="a0", sueltos=s)
-    mesada(m, 12.6, 15.3, 4.75, 5.35, anafe=True)
-    cama(s, 12.9, 15.4, 6.0, 7.9)
-    bano(m, 8.8, 11.4, 6.0, 8.51, ducha="d1")
-    bano(m, 7.7, 8.7, 6.0, 8.51, ducha=None)                                # toilette de portería
+    # cocina: isla con pileta y banquetas del lado del comedor, mesada con anafe y heladera contra el dormitorio 3
+    mesada(m, 12.3, 15.35, 3.05, 3.65, banquetas="a0", pileta=True, sueltos=s)
+    mesada(m, 13.0, 15.35, 4.8, 5.4, anafe=14.2)
+    heladera(m, 12.35, 12.98, 4.75, 5.4)
+    # dormitorio 3 con la cabecera contra la medianera; baño 2 con todo contra el muro de la portería y la ducha
+    # al fondo
+    cama(s, 13.1, 14.7, 6.51, 8.51, cabecera="a1")
+    caja(m, "INT_Mueble", 13.1, 14.7, 5.5, 5.85, 0, 0.5)                      # rack
+    bano(m, 8.8, 10.3, 5.5, 8.51, ducha="a1")
+    caja(m, "INT_Madera_Mueble", 10.4, 12.2, 7.9, 8.51, 0, 2.0)            # placard del paso
+    bano(m, 7.7, 8.7, 5.55, 8.51, ducha=None)                               # toilette de portería
     caja(m, "INT_Mueble", 6.7, 7.4, 6.5, 8.3, 0, 0.75)                      # mostrador de portería
     caja(m, "INT_Ducha", 2.4, 6.2, 8.1, 8.5, 0, 2.0)                        # nicho de los 9 medidores
     caja(m, "INT_Ducha", 0.6, 2.3, 7.95, 8.5, 0, 1.8)                       # medidores de gas
@@ -192,12 +215,16 @@ def estar(m, sofa, respaldo, mesita, rack):
         caja(m, "INT_Mueble", *rack, 0, 0.5)
 
 
-def mesada(m, d0, d1, a0, a1, banquetas=None, anafe=False, sueltos=None):
+def mesada(m, d0, d1, a0, a1, banquetas=None, anafe=False, pileta=False, sueltos=None):
+    """anafe: True (al medio) o la d de su centro; pileta: bacha al medio"""
     caja(m, "INT_Mueble", d0, d1, a0, a1, 0, 0.86)
     caja(m, "INT_Mesada", d0, d1, a0, a1, 0.86, 0.9)
     if anafe:
-        dm = (d0 + d1) / 2
+        dm = (d0 + d1) / 2 if anafe is True else anafe
         caja(m, "INT_Pozo", dm - 0.3, dm + 0.3, a0 + 0.05, a1 - 0.05, 0.9, 0.905)
+    if pileta:
+        dm, am = (d0 + d1) / 2, (a0 + a1) / 2
+        caja(m, "INT_Ducha", dm - 0.35, dm + 0.35, am - 0.2, am + 0.2, 0.9, 0.905)
     if banquetas:
         largo = d1 - d0
         for i in range(3):
@@ -209,8 +236,19 @@ def mesada(m, d0, d1, a0, a1, banquetas=None, anafe=False, sueltos=None):
 
 
 def cama(m, d0, d1, a0, a1, cabecera="d1", mesitas=True):
+    """cabecera: el lado contra el muro (d0, d1, a0 o a1)"""
     caja(m, "INT_Cama", d0, d1, a0, a1, 0.15, 0.52)
     caja(m, "INT_Madera_Mueble", d0, d1, a0, a1, 0, 0.15)
+    if cabecera in ("a0", "a1"):
+        ha = (a1 - 0.08, a1) if cabecera == "a1" else (a0, a0 + 0.08)
+        caja(m, "INT_Madera_Mueble", d0 - 0.05, d1 + 0.05, *ha, 0, 1.1)
+        almohada = (a1 - 0.55, a1 - 0.15) if cabecera == "a1" else (a0 + 0.15, a0 + 0.55)
+        caja(m, "INT_Mueble", d0 + 0.12, d1 - 0.12, *almohada, 0.52, 0.62)
+        if mesitas:
+            ma = (a1 - 0.45, a1) if cabecera == "a1" else (a0, a0 + 0.45)
+            caja(m, "INT_Madera_Mueble", d0 - 0.5, d0 - 0.05, *ma, 0, 0.5)
+            caja(m, "INT_Madera_Mueble", d1 + 0.05, d1 + 0.5, *ma, 0, 0.5)
+        return
     hd = (d1 - 0.08, d1) if cabecera == "d1" else (d0, d0 + 0.08)
     caja(m, "INT_Madera_Mueble", *hd, a0 - 0.05, a1 + 0.05, 0, 1.1)
     almohada = (d1 - 0.55, d1 - 0.15) if cabecera == "d1" else (d0 + 0.15, d0 + 0.55)
@@ -229,11 +267,15 @@ def bano(m, d0, d1, a0, a1, ducha="d0"):
     dw = (d0 + d1) / 2
     caja(m, "INT_Sanitario", dw - 0.2, dw + 0.2, a0 + 0.05, a0 + 0.25, 0, 0.75)  # mochila
     caja(m, "INT_Sanitario", dw - 0.18, dw + 0.18, a0 + 0.25, a0 + 0.7, 0, 0.4)  # inodoro
-    if ducha:
+    if ducha == "a1":       # al fondo, de pared a pared
+        caja(m, "INT_Ducha", d0, d1, a1 - 0.85, a1, 0, 0.04)
+    elif ducha:
         d = (d0, d0 + 0.9) if ducha == "d0" else (d1 - 0.9, d1)
-        if ducha == "d0":
-            caja(m, "INT_Mueble", d0 + 0.1, d0 + 0.7, a1 - 0.6, a1 - 0.1, 0, 0.85)
         caja(m, "INT_Ducha", *d, a1 - 1.0, a1, 0, 0.04)
+
+
+def heladera(m, d0, d1, a0, a1):
+    caja(m, "INT_Ducha", d0 + 0.01, d1 - 0.01, a0, a1, 0, 1.85)
 
 
 def escalera(m, d0, d1, a0, a1, alto, un_tramo=False):
@@ -284,10 +326,10 @@ def nivel(col, nombre, mallas, z, n, compartidas=None):
 
 def interiores(col):
     material("WEB_Corte")  # lo busca renders_plantas.py por nombre para la cara cortada
-    # planta baja: piso terminado en 0; los muros llegan hasta la losa del piso 1
-    nivel(col, "PB", capas(MUROS_PB, SOLADOS_PB, muebles_pb, ALTO_PB - LOSA), 0.0, 0)
+    # planta baja: piso terminado en 0; los muros llegan hasta la losa del piso 1 (su cara de abajo, LOSA_CIELO)
+    nivel(col, "PB", capas(MUROS_PB, SOLADOS_PB, muebles_pb, ALTO_PB - LOSA_CIELO), 0.0, 0)
     # piso tipo: una malla por capa, compartida por los cuatro pisos (duplicados vinculados)
-    base = nivel(col, "01", capas(MUROS_TIPO, SOLADOS_TIPO, muebles_tipo, ALTO_PISO - 2 * LOSA),
+    base = nivel(col, "01", capas(MUROS_TIPO, SOLADOS_TIPO, muebles_tipo, ALTO_PISO - LOSA - LOSA_CIELO),
                  ALTO_PB + LOSA, 1)
     compartidas = {o.name.rsplit("_", 1)[1]: o.data for o in base}
     for n in range(2, PISOS + 1):

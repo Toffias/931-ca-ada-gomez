@@ -131,6 +131,11 @@ medianeras y contrafrente con ventanas (no cajas macizas), las cajas `Unidad_*` 
 común, y la PB tiene una platea para medir el corte igual que en los pisos. Cámara `Render_Planta` (en
 Referencias): piso 2, 25° desde la vertical, 50 mm, frente abajo, `altura_corte = 2.0` (1,5 m sobre el piso
 terminado: el nivel de cada `Piso_NN` es el fondo de su losa), fondo blanco. Tanda: 2560×1440, Cycles 256 muestras.
+Revisadas contra las cotas del plano: en A se entra por el hall (el muro estar/palier es ciego y lleva el rack), la
+isla con pileta y banquetas del lado del estar, el baño 2 es en suite por el vestidor y las camas apoyan la cabecera
+en la medianera (principal) o en el muro con B (dormitorio 2), igual que la de B; en B la cocina es en L; en la PB la
+isla tiene las banquetas del lado del comedor y el fondo derecho es baño 2 (1,50) + paso con placard (1,80) +
+dormitorio 3 (3,20) con la cama contra la medianera.
 
 **Noche: en el modo 3D.** La web sólo usa la noche en el visor (no hay lugar para un render de noche aparte; la
 galería ya tiene el atardecer del cliente). Ajustado contra `fachada-atardecer`: spots y tiras LED con menos fuerza
@@ -164,6 +169,21 @@ aguas; resto de la cuadra con cornisas y ventanas; tazas de árboles en la vered
 arbustos y faroles de las plantillas de la Torre Cityh (`C:/Renders/Ejemplos/Edificio 3`), con las hojas llevadas a
 tamaño real, y materiales propios (tejas con hiladas, nogal, revoques crema y blanco). Falta: árboles más
 irregulares y autos (no hay modelos en la máquina).
+
+**Recorridos 360** (`scripts/blender/recorrido_ca931.py`, corre al final de `modelar_ca931.py`): uno por tipología,
+en una unidad de muestra (3 ambientes en el 2A, 2 ambientes en el 3B, planta baja), sobre los mismos interiores de
+las plantas. Para verse desde adentro, en esa unidad suma lo que desde arriba no se nota: pintura en la cara
+interior de fachada, medianeras y contrafrente (por fuera son revoques), cielorraso blanco y vigas, zócalos,
+dinteles, puertas con marco (la de entrada cerrada, corredizas en los baños chicos), cocina con bajo mesada,
+alacenas, anafe y bacha, baños con revestimiento, ducha con mampara y sanitarios suspendidos, placards, racks con
+tele, cortinas de voile y rollers, luminarias. Los muebles en cajas de esa unidad se reemplazan
+(`Recorrido_Muebles_NN`). La losa adentro baja sólo 10 cm (`LOSA_CIELO`): cielorraso a 2,40 en los pisos, con vigas
+sobre el frente y el contrafrente que tapan la junta. Por el ventanal se ve la vereda de enfrente: la misma cuadra
+girada 180° sobre el eje de la calle (en las tomas de fachada no está). Afuera de eso, el HDRI de Poly Haven
+(`portland_landing_pad`, con torres): **lo ideal es una foto 360 tomada en el lote a la altura de un primer piso**.
+Desde la sesión de Blender: `previa()` (perspectiva en ~15 s con el mismo ambiente) y `tanda()` (renders_recorrido
+encolado; ~15 min por panorámica de 6144 × 3072 en la RX 6700 XT). El seed los carga desde
+`src/seed/assets/ca931/recorridos/<recorrido>/` y prende la sección.
 
 **Control de calidad de cada render:** ponerlo al lado (o encima, en diferencia) de la referencia con la misma
 cámara y revisar: proporciones, colores de cada material, cantidad de listones, ubicación del número 931, plantas y

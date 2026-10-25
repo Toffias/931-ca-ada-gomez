@@ -1,0 +1,70 @@
+{
+  "recorrido": "2-ambientes",
+  "nombre": "2 ambientes",
+  "unidad": "3B",
+  "plano": "plano.webp",
+  "ancho": 6144,
+  "alto": 3072,
+  "puntos": [
+    {
+      "clave": "estar",
+      "titulo": "Estar comedor",
+      "rumbo": 153.4,
+      "panorama": "estar.webp",
+      "x": 46.47,
+      "y": 72.46,
+      "enlaces": [
+        "cocina",
+        "pasillo"
+      ]
+    },
+    {
+      "clave": "cocina",
+      "titulo": "Cocina",
+      "rumbo": 90.0,
+      "panorama": "cocina.webp",
+      "x": 50.3,
+      "y": 47.26,
+      "enlaces": [
+        "estar",
+        "pasillo"
+      ]
+    },
+    {
+      "clave": "pasillo",
+      "titulo": "Pasillo",
+      "rumbo": 0.0,
+      "panorama": "pasillo.webp",
+      "x": 45.75,
+      "y": 31.37,
+      "enlaces": [
+        "estar",
+        "cocina",
+        "bano",
+        "dormitorio"
+      ]
+    },
+    {
+      "clave": "bano",
+      "titulo": "Baño",
+      "rumbo": 180.0,
+      "panorama": "bano.webp",
+      "x": 51.12,
+      "y": 31.92,
+      "enlaces": [
+        "pasillo"
+      ]
+    },
+    {
+      "clave": "dormitorio",
+      "titulo": "Dormitorio",
+      "rumbo": 46.2,
+      "panorama": "dormitorio.webp",
+      "x": 46.47,
+      "y": 18.5,
+      "enlaces": [
+        "pasillo"
+      ]
+    }
+  ]
+}

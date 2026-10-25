@@ -34,6 +34,9 @@ ALTO_PISO = 2.75
 PISOS = 4
 PRETIL = 1.35          # remate: del nivel de azotea al borde superior
 LOSA = 0.25            # media losa (el canto se ve de ~0,5 m en los renders)
+# adentro la losa baja sólo 10 cm de su nivel (cielorraso a 2,40 en los pisos): el canto grueso queda en la fachada
+# y en vigas perimetrales sobre el frente y el contrafrente
+LOSA_CIELO = 0.10
 # franja de listones: en la foto cae a la derecha del centro (x 0,7–1,7 proyectando sus bordes sobre la fachada);
 # el plano dice 3,50 + 1,36 + 3,50 simétrico. Se sigue la imagen, a confirmar con el cliente.
 MAD_I, MAD_D = 0.70, 1.70
@@ -277,6 +280,12 @@ def cascara(m, mat, y_frente, z0, z1, ventanas, con_laterales=True):
     muro_con_huecos(m, mat, X0 + 0.15, X1 - 0.15, FONDO - 0.2, FONDO, z0, z1, ventanas)
 
 
+def vigas(m, y_frente, z):
+    """vigas perimetrales bajo la losa del nivel z: tapan la junta entre la losa fina de adentro y los muros"""
+    for y in ((y_frente, VIDRIO_Y + 0.4), (FONDO - 0.35, FONDO)):
+        m.caja("WEB_Revoque_Claro", (X0 + 0.15, X1 - 0.15), y, (z - LOSA, z - LOSA_CIELO))
+
+
 def spots(m, x0, x1, y, z, n):
     for i in range(n):
         x = x0 + (x1 - x0) * (i + 0.5) / n
@@ -330,7 +339,8 @@ def piso(col, n):
     laterales(m, z0 - LOSA, z1 - LOSA)
     esquina(m, z0 - LOSA, z1 - LOSA)
     # losa en todo el fondo, entre medianeras (si no, se ve la caja de la unidad por la rendija)
-    m.caja("WEB_Revoque_Claro", (X0 + 0.15, X1 - 0.15), (VIDRIO_Y + 0.1, FONDO), (z0 - LOSA, z0 + LOSA))
+    m.caja("WEB_Revoque_Claro", (X0 + 0.15, X1 - 0.15), (VIDRIO_Y + 0.1, FONDO), (z0 - LOSA_CIELO, z0 + LOSA))
+    vigas(m, VIDRIO_Y + 0.1, z0)
     # losa: canto gris del lado del 3 ambientes, con cielorraso claro y spots
     xa = X0 + ALETA
     m.caja("WEB_Revoque_Gris", (xa, MAD_I), (-BALCON, VIDRIO_Y + 0.1), (z0 - LOSA, z0 + LOSA))
@@ -374,10 +384,12 @@ def remate(col):
     # claro del lateral: si no, arriba del lateral se lee una banda oscura horizontal
     xb = X1 - ALETA_DER
     m.caja("WEB_Revoque_Gris", (xa, xb), (-BALCON - 0.1, VIDRIO_Y - 0.05), z)
-    m.caja("WEB_Revoque_Gris", (X0 + 0.15, X1 - 0.15), (VIDRIO_Y + 0.2, ESQUINA_FONDO), z)
+    zi = (TECHO - LOSA_CIELO, z[1])
+    m.caja("WEB_Revoque_Gris", (X0 + 0.15, X1 - 0.15), (VIDRIO_Y + 0.2, ESQUINA_FONDO), zi)
     esquina(m, *z)
     laterales(m, *z)
-    m.caja("WEB_Revoque_Claro", (X0 + 0.15, X1 - 0.15), (ESQUINA_FONDO, FONDO), z)
+    m.caja("WEB_Revoque_Claro", (X0 + 0.15, X1 - 0.15), (ESQUINA_FONDO, FONDO), zi)
+    vigas(m, VIDRIO_Y + 0.2, TECHO)
     m.caja("WEB_Revoque_Gris", (xa, xb), (VIDRIO_Y - 0.05, VIDRIO_Y + 0.2), z)
     m.caja("WEB_Cielorraso", (xa, xb), (-BALCON - 0.05, VIDRIO_Y - 0.05), (TECHO - LOSA - 0.005, TECHO - LOSA))
     m.caja("WEB_Farol_LED", (xa, MAD_I), (-BALCON - 0.105, -BALCON - 0.1), (TECHO - LOSA + 0.02, TECHO - LOSA + 0.05))
@@ -648,7 +660,10 @@ def main():
     interiores(col_interiores)
     if VESTIR and os.path.isdir("C:/Renders/_assets/polyhaven"):
         exec(open(ruta.replace("interior_ca931.py", "vestir_ca931.py"), encoding="utf-8").read(), globals())
-        vestir(col_interiores)
+        mats = vestir(col_interiores)
+        # terminaciones y cámaras del recorrido 360 (ocultas para plantas y fachadas)
+        exec(open(ruta.replace("interior_ca931.py", "recorrido_ca931.py"), encoding="utf-8").read(), globals())
+        recorridos(col_interiores, mats)
     # para renders_ca931.py
     bpy.app.driver_namespace["ca931_medidas"] = {k: globals()[k] for k in (
         "X0", "X1", "FONDO", "BALCON", "ALTO_PB", "ALTO_PISO", "PISOS", "LOSA", "MAD_I", "MAD_D", "ALETA")}

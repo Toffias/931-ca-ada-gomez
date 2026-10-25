@@ -1,0 +1,94 @@
+{
+  "recorrido": "3-ambientes",
+  "nombre": "3 ambientes",
+  "unidad": "2A",
+  "plano": "plano.webp",
+  "ancho": 6144,
+  "alto": 3072,
+  "puntos": [
+    {
+      "clave": "estar",
+      "titulo": "Estar comedor",
+      "rumbo": 198.4,
+      "panorama": "estar.webp",
+      "x": 46.79,
+      "y": 69.18,
+      "enlaces": [
+        "cocina",
+        "pasillo",
+        "hall"
+      ]
+    },
+    {
+      "clave": "cocina",
+      "titulo": "Cocina",
+      "rumbo": 188.0,
+      "panorama": "cocina.webp",
+      "x": 56.88,
+      "y": 80.13,
+      "enlaces": [
+        "estar"
+      ]
+    },
+    {
+      "clave": "pasillo",
+      "titulo": "Pasillo",
+      "rumbo": 0.0,
+      "panorama": "pasillo.webp",
+      "x": 48.33,
+      "y": 45.07,
+      "enlaces": [
+        "estar",
+        "bano",
+        "hall"
+      ]
+    },
+    {
+      "clave": "bano",
+      "titulo": "Baño",
+      "rumbo": 177.3,
+      "panorama": "bano.webp",
+      "x": 42.69,
+      "y": 45.34,
+      "enlaces": [
+        "pasillo"
+      ]
+    },
+    {
+      "clave": "hall",
+      "titulo": "Hall de dormitorios",
+      "rumbo": 0.0,
+      "panorama": "hall.webp",
+      "x": 48.44,
+      "y": 24.52,
+      "enlaces": [
+        "estar",
+        "pasillo",
+        "dormitorio",
+        "principal"
+      ]
+    },
+    {
+      "clave": "dormitorio",
+      "titulo": "Dormitorio",
+      "rumbo": 0.0,
+      "panorama": "dormitorio.webp",
+      "x": 58.3,
+      "y": 18.22,
+      "enlaces": [
+        "hall"
+      ]
+    },
+    {
+      "clave": "principal",
+      "titulo": "Dormitorio principal",
+      "rumbo": 307.5,
+      "panorama": "principal.webp",
+      "x": 45.15,
+      "y": 18.5,
+      "enlaces": [
+        "hall"
+      ]
+    }
+  ]
+}

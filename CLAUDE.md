@@ -159,13 +159,15 @@ Cuando el usuario arranca un proyecto nuevo, recorrer esta lista y preguntar lo 
 Completar al crear un proyecto desde la plantilla (en el repo template queda así):
 
 - Proyecto: *Cañada de Gómez 931* (Male Group S.A.). Material del cliente en `docs/referencias/`, plan en
-  [`docs/plan-renders-931.md`](docs/plan-renders-931.md). Fases A y B hechas: seed con sus renders y el
-  modelo de Blender (`scripts/blender/modelar_ca931.py` → `blender/ca931_web.blend`, fuera del repo), con cámaras
-  `Ref_*` calzadas sobre las fotos.
+  [`docs/plan-renders-931.md`](docs/plan-renders-931.md). Fases A, B y C hechas: seed con sus renders, el modelo de
+  Blender (`scripts/blender/modelar_ca931.py` → `blender/ca931_web.blend`, fuera del repo) con cámaras `Ref_*`
+  calzadas sobre las fotos, Disponibilidad sobre las fotos, plantas por piso, noche y recorridos 360 por tipología
+  (`recorrido_ca931.py`). En Blender se trabaja con `scripts/blender/sesion_ca931.py`.
 - Torres: `canada-de-gomez-931` (PB + 4 pisos entre medianeras; unidades `PB`, `1A`…`4A` 3 amb, `1B`…`4B` 2 amb)
 - Tema por defecto: oscuro
 - Idiomas: castellano (defecto) e inglés
-- Secciones apagadas: amenities, recorridos, video, obra, ubicación y blog (sin material todavía)
+- Secciones apagadas: amenities, video, obra, ubicación y blog (sin material todavía); recorridos se prende sola si
+  el seed trae panorámicas
 - Producción (hosting, base, storage, dominio): VPS Hostinger (pm2 `constructoras`, puerto 3003), Postgres local,
   `media/` en disco del VPS, `https://constructoras.apzsoftware.online`. Deploy por GitHub Actions y contenido con
   `scripts/deploy/subir-snapshot.sh`: ver [`docs/deploy.md`](docs/deploy.md).

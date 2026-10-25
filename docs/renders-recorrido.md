@@ -28,7 +28,8 @@ En `//web/recorridos/<recorrido>/`, junto al `.blend`:
 
 - `<punto>.webp` por cámara: panorámica equirectangular 2:1 (6144×3072) en Cycles, con denoise.
 - `plano.webp`: la unidad vista desde arriba, cortada apenas por debajo de las cámaras, con el norte arriba y fondo
-  transparente. Es **cuadrado** porque la web calcula hacia dónde apunta cada flecha con las posiciones x/y en %.
+  transparente. Lo que se ve por las ventanas pero no va en el plano (techos vecinos más bajos que el corte,
+  vereda, árboles) se saca con `OCULTAR_PLANO` (colecciones o prefijos de objetos). Es **cuadrado** porque la web calcula hacia dónde apunta cada flecha con las posiciones x/y en %.
 - `recorrido.json`: por punto, `rumbo` (hacia dónde mira el centro de la panorámica, en grados desde el norte),
   `x`/`y` en el plano y `enlaces`.
 

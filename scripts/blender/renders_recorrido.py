@@ -50,6 +50,8 @@ MARGEN_PLANO = 1.08                # aire alrededor de la unidad en el plano
 OCULTAR = ("Bruma",)               # prefijos de objetos que no van en estos renders
 OCULTAR_COLECCIONES = ()           # colecciones que no van (p. ej. la copia del entorno para el visor web y los
                                    # edificios vecinos modelados: de lejos los reemplaza el HDRI)
+OCULTAR_PLANO = ()                 # colecciones (o prefijos de objetos) que se ven por las ventanas pero no van en el
+                                   # plano: los techos vecinos quedan por debajo del corte y lo ensuciarían
 # ambiente interior: lo que se ve desde adentro no es lo que se ve desde afuera
 HDRI = ""                          # foto 360 de cielo y ciudad (.hdr/.exr) que ilumina y se ve por las ventanas
 HDRI_GIRO = 0.0                    # grados: gira el HDRI alrededor del eje vertical
@@ -508,8 +510,12 @@ def render_plano(cambios, escena, todos, centro, lado, z_corte, ruta, lado_px):
     z_piso = z_corte - 1.6 / ESCALA
     cerca = lado * 1.5  # sólo se corta lo que cae cerca de la unidad; lo lejano está abajo o arriba y se oculta
     copias = []
+    fuera = {o for n in OCULTAR_PLANO if n in bpy.data.collections for o in objetos_de(bpy.data.collections[n])}
     for o in todos:
         if o.hide_render or o.type in ("LIGHT", "CAMERA"):
+            continue
+        if o in fuera or o.name.startswith(tuple(OCULTAR_PLANO)):
+            cambios.fijar(o, "hide_render", True)
             continue
         x0, y0, z0, x1, y1, z1 = caja(o)
         if z0 >= z_corte or z1 < z_piso - 0.5 / ESCALA:

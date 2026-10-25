@@ -137,54 +137,62 @@ def sueltos_tipo(p, mats):
     # 3 ambientes (A)
     mesa_rect(p, mats, 0.75, 1.6, 1.0, 2.6)
     estar(p, mats, 0.2, 5.4, 90, (0.95, 2.75, 4.35, 6.45))
-    banquetas(p, mats, [(2.25, 0.9), (2.25, 1.6), (2.25, 2.3)])
-    cama(p, mats, 1.4, 15.45, 180, 1.6, True)
-    vi["mesa_de_luz"](p, mats, 0.37, 15.2)
-    vi["mesa_de_luz"](p, mats, 2.45, 15.2)
-    alfombra(p, mats, 0.4, 2.4, 12.6, 13.6)
-    cama(p, mats, 3.95, 15.45, 180, 1.0, False)
-    vi["mesa_de_luz"](p, mats, 4.85, 15.2)
+    banquetas(p, mats, [(2.75, 0.95), (2.75, 1.5), (2.75, 2.05)])
+    # principal y dormitorio 2 con la cabecera contra la medianera y contra el muro con B, como en el plano
+    cama(p, mats, 0.15, 14.0, -90, 1.6, True)
+    vi["mesa_de_luz"](p, mats, 0.37, 12.95)
+    vi["mesa_de_luz"](p, mats, 0.37, 15.05)
+    alfombra(p, mats, 0.9, 2.4, 12.8, 15.2)
+    cama(p, mats, 5.58, 14.55, 90, 0.9, False)
+    vi["mesa_de_luz"](p, mats, 5.3, 15.25)
     # 2 ambientes (B)
-    estar(p, mats, 8.5, 1.7, -90, (5.75, 7.75, 0.6, 2.8))
+    estar(p, mats, 8.5, 1.85, -90, (5.75, 7.75, 0.75, 2.95))  # deja lugar a la cortina del ventanal
     mesa_rect(p, mats, 6.55, 7.35, 3.5, 5.1)
-    banquetas(p, mats, [(6.15, 6.9), (6.65, 6.9), (7.15, 6.9)])
-    cama(p, mats, 7.2, 15.45, 180, 1.6, True)
-    vi["mesa_de_luz"](p, mats, 6.15, 15.2, lampara_encima=False)
-    vi["mesa_de_luz"](p, mats, 8.27, 15.2)
-    alfombra(p, mats, 6.0, 8.3, 12.4, 13.3)
+    banquetas(p, mats, [(7.0, 5.78), (7.6, 5.78)])
+    cama(p, mats, 8.51, 14.0, 90, 1.6, True)
+    vi["mesa_de_luz"](p, mats, 8.25, 12.95, lampara_encima=False)
+    vi["mesa_de_luz"](p, mats, 8.25, 15.05)
+    alfombra(p, mats, 6.2, 7.7, 12.8, 15.2)
 
 
 def modelos_tipo(col, z, piso):
     modelo("modern_coffee_table_01", col, 1.75, 5.4, 90, z, piso)
-    modelo("potted_plant_04", col, 2.75, 0.75, 0, z, piso)
+    modelo("potted_plant_04", col, 0.45, 3.4, 0, z, piso)
     modelo("potted_plant_02", col, 0.45, 6.5, 0, z, piso)
     modelo("ceramic_vase_01", col, 1.15, 1.8, 0, z + 0.755, piso)
-    modelo("wooden_bowl_01", col, 2.85, 1.6, 0, z + 0.9, piso)
-    modelo("modern_coffee_table_01", col, 6.95, 1.7, 90, z, piso)
+    modelo("wooden_bowl_01", col, 3.3, 2.1, 0, z + 0.9, piso)
+    modelo("modern_coffee_table_01", col, 6.95, 1.85, 90, z, piso)
     modelo("potted_plant_01", col, 5.75, 0.75, 0, z, piso)
     modelo("ceramic_vase_03", col, 6.95, 4.3, 0, z + 0.755, piso)
 
 
 def sueltos_pb(p, mats):
-    cama(p, mats, 1.25, 0.62, 0, 1.6, True)
-    vi["mesa_de_luz"](p, mats, 2.25, 0.85)
-    cama(p, mats, 3.9, 0.62, 0, 1.0, False)
-    vi["mesa_de_luz"](p, mats, 4.75, 0.85)
+    # dormitorios 1 y 2: de una plaza, de costado, con la cabecera contra la medianera y contra el hall (plano)
+    cama(p, mats, 0.15, 1.35, -90, 0.9, False)
+    vi["mesa_de_luz"](p, mats, 0.37, 2.05)
+    cama(p, mats, 5.31, 1.25, 90, 0.9, False)
+    vi["mesa_de_luz"](p, mats, 5.09, 1.95)
+    # escritorio angosto contra el tabique con el dormitorio 1
+    p.caja(2.57, 0.75, 3.02, 1.95, 0.72, 0.75, mats["roble"], 0.003)
+    for d in (0.8, 1.9):
+        p.caja(2.94, d - 0.02, 2.98, d + 0.02, 0, 0.72, mats["negro"], 0.002)
+    vi["libros"](p, mats, 2.62, 1.6, 0.75)
     estar(p, mats, 0.2, 9.2, 90, (0.95, 2.95, 8.2, 10.2))
     mesa_rect(p, mats, 0.6, 1.45, 12.7, 14.5)
-    banquetas(p, mats, [(3.05, 13.2), (3.05, 13.9), (3.05, 14.6)])
-    cama(p, mats, 6.95, 15.45, 180, 1.6, True)
-    vi["mesa_de_luz"](p, mats, 5.85, 15.2)
-    vi["mesa_de_luz"](p, mats, 8.05, 15.2)
+    banquetas(p, mats, [(2.75, 13.3), (2.75, 13.95), (2.75, 14.6)])
+    cama(p, mats, 8.51, 13.9, 90, 1.6, True)
+    vi["mesa_de_luz"](p, mats, 8.25, 12.88)
+    vi["mesa_de_luz"](p, mats, 8.25, 14.92)
 
 
 def modelos_pb(col):
     modelo("modern_coffee_table_01", col, 1.75, 9.2, 90, 0.0, 0)
-    modelo("modern_arm_chair_01", col, 2.6, 8.0, -110, 0.0, 0)
-    modelo("modern_arm_chair_01", col, 2.6, 10.4, -70, 0.0, 0)
+    # sillones a los lados de la mesita, enfrentados (plano)
+    modelo("modern_arm_chair_01", col, 1.5, 7.9, 180, 0.0, 0)
+    modelo("modern_arm_chair_01", col, 1.5, 10.75, 0, 0.0, 0)
     modelo("potted_plant_04", col, 0.45, 7.75, 0, 0.0, 0)
     modelo("potted_plant_01", col, 8.1, 0.95, 0, 0.0, 0)        # hall de acceso
-    modelo("potted_plant_02", col, 3.0, 15.3, 0, 0.0, 0)        # junto a la puerta-ventana al patio
+    modelo("potted_plant_02", col, 0.45, 15.2, 0, 0.0, 0)       # junto a la puerta-ventana al patio
 
 
 # ---------------------------------------------------------------- luz
@@ -229,3 +237,4 @@ def vestir(col_interiores):
     esc.cycles.samples = 256
     esc.cycles.use_denoising = True
     print(f"Vestido: {len(col.objects)} objetos, {len(_modelos)} modelo(s) de Poly Haven")
+    return mats
