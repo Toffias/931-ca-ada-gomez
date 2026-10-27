@@ -24,6 +24,8 @@ type Props = {
   /** 'siempre': las formas se ven pintadas; 'hover': sólo al pasar (siluetas sobre un render) */
   pintar?: 'siempre' | 'hover'
   etiquetas?: boolean
+  /** un punto del color de cada forma en su centro, en lugar de pintarla (disponibilidad sobre fotos) */
+  marcadores?: boolean
   etiquetaDe?: (f: FormaEscena) => string | undefined
   pois?: PuntoDeInteres[]
   onPoi?: (p: PuntoDeInteres, x: number, y: number) => void
@@ -51,6 +53,7 @@ export function VisorEscena({
   hover,
   pintar = 'siempre',
   etiquetas = true,
+  marcadores = false,
   etiquetaDe,
   pois,
   onPoi,
@@ -187,7 +190,7 @@ export function VisorEscena({
         </g>
       )}
 
-      <g className={`formas pintar-${pintar}`}>
+      <g className={`formas pintar-${pintar}${marcadores ? ' con-marcadores' : ''}`}>
         {formas.map((f) => {
           const k = claveForma(f)
           const color = colorDe?.(f) ?? null
@@ -216,6 +219,28 @@ export function VisorEscena({
           return f.d ? <path key={k} d={f.d} {...props} /> : <polygon key={k} points={aPuntosSVG(f.puntos ?? [])} {...props} />
         })}
       </g>
+
+      {marcadores && (
+        // tamaño fijo en pantalla (~6 px de radio): se mide en unidades del viewBox con pxPorUnidad
+        <g className="marcadores" aria-hidden>
+          {formas.map((f) => {
+            const k = claveForma(f)
+            const r = 5.5 / pxPorUnidad
+            const clases = ['marcador', apagada?.(f) && 'apagada', resaltada === k && 'resaltada', hover === k && 'hover']
+              .filter(Boolean)
+              .join(' ')
+            return (
+              <g key={k} transform={`translate(${f.centro[0]} ${f.centro[1]})`}>
+                <g className={clases} style={colorDe?.(f) ? ({ '--color': colorDe(f) } as React.CSSProperties) : undefined}>
+                  <circle className="marcador-halo" r={r * 2.6} />
+                  <circle className="marcador-anillo" r={r * 1.9} />
+                  <circle className="marcador-punto" r={r} />
+                </g>
+              </g>
+            )
+          })}
+        </g>
+      )}
 
       {etiquetas && (
         <g className="etiquetas" aria-hidden>

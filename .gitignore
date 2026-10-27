@@ -66,3 +66,4 @@ DEPLOYED_SHA.txt
 
 # .blend del proyecto (se rehace con scripts/blender/modelar_ca931.py) y su exportación
 /blender/
+/output

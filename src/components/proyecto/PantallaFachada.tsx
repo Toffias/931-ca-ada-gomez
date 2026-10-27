@@ -52,6 +52,7 @@ export function PantallaFachada({ escena, vistas, actual, unidades, conTour, dor
           hover={conTorre(s.hover?.unidad)}
           resaltada={conTorre(s.elegida?.unidad)}
           etiquetas={!render}
+          marcadores={render}
           etiquetaDe={(f) => {
             const u = s.unidadDe(f)
             return u ? t.escena.unidadEstado(u.codigo, t.estados[s.estadoDe(u)]) : f.clave

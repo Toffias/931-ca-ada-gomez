@@ -155,6 +155,7 @@ async function main() {
   const derecha = await subir('fachada-derecha.webp', `Fachada de ${NOMBRE} desde la vereda de enfrente`)
   const atardecer = await subir('atardecer.webp', `Fachada de ${NOMBRE} al atardecer, con las luces encendidas`)
   const acceso = await subir('acceso.webp', 'Acceso peatonal con la columna de piedra y el número 931')
+  const inicio = await subir('inicio.webp', `Fachada de ${NOMBRE} desde la calle arbolada, de día`)
   const galeria = [
     { imagen: izquierda.id, epigrafe: 'Fachada' },
     { imagen: derecha.id, epigrafe: 'Desde la vereda de enfrente' },
@@ -172,16 +173,20 @@ async function main() {
       })),
     )),
   ]
-  // Disponibilidad sobre las fotos del cliente: máscaras calculadas en Blender con las cámaras calzadas
-  // (Render_Fachada_* de scripts/blender/modelar_ca931.py, docs/plan-renders-931.md Fase C)
-  const vistasDisponibilidad = [
-    { etiqueta: 'Frente', imagen: izquierda.id, mascara: (await subir('mascara-frente.svg', 'Máscara de unidades · Frente')).id },
-    {
-      etiqueta: 'Frente derecha',
-      imagen: derecha.id,
-      mascara: (await subir('mascara-frente-derecha.svg', 'Máscara de unidades · Frente derecha')).id,
-    },
-  ]
+  // Disponibilidad sobre las fotos del cliente ampliadas (más cielo, vereda y vecinos, assets/ca931/disponibilidad/):
+  // máscaras calculadas en Blender con las cámaras calzadas (Render_Fachada_* de scripts/blender/modelar_ca931.py)
+  // y llevadas a la foto ampliada con una homografía sobre el edificio
+  const vistasDisponibilidad = []
+  for (const [etiqueta, archivo] of [
+    ['Frente', 'frente'],
+    ['Frente derecha', 'frente-derecha'],
+  ]) {
+    vistasDisponibilidad.push({
+      etiqueta,
+      imagen: (await subir(`disponibilidad/${archivo}.webp`, `Fachada de ${NOMBRE} · ${etiqueta.toLowerCase()}`)).id,
+      mascara: (await subir(`disponibilidad/mascara-${archivo}.svg`, `Máscara de unidades · ${etiqueta}`)).id,
+    })
+  }
   // Plantas por piso: renders fotorrealistas con el edificio cortado y su máscara (renders_plantas.py con fondo
   // blanco, docs/plan-renders-931.md Fase C); misma cámara para todos los pisos
   const niveles = []
@@ -240,7 +245,7 @@ async function main() {
       descripcion:
         'Edificio entre medianeras de planta baja y 4 pisos. Por piso, un 3 ambientes y un 2 ambientes al frente, con balcón; en planta baja, un 4 ambientes con patio propio. Fachada de revoque gris y crema con una franja vertical de listones de madera.',
       legal: LEGAL,
-      intro: { poster: izquierda.id, nubes: false },
+      intro: { poster: inicio.id, nubes: false },
       giro: [
         { etiqueta: 'Frente', imagen: izquierda.id },
         { etiqueta: 'Frente derecha', imagen: derecha.id },

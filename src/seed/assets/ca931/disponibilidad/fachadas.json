@@ -1,0 +1,40 @@
+{
+  "ancho": 1672,
+  "alto": 941,
+  "vistas": [
+    {
+      "camara": "foto",
+      "etiqueta": "Frente",
+      "imagen": "frente.webp",
+      "mascara": "mascara-frente.svg",
+      "unidades": [
+        "4A",
+        "4B",
+        "3A",
+        "3B",
+        "2A",
+        "2B",
+        "1A",
+        "1B",
+        "PB"
+      ]
+    },
+    {
+      "camara": "foto",
+      "etiqueta": "Frente derecha",
+      "imagen": "frente-derecha.webp",
+      "mascara": "mascara-frente-derecha.svg",
+      "unidades": [
+        "4A",
+        "4B",
+        "3A",
+        "3B",
+        "2A",
+        "2B",
+        "1A",
+        "1B",
+        "PB"
+      ]
+    }
+  ]
+}
