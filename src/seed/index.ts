@@ -156,6 +156,7 @@ async function main() {
   const atardecer = await subir('atardecer.webp', `Fachada de ${NOMBRE} al atardecer, con las luces encendidas`)
   const acceso = await subir('acceso.webp', 'Acceso peatonal con la columna de piedra y el número 931')
   const inicio = await subir('inicio.webp', `Fachada de ${NOMBRE} desde la calle arbolada, de día`)
+  const favicon = await subir('favicon.svg', 'Monograma de Male Group S.A.')
   const galeria = [
     { imagen: izquierda.id, epigrafe: 'Fachada' },
     { imagen: derecha.id, epigrafe: 'Desde la vereda de enfrente' },
@@ -227,6 +228,7 @@ async function main() {
       colorFondo: '#111214',
       tipografia: 'inter',
       tema: 'oscuro',
+      favicon: favicon.id,
       desarrolladora: { nombre: 'Male Group S.A.' },
       secciones: {
         disponibilidad: true,

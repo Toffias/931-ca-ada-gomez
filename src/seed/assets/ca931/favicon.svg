@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 -280 1476 1476">
+  <!-- Monograma de Male Group S.A. (sin la leyenda, que no se lee a 16 px). En pestañas oscuras pasa a blanco. -->
+  <style>
+    .tinta { fill: #000 }
+    @media (prefers-color-scheme: dark) { .tinta { fill: #fff } }
+  </style>
+  <rect class="tinta" x="60" y="74" width="133" height="735"/>
+  <path class="tinta" d="M203 74h7l392 407-92 97-307-323z"/>
+  <path class="tinta" d="M970 81v209L496 809H307z"/>
+  <path class="tinta" d="M981 74h429v125h-293v188h281v125h-281v185h273l106 112H981z"/>
+  <path fill="#f00" d="M727 579h242v55H745l-58 63h-70z"/>
+</svg>
