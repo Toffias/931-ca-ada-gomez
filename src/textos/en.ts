@@ -368,6 +368,7 @@ export const en: Textos = {
 
   intro: {
     entrega: (fecha) => `Delivery ${fecha}`,
+    saltar: 'Skip',
   },
 
   visor3d: {

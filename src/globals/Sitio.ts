@@ -21,8 +21,10 @@ const imagenes = (name: string, label: string): Field => ({
 // valores iniciales por idioma: si no, el inglés arrancaría con el texto en castellano
 const MOTIVOS_ES = ['Quiero comprar', 'Quiero invertir', 'Soy inmobiliaria', 'Otro']
 const MOTIVOS_EN = ['I want to buy', 'I want to invest', "I'm a real estate agent", 'Other']
-const LEGAL_ES = 'Imágenes ilustrativas, no contractuales. Precios y disponibilidad sujetos a cambios.'
-const LEGAL_EN = 'Images are for illustration only and not contractual. Prices and availability subject to change.'
+const LEGAL_ES =
+  'Las imágenes, renders, videos y planos exhibidos son meramente ilustrativos, no contractuales, y el emprendimiento terminado podrá diferir de lo representado. Medidas, materiales y terminaciones sujetos a modificaciones. Precios y disponibilidad sujetos a cambios sin previo aviso.'
+const LEGAL_EN =
+  'All images, renderings, videos and floor plans shown are for illustration only and not contractual; the finished development may differ from what is shown. Dimensions, materials and finishes are subject to change. Prices and availability are subject to change without notice.'
 
 export const SECCIONES = [
   { name: 'disponibilidad', label: 'Disponibilidad en fachada' },
@@ -212,6 +214,16 @@ export const Sitio: GlobalConfig = {
                     { name: 'videoMovil', label: 'Video vertical (celular)', type: 'upload', relationTo: 'media' },
                     { name: 'poster', label: 'Póster / imagen de fondo', type: 'upload', relationTo: 'media' },
                   ],
+                },
+                {
+                  name: 'videoEntrada',
+                  label: 'Video al tocar "Entrar" (MP4)',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description:
+                      'Sólo con imagen de fondo (sin video). Tiene que arrancar en el mismo cuadro que el póster: al tocar "Entrar" se reproduce encima y al terminar pasa a la pantalla siguiente. Sin audio y corto (5–12 s).',
+                  },
                 },
                 {
                   name: 'nubes',

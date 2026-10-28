@@ -384,6 +384,7 @@ export const es = {
 
   intro: {
     entrega: (fecha: string) => `Entrega ${fecha}`,
+    saltar: 'Saltar',
   },
 
   visor3d: {

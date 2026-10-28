@@ -1205,6 +1205,10 @@ export interface Sitio {
     videoMovil?: (number | null) | Media;
     poster?: (number | null) | Media;
     /**
+     * Sólo con imagen de fondo (sin video). Tiene que arrancar en el mismo cuadro que el póster: al tocar "Entrar" se reproduce encima y al terminar pasa a la pantalla siguiente. Sin audio y corto (5–12 s).
+     */
+    videoEntrada?: (number | null) | Media;
+    /**
      * Sólo con imagen de fondo (sin video). El cielo se detecta solo en la imagen; apagarlo si el render ya trae nubes.
      */
     nubes?: boolean | null;
@@ -1340,6 +1344,7 @@ export interface SitioSelect<T extends boolean = true> {
         video?: T;
         videoMovil?: T;
         poster?: T;
+        videoEntrada?: T;
         nubes?: T;
       };
   giro?:

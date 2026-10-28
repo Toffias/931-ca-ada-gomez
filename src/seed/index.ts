@@ -23,9 +23,11 @@ const asset = (f: string) => path.resolve(dirname, 'assets', 'ca931', f)
 const NOMBRE = 'Cañada de Gómez 931'
 const SLUG = 'canada-de-gomez-931'
 
-// Disclaimer tal cual viene en los planos del cliente
+// Disclaimer de los planos del cliente, reforzado: las imágenes de la web son referencia, no compromiso
 const LEGAL =
-  'Los planos e imágenes exhibidos corresponden a etapa de anteproyecto, las medidas, materiales y terminaciones podrán ser modificados durante el desarrollo y hasta la aprobación del plano conforme a obra.'
+  'Las imágenes, renders, recorridos virtuales, videos, planos y modelos 3D exhibidos en este sitio son meramente ilustrativos y de carácter orientativo, y no constituyen documentación contractual ni oferta vinculante. Corresponden a la etapa de anteproyecto: el emprendimiento terminado podrá diferir de lo representado. Las medidas, superficies, materiales, terminaciones, colores, equipamiento, parquización y entorno podrán ser modificados por la desarrolladora durante el desarrollo de la obra y hasta la aprobación del plano conforme a obra. El mobiliario, los artefactos y la decoración mostrados no están incluidos salvo que se indique expresamente en el boleto de compraventa. Precios y disponibilidad sujetos a cambios sin previo aviso.'
+const LEGAL_EN =
+  'All images, renderings, virtual tours, videos, floor plans and 3D models shown on this website are for illustration and guidance only and do not constitute contractual documentation or a binding offer. They correspond to the preliminary design stage: the finished development may differ from what is shown. Dimensions, areas, materials, finishes, colors, fittings, landscaping and surroundings may be modified by the developer during construction and until approval of the as-built plans. Furniture, appliances and decoration shown are not included unless expressly stated in the purchase agreement. Prices and availability are subject to change without notice.'
 
 const DATOS_EDIFICIO = {
   nombre: NOMBRE,
@@ -156,6 +158,8 @@ async function main() {
   const atardecer = await subir('atardecer.webp', `Fachada de ${NOMBRE} al atardecer, con las luces encendidas`)
   const acceso = await subir('acceso.webp', 'Acceso peatonal con la columna de piedra y el número 931')
   const inicio = await subir('inicio.webp', `Fachada de ${NOMBRE} desde la calle arbolada, de día`)
+  // arranca en el mismo cuadro que inicio.webp y avanza hasta el hall (sin audio, con faststart)
+  const entrada = await subir('entrada.mp4', `Recorrido desde la calle hasta el hall de ${NOMBRE}`)
   const favicon = await subir('favicon.svg', 'Monograma de Male Group S.A.')
   const galeria = [
     { imagen: izquierda.id, epigrafe: 'Fachada' },
@@ -247,7 +251,7 @@ async function main() {
       descripcion:
         'Edificio entre medianeras de planta baja y 4 pisos. Por piso, un 3 ambientes y un 2 ambientes al frente, con balcón; en planta baja, un 4 ambientes con patio propio. Fachada de revoque gris y crema con una franja vertical de listones de madera.',
       legal: LEGAL,
-      intro: { poster: inicio.id, nubes: false },
+      intro: { poster: inicio.id, videoEntrada: entrada.id, nubes: false },
       giro: [
         { etiqueta: 'Frente', imagen: izquierda.id },
         { etiqueta: 'Frente derecha', imagen: derecha.id },
@@ -256,6 +260,7 @@ async function main() {
       ubicacion: { direccion: 'Cañada de Gómez 931', cercanias: [] },
     },
   })
+  await payload.updateGlobal({ slug: 'sitio', locale: 'en', data: { legal: LEGAL_EN } })
 
   const edificio = await payload.create({
     collection: 'edificios',

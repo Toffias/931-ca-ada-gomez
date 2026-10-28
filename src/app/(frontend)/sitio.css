@@ -327,6 +327,16 @@ a.boton-icono { display: grid; place-items: center; color: var(--texto); }
 .intro-eslogan { margin: 0 0 10px; font-size: clamp(16px, 2vw, 20px); color: #e3e7ed; max-width: 560px; text-shadow: 0 2px 16px rgba(0,0,0,.5); }
 .intro-contenido .boton.grande { min-width: 180px; padding: 14px 34px; border-radius: 99px; font-size: 16px; letter-spacing: .5px; }
 .intro-firma { position: absolute; bottom: calc(18px + env(safe-area-inset-bottom)); left: 0; right: 0; margin: 0; text-align: center; font-size: 12px; color: rgba(255,255,255,.65); z-index: 2; }
+/* video de entrada (IntroConEntrada): aparece encima del fondo apenas arranca y el texto y el velo se apagan */
+.intro-entrada { z-index: 1; opacity: 0; transition: opacity .45s ease; pointer-events: none; }
+.intro-entrada.visible { opacity: 1; }
+.intro.entrando .intro-contenido, .intro.entrando .intro-firma { animation: desvanecer .4s ease forwards; pointer-events: none; }
+.intro-velo { transition: opacity .8s ease; }
+.intro.entrando .intro-velo { opacity: 0; }
+.intro-saltar { position: absolute; z-index: 3; right: 20px; bottom: calc(18px + env(safe-area-inset-bottom)); padding: 8px 16px;
+  border: 1px solid rgba(255,255,255,.35); border-radius: 99px; background: rgba(8,10,14,.35); color: var(--texto-imagen);
+  font: inherit; font-size: 13px; letter-spacing: .4px; cursor: pointer; backdrop-filter: blur(6px); animation: desvanecer .5s ease 1.2s reverse both; }
+.intro-saltar:hover { background: rgba(8,10,14,.55); }
 
 /* ---------- giro 360 ---------- */
 .pantalla-giro { background: #000; }
