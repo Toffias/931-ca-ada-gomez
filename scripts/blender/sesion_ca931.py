@@ -168,6 +168,8 @@ def previa(nombre, camara, giro=0.0, muestras=128, lente=14, ancho=960, alto=540
         _preparar_recorrido(rr, cambios)
         rr["preparar_render"](cambios, esc, True)
         rr["preparar_ambiente"](cambios, esc, todos)
+        prefijo = "Pano_" + camara.split("_")[1] + "_"
+        cambios.deshacer.append(rr["aire_con_luz"]([o for o in todos if o.name.startswith(prefijo)]))
         cambios.fijar(esc.cycles, "samples", muestras)
         cambios.fijar(esc.render, "resolution_x", ancho)
         cambios.fijar(esc.render, "resolution_y", alto)

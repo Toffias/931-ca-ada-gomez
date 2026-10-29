@@ -363,6 +363,8 @@ export const es = {
     sinPanoramas: 'Este recorrido todavía no tiene panoramas.',
     recorridos: 'Recorridos',
     ambientes: 'Ambientes del recorrido',
+    momento: 'Momento del día',
+    momentos: { actual: 'Actual', dia: 'Día', atardecer: 'Atardecer', noche: 'Noche' },
     // botones del visor de panoramas (Photo Sphere Viewer)
     visor: {
       zoom: 'Zoom',

@@ -348,6 +348,8 @@ export const en: Textos = {
     sinPanoramas: "This tour doesn't have any panoramas yet.",
     recorridos: 'Tours',
     ambientes: 'Rooms in the tour',
+    momento: 'Time of day',
+    momentos: { actual: 'Current', dia: 'Day', atardecer: 'Sunset', noche: 'Night' },
     visor: {
       zoom: 'Zoom',
       zoomOut: 'Zoom out',

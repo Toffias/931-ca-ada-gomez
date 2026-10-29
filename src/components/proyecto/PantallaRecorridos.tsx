@@ -6,7 +6,7 @@ import type { Imagen } from '@/lib/tipos'
 
 import { Icono } from '../ui/Icono'
 import { useRutas, useTextos } from '../ui/ProveedorIdioma'
-import { type PuntoRecorrido, VisorRecorrido } from './VisorRecorrido'
+import { type PuntoRecorrido, type VarianteRecorrido, VisorRecorrido } from './VisorRecorrido'
 
 export type RecorridoPublico = {
   slug: string
@@ -17,7 +17,17 @@ export type RecorridoPublico = {
   puntos: PuntoRecorrido[]
 }
 
-export function PantallaRecorridos({ recorridos, actual, punto }: { recorridos: RecorridoPublico[]; actual: RecorridoPublico; punto?: string }) {
+export function PantallaRecorridos({
+  recorridos,
+  actual,
+  punto,
+  variantes,
+}: {
+  recorridos: RecorridoPublico[]
+  actual: RecorridoPublico
+  punto?: string
+  variantes?: VarianteRecorrido[]
+}) {
   const rutas = useRutas()
   const t = useTextos().recorridos
   return (
@@ -29,6 +39,7 @@ export function PantallaRecorridos({ recorridos, actual, punto }: { recorridos: 
           key={actual.slug}
           puntos={actual.puntos}
           inicial={punto}
+          variantes={variantes}
           plano={actual.plano ? { url: actual.plano.chica, alt: actual.plano.alt } : null}
           onCambio={(clave) => window.history.replaceState(null, '', rutas.recorridos(actual.slug, clave))}
         />

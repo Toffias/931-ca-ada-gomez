@@ -260,6 +260,12 @@ pnpm cargar:recorridos "<…>/web/recorridos/unidad-a" <slug-torre> A2,B2,C1,C2,
 - `--sin-plano` dejaba `"plano": null` en el JSON aunque la imagen existiera (el cargador no la subía).
 - `awk length` cuenta bytes: para buscar líneas > 120 caracteres usar Python.
 
+## Luz cinematográfica (haces de sol, momentos del día)
+
+`renders_recorrido.py` acepta `haces`, `polvo` y `aire_caja` en la primera cámara, y el visor, `variantes` (día /
+atardecer / noche). Qué valores funcionaron, qué no (el polvo en imagen fija) y cuánto cuesta: skill de usuario
+`luz-cinematografica`. Leerla antes de tocar la luz.
+
 ## Alcance y pendientes
 
 - Hecho sólo la unidad A. Las B, C y D son espejo: cada tipología distinta necesita su recorrido (~2 h de render).

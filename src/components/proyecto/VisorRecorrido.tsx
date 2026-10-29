@@ -15,27 +15,38 @@ export type PuntoRecorrido = {
   titulo: string
   rumbo: number
   panorama: string | null
+  // la misma toma en otro momento del día (clave de `variantes` → panorámica); sin ella se ve `panorama`
+  panoramas?: Record<string, string | null>
   x?: number | null
   y?: number | null
   enlaces: string[]
 }
 
+export type VarianteRecorrido = { clave: string; titulo: string }
+
 type Props = {
   puntos: PuntoRecorrido[]
   inicial?: string
   plano?: { url: string; alt: string } | null
+  // momentos del día (día, atardecer, noche…): la primera es la de `panorama`
+  variantes?: VarianteRecorrido[]
   onCambio?: (clave: string) => void
 }
 
+const panoramaDe = (p: PuntoRecorrido, variante?: string) => (variante && p.panoramas?.[variante]) || p.panorama
+
 // Recorrido 360 propio (spec L): panoramas equirectangulares. Se pasa de un punto a otro con la lista de ambientes
 // o con los puntos del plano, no con flechas en el piso: según dónde quedaba la cámara se superponían.
-export function VisorRecorrido({ puntos, inicial, plano, onCambio }: Props) {
+export function VisorRecorrido({ puntos, inicial, plano, variantes = [], onCambio }: Props) {
   const t = useTextos()
   const textos = useRef(t)
   textos.current = t
   const caja = useRef<HTMLDivElement>(null)
   const tour = useRef<VirtualTourPlugin | null>(null)
   const [actual, setActual] = useState(inicial ?? puntos[0]?.clave)
+  const [variante, setVariante] = useState(variantes[0]?.clave)
+  const varianteRef = useRef(variante)
+  varianteRef.current = variante
   const onCambioRef = useRef(onCambio)
   onCambioRef.current = onCambio
 
@@ -53,7 +64,7 @@ export function VisorRecorrido({ puntos, inicial, plano, onCambio }: Props) {
       const inicio = puntos.find((p) => p.clave === inicial) ?? puntos[0]
       const nodos: VirtualTourNode[] = puntos.map((p) => ({
         id: p.clave,
-        panorama: p.panorama,
+        panorama: panoramaDe(p, varianteRef.current),
         name: p.titulo,
         caption: p.titulo,
         // rumbo = hacia dónde mira el centro de la panorámica; girándola al revés, el norte queda en yaw 0
@@ -69,7 +80,18 @@ export function VisorRecorrido({ puntos, inicial, plano, onCambio }: Props) {
         lang: textos.current.recorridos.visor,
         plugins: [
           MarkersPlugin,
-          [VirtualTourPlugin, { positionMode: 'manual', renderMode: '3d', nodes: nodos, startNodeId: inicio.clave }],
+          [
+            VirtualTourPlugin,
+            {
+              positionMode: 'manual',
+              renderMode: '3d',
+              nodes: nodos,
+              startNodeId: inicio.clave,
+              // cambiar el momento del día recarga el mismo punto: fundido sin girar ni mostrar el cargador
+              transitionOptions: (destino: VirtualTourNode, origen?: VirtualTourNode) =>
+                origen?.id === destino.id ? { showLoader: false, speed: 900, rotation: false, effect: 'fade' } : {},
+            },
+          ],
         ],
       })
       const vt = viewer.getPlugin<VirtualTourPlugin>(VirtualTourPlugin)
@@ -90,9 +112,26 @@ export function VisorRecorrido({ puntos, inicial, plano, onCambio }: Props) {
   }, [puntos])
 
   const ir = (clave: string) => tour.current?.setCurrentNode(clave)
+  const cambiarVariante = (clave: string) => {
+    setVariante(clave)
+    // el punto actual va último: updateNode lo recarga en el momento
+    for (const p of [...puntos.filter((p) => p.clave !== actual), ...puntos.filter((p) => p.clave === actual)]) {
+      const panorama = panoramaDe(p, clave)
+      if (panorama) tour.current?.updateNode({ id: p.clave, panorama })
+    }
+  }
   return (
     <div className="recorrido">
       <div ref={caja} className="recorrido-visor" />
+      {variantes.length > 1 && (
+        <div className="recorrido-variantes" role="group" aria-label={t.recorridos.momento}>
+          {variantes.map((v) => (
+            <button key={v.clave} className={v.clave === variante ? 'activo' : undefined} aria-pressed={v.clave === variante} onClick={() => cambiarVariante(v.clave)}>
+              {v.titulo}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="recorrido-panel">
         {puntos.length > 1 && (
           <nav className="recorrido-lista" aria-label={t.recorridos.ambientes}>

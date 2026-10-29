@@ -68,6 +68,15 @@ INVISIBLES = ("WEB_Luz_Interior",)  # tiras que iluminan la fachada de noche: de
 FACHADAS = ("WEB_Fachada",)        # muros de fachada: del lado de adentro de los vidrios se pintan como las paredes
 PARED = "WEB_Pared_Interior"
 FACHADA_ESPESOR = 0.15             # metros hacia adentro de los vidrios que todavía son fachada (antepechos, dinteles)
+# aire con luz: una bruma muy tenue en la unidad hace visibles los haces de sol que entran por las ventanas, y las
+# motas de polvo sólo brillan adentro del haz (como el polvo de verdad). Sólo en las panorámicas, no en el plano
+HACES = 0.0                        # densidad del aire por metro (0 = sin haces; 0,02–0,05 se nota sin velar)
+ANISOTROPIA = 0.85
+POLVO = 0.0                        # motas por m³ (0 = sin polvo)
+MOTA = 0.0015                      # metros de radio de cada mota (a 1–2 m de la cámara, uno o dos píxeles)
+OPACIDAD_MOTA = 0.25
+AIRE_CAJA = None                   # (x0, y0, x1, y1) en metros: dónde hay aire; None = las cámaras ± AIRE_MARGEN
+AIRE_MARGEN = 1.0
 SALIDA = "//web/recorridos"
 CALIDAD = 88
 
@@ -220,7 +229,8 @@ def preparar_render(cambios, escena, prueba):
     # el indirecto recortado para que no queden "luciérnagas"
     for attr, valor in (("use_adaptive_sampling", True), ("adaptive_threshold", UMBRAL_RUIDO),
                         ("max_bounces", 16), ("diffuse_bounces", 8), ("glossy_bounces", 8),
-                        ("transmission_bounces", 12), ("transparent_max_bounces", 32), ("volume_bounces", 0),
+                        ("transmission_bounces", 12), ("transparent_max_bounces", 32),
+                        ("volume_bounces", 1 if HACES > 0 else 0),  # con 0 el aire no recibe ni el sol directo
                         ("caustics_reflective", False), ("caustics_refractive", False), ("blur_glossy", 1.0),
                         ("sample_clamp_direct", 0.0), ("sample_clamp_indirect", 10.0),
                         ("use_denoising", True), ("denoiser", "OPENIMAGEDENOISE"),
@@ -269,7 +279,16 @@ def preparar_ambiente(cambios, escena, todos):
         nt.links.new(nt.nodes.new("ShaderNodeLightPath").outputs["Is Camera Ray"], mezcla.inputs["Factor"])
         nt.links.new(recorte.outputs[0], next(x for x in mezcla.inputs if x.name == "A" and x.type == "RGBA"))
         nt.links.new(tex.outputs["Color"], next(x for x in mezcla.inputs if x.name == "B" and x.type == "RGBA"))
-        nt.links.new(next(x for x in mezcla.outputs if x.type == "RGBA"), fondo.inputs["Color"])
+        color = next(x for x in mezcla.outputs if x.type == "RGBA")
+        if HACES > 0:
+            # la bruma la ilumina sólo el sol: con el cielo también, vela todo parejo y el haz no se distingue
+            sin_cielo = nt.nodes.new("ShaderNodeMix")
+            sin_cielo.data_type = "RGBA"
+            nt.links.new(nt.nodes.new("ShaderNodeLightPath").outputs["Is Volume Scatter Ray"], sin_cielo.inputs["Factor"])
+            nt.links.new(color, next(x for x in sin_cielo.inputs if x.name == "A" and x.type == "RGBA"))
+            next(x for x in sin_cielo.inputs if x.name == "B" and x.type == "RGBA").default_value = (0, 0, 0, 1)
+            color = next(x for x in sin_cielo.outputs if x.type == "RGBA")
+        nt.links.new(color, fondo.inputs["Color"])
         cambios.fijar(escena, "world", mundo)
         imagen = tex.image
 
@@ -324,6 +343,108 @@ def preparar_ambiente(cambios, escena, todos):
             if m and m.name in temporales:
                 o.data.materials[i] = temporales[m.name]
                 cambios.deshacer.append(lambda d=o.data, i=i, m=m: d.materials.__setitem__(i, m))
+
+
+def aire_con_luz(camaras):
+    """
+    bruma y polvo dentro de la unidad (HACES, POLVO); devuelve la función que los saca. La caja va de piso a
+    techo: por la ventana se sigue viendo la ciudad limpia y el sol sólo se ve como haz adentro
+    """
+    if HACES <= 0 and POLVO <= 0:
+        return lambda: None
+    import random
+    pos = [c.matrix_world.translation for c in camaras]
+    m = AIRE_MARGEN / ESCALA
+    x0, y0, x1, y1 = ([v / ESCALA for v in AIRE_CAJA] if AIRE_CAJA else
+                      (min(p.x for p in pos) - m, min(p.y for p in pos) - m,
+                       max(p.x for p in pos) + m, max(p.y for p in pos) + m))
+    ojo = min(p.z for p in pos)
+    z0, z1 = ojo - 1.55 / ESCALA, ojo + 0.85 / ESCALA
+    col = bpy.data.collections.new("_Aire_Recorrido")
+    bpy.context.scene.collection.children.link(col)
+    creados = []
+
+    if HACES > 0:
+        mat = bpy.data.materials.new("_Aire")
+        mat.use_nodes = True
+        nt = mat.node_tree
+        nt.nodes.clear()
+        vol = nt.nodes.new("ShaderNodeVolumePrincipled")
+        vol.inputs["Density"].default_value = HACES * ESCALA  # por unidad de Blender
+        # el polvo dispersa casi todo hacia adelante: el haz brilla a contraluz y la luz que rebota del piso (que
+        # viene de abajo) casi no vela
+        vol.inputs["Anisotropy"].default_value = ANISOTROPIA
+        nt.links.new(vol.outputs[0], nt.nodes.new("ShaderNodeOutputMaterial").inputs["Volume"])
+        if hasattr(getattr(mat, "cycles", None), "homogeneous_volume"):  # Blender 5 lo detecta solo
+            mat.cycles.homogeneous_volume = True
+        malla = bpy.data.meshes.new("_Aire")
+        bm = bmesh.new()
+        bmesh.ops.create_cube(bm, size=1.0)
+        bm.to_mesh(malla)
+        bm.free()
+        malla.materials.append(mat)
+        o = bpy.data.objects.new("_Aire", malla)
+        o.location = ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)
+        o.scale = (x1 - x0, y1 - y0, z1 - z0)
+        col.objects.link(o)
+        creados += [o, malla, mat]
+
+    if POLVO > 0:
+        volumen = (x1 - x0) * (y1 - y0) * (z1 - z0) * ESCALA ** 3
+        azar = random.Random(931)
+        lejos = (0.5 / ESCALA) ** 2  # pegada a la cámara, una mota es una mancha
+        puntos = []
+        for _ in range(int(volumen * POLVO)):
+            v = Vector((azar.uniform(x0, x1), azar.uniform(y0, y1), azar.uniform(z0, z1)))
+            if all((v - p).length_squared > lejos for p in pos):
+                puntos.append(v)
+        nube = bpy.data.meshes.new("_Polvo")
+        nube.from_pydata(puntos, [], [])
+        mota = bpy.data.meshes.new("_Mota")
+        bm = bmesh.new()
+        bmesh.ops.create_icosphere(bm, subdivisions=1, radius=MOTA / ESCALA)
+        bm.to_mesh(mota)
+        bm.free()
+        mat = bpy.data.materials.new("_Mota")
+        mat.use_nodes = True
+        nt = mat.node_tree
+        nt.nodes.clear()
+        bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
+        bsdf.inputs["Base Color"].default_value = (0.9, 0.88, 0.85, 1)
+        bsdf.inputs["Roughness"].default_value = 1.0
+        # casi transparente: en sombra no se distingue del fondo (si no, parecen manchas de suciedad) y en el haz,
+        # con el sol diez veces más fuerte que la luz rebotada, brilla
+        mezcla = nt.nodes.new("ShaderNodeMixShader")
+        mezcla.inputs[0].default_value = OPACIDAD_MOTA
+        nt.links.new(nt.nodes.new("ShaderNodeBsdfTransparent").outputs[0], mezcla.inputs[1])
+        nt.links.new(bsdf.outputs[0], mezcla.inputs[2])
+        nt.links.new(mezcla.outputs[0], nt.nodes.new("ShaderNodeOutputMaterial").inputs["Surface"])
+        mota.materials.append(mat)
+        o_nube = bpy.data.objects.new("_Polvo", nube)
+        o_mota = bpy.data.objects.new("_Mota", mota)
+        o_mota.parent = o_nube
+        o_nube.instance_type = "VERTS"  # una mota en cada vértice, sin duplicar la malla
+        col.objects.link(o_nube)
+        col.objects.link(o_mota)
+        creados += [o_nube, o_mota, nube, mota, mat]
+
+    def sacar():
+        for d in creados:
+            try:
+                if isinstance(d, bpy.types.Object):
+                    bpy.data.objects.remove(d, do_unlink=True)
+                elif isinstance(d, bpy.types.Mesh):
+                    bpy.data.meshes.remove(d)
+                else:
+                    bpy.data.materials.remove(d)
+            except ReferenceError:
+                pass  # ya se sacó
+        creados.clear()
+        try:
+            bpy.data.collections.remove(col)
+        except ReferenceError:
+            pass
+    return sacar
 
 
 def sol_del_hdri(imagen):
@@ -564,6 +685,11 @@ def configurar(primera):
         SOL_RUMBO = float(primera["sol_rumbo"])
     if "sol_altura" in primera:
         SOL_ALTURA = float(primera["sol_altura"])
+    global HACES, POLVO, AIRE_CAJA
+    HACES = float(primera.get("haces", HACES))
+    POLVO = float(primera.get("polvo", POLVO))
+    if primera.get("aire_caja"):
+        AIRE_CAJA = tuple(float(v) for v in str(primera["aire_caja"]).split(","))
 
 
 def ocultar_sobrantes(cambios, todos):
@@ -626,10 +752,13 @@ def main():
                 })
                 print(f"  {recorrido}/{clave}: rumbo {rumbo_de(cam):g}° → {', '.join(enlaces[clave]) or '—'}")
             if not solo_datos:
+                sacar_aire = aire_con_luz([c for _, c in puntos])
+                cambios.deshacer.append(sacar_aire)  # si se corta a mitad de la tanda
                 for clave, cam in puntos:
                     if puntos_pedidos and clave not in puntos_pedidos:
                         continue
                     render_panorama(cambios, escena, cam, os.path.join(carpeta, f"{clave}.webp"), ancho)
+                sacar_aire()  # el plano se ve desde arriba: sin bruma
                 if not sin_plano:
                     z_corte = min(c.matrix_world.translation.z for _, c in puntos) - ALTURA_CORTE / ESCALA
                     render_plano(cambios, escena, todos, centro, lado, z_corte, os.path.join(carpeta, "plano.webp"),
