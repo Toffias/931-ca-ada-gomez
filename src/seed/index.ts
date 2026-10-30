@@ -51,19 +51,21 @@ const DATOS_EDIFICIO = {
   },
 }
 
-// Tipologías del anteproyecto (opción 2). Superficies del plano; el patio de la PB no es balcón, va en la descripción.
+// Tipologías del anteproyecto (planos corregidos). Superficies del plano; el patio y la expansión de la PB no son
+// balcón, van en la descripción.
 const TIPOLOGIAS = {
   PB: {
     nombre: '4 ambientes con patio',
     dormitorios: 3,
     banos: 2,
     ambientes: 4,
-    superficieInterna: 90.5,
-    superficieTotal: 121.8,
+    superficieInterna: 89,
+    superficieTotal: 121.9,
     extras: [] as ('balcon' | 'lavadero')[],
     descripcion:
-      'Planta baja de 4 ambientes con patio propio de 31,30 m² al contrafrente. Living comedor y cocina con desayunador abiertos al patio, tres dormitorios y dos baños. 90,50 m² cubiertos.',
+      'Planta baja de 4 ambientes con patio propio de 31,30 m² al contrafrente. Living comedor y cocina con desayunador abiertos al patio, tres dormitorios (uno con expansión al frente) y dos baños. 89,00 m² cubiertos.',
     planta2d: ['planta-pb-2d.png', 'Plano de la unidad de planta baja'],
+    planta3d: ['planta-pb-3d.webp', 'Planta 3D amueblada de la planta baja, con el patio'],
   },
   A: {
     nombre: '3 ambientes con balcón',
@@ -71,12 +73,13 @@ const TIPOLOGIAS = {
     banos: 2,
     ambientes: 3,
     superficieInterna: 69.5,
-    superficieBalcon: 6.8,
-    superficieTotal: 76.3,
+    superficieBalcon: 6.9,
+    superficieTotal: 76.4,
     extras: ['balcon'] as ('balcon' | 'lavadero')[],
     descripcion:
       'Departamento de 3 ambientes al frente, con balcón de baranda de vidrio. Living comedor y cocina con desayunador hacia el balcón, dos dormitorios al contrafrente y dos baños.',
     planta2d: ['planta-3amb-2d.png', 'Plano del 3 ambientes (pisos 1 a 4)'],
+    planta3d: ['planta-3amb-3d.webp', 'Planta 3D amueblada del 3 ambientes (pisos 1 a 4)'],
   },
   B: {
     nombre: '2 ambientes con balcón',
@@ -84,12 +87,13 @@ const TIPOLOGIAS = {
     banos: 1,
     ambientes: 2,
     superficieInterna: 49,
-    superficieBalcon: 4.9,
-    superficieTotal: 53.9,
+    superficieBalcon: 4.3,
+    superficieTotal: 53.3,
     extras: ['balcon'] as ('balcon' | 'lavadero')[],
     descripcion:
       'Departamento de 2 ambientes al frente, con balcón. Living comedor con cocina integrada, dormitorio al contrafrente y baño.',
     planta2d: ['planta-2amb-2d.png', 'Plano del 2 ambientes (pisos 1 a 4)'],
+    planta3d: ['planta-2amb-3d.webp', 'Planta 3D amueblada del 2 ambientes (pisos 1 a 4)'],
   },
 }
 const tipologiaDe = (codigo: string): keyof typeof TIPOLOGIAS => (codigo === 'PB' ? 'PB' : codigo.endsWith('A') ? 'A' : 'B')
@@ -279,7 +283,9 @@ async function main() {
   const tipologias = new Map<string, number>()
   for (const [codigo, t] of Object.entries(TIPOLOGIAS)) {
     const [archivo, alt] = t.planta2d
-    const { planta2d: _, ...datos } = t
+    const { planta2d: _, ...datos } = 'planta3d' in t ? (({ planta3d: __, ...resto }) => resto)(t) : t
+    // planta 3D del cliente (render amueblado de la planta tipo, recortado por unidad): el "3D" del switch de la ficha
+    const planta3d = 'planta3d' in t && fs.existsSync(asset(t.planta3d[0])) ? (await subir(t.planta3d[0], t.planta3d[1])).id : undefined
     const doc = await payload.create({
       collection: 'tipologias',
       data: {
@@ -288,6 +294,7 @@ async function main() {
         edificio: edificio.id,
         foto: izquierda.id,
         planta2d: (await subir(archivo, alt)).id,
+        planta: planta3d,
         galeria,
         recorrido: recorridos.get(codigo as keyof typeof TIPOLOGIAS),
       },

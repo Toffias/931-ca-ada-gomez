@@ -25,7 +25,7 @@ def materiales_vestidos():
     pbr, liso = vi["pbr"], vi["liso"]
     pbr("INT_Muro", "pared", color_fijo=(0.8, 0.795, 0.78), rugosidad=(0.6, 0.85), normal=0.12)
     pbr("INT_Madera", "madera_piso", rugosidad=(0.25, 0.55), normal=0.5)
-    pbr("INT_Ceramica", "marmol", color_fijo=(0.7, 0.69, 0.66), rugosidad=(0.04, 0.3), normal=1.4)
+    pbr("INT_Ceramica", "marmol", color_fijo=(0.27, 0.255, 0.235), rugosidad=(0.2, 0.5), normal=0.6)   # porcelanato gris piedra (cliente)
     pbr("INT_Comun", "marmol", tinte=(0.6, 0.6, 0.59), rugosidad=(0.1, 0.35))
     pbr("INT_Ducha", "marmol", color_fijo=(0.32, 0.32, 0.31), rugosidad=(0.05, 0.3), normal=1.6)
     pbr("INT_Madera_Mueble", "roble", rugosidad=(0.35, 0.6), normal=0.3)
@@ -136,7 +136,7 @@ def estar(p, mats, a, d, giro, alfombra_):
 def sueltos_tipo(p, mats):
     # 3 ambientes (A)
     mesa_rect(p, mats, 0.75, 1.6, 1.0, 2.6)
-    estar(p, mats, 0.2, 5.4, 90, (0.95, 2.75, 4.35, 6.45))
+    estar(p, mats, 0.2, 5.3, 90, (0.95, 2.75, 4.25, 6.3))   # el estar termina en 6,40 (planos corregidos)
     banquetas(p, mats, [(2.75, 0.95), (2.75, 1.5), (2.75, 2.05)])
     # principal y dormitorio 2 con la cabecera contra la medianera y contra el muro con B, como en el plano
     cama(p, mats, 0.15, 14.0, -90, 1.6, True)
@@ -156,9 +156,9 @@ def sueltos_tipo(p, mats):
 
 
 def modelos_tipo(col, z, piso):
-    modelo("modern_coffee_table_01", col, 1.75, 5.4, 90, z, piso)
+    modelo("modern_coffee_table_01", col, 1.75, 5.3, 90, z, piso)
     modelo("potted_plant_04", col, 0.45, 3.4, 0, z, piso)
-    modelo("potted_plant_02", col, 0.45, 6.5, 0, z, piso)
+    modelo("potted_plant_02", col, 0.45, 6.15, 0, z, piso)
     modelo("ceramic_vase_01", col, 1.15, 1.8, 0, z + 0.755, piso)
     modelo("wooden_bowl_01", col, 3.3, 2.1, 0, z + 0.9, piso)
     modelo("modern_coffee_table_01", col, 6.95, 1.85, 90, z, piso)
@@ -168,8 +168,8 @@ def modelos_tipo(col, z, piso):
 
 def sueltos_pb(p, mats):
     # dormitorios 1 y 2: de una plaza, de costado, con la cabecera contra la medianera y contra el hall (plano)
-    cama(p, mats, 0.15, 1.35, -90, 0.9, False)
-    vi["mesa_de_luz"](p, mats, 0.37, 2.05)
+    cama(p, mats, 0.15, 1.45, -90, 0.9, False)   # el 1 empieza en 0,90: adelante queda la expansión
+    vi["mesa_de_luz"](p, mats, 0.37, 2.15)
     cama(p, mats, 5.31, 1.25, 90, 0.9, False)
     vi["mesa_de_luz"](p, mats, 5.09, 1.95)
     # escritorio angosto contra el tabique con el dormitorio 1

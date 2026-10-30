@@ -307,13 +307,22 @@ def planta_baja(col):
     m.caja("WEB_Fachada_Crema", (0.05, 0.15), (0.45, 0.6), (0, ALTO_PB))
     m.caja("WEB_Fachada_Crema", (0.98, 1.05), (0.6, 2.3), (0, ALTO_PB))
     m.caja("WEB_Fachada_Crema", (2.35, 2.45), (0.6, 2.3), (0, ALTO_PB))
-    # izquierda: ventanal de los dormitorios detrás de listones negros, con jardinera baja
-    m.caja("WEB_Vidrio_Local", (X0 + 0.25, 0.05), (0.55, 0.6), (0.45, ALTO_PB - 0.3))
-    m.caja("WEB_Revoque_Gris", (X0 + 0.15, 0.15), (0.05, 0.6), (0, 0.4))
-    for x in (X0 + 1.5, X0 + 3.0):
-        m.esfera("WEB_Planta", x, 0.3, 0.55, 0.3, 0.8)
+    # izquierda, detrás de listones negros: el dormitorio 1 se retira a 0,90 y deja una expansión de 0,70 con
+    # puerta-ventana (plano corregido); el dormitorio 2 tiene ventanal sobre una jardinera baja
+    xd = X0 + 2.47   # tabique entre los dos dormitorios
+    m.caja("WEB_Vidrio_Local", (X0 + 0.25, xd - 0.05), (0.85, 0.9), (0.05, ALTO_PB - 0.3))
+    m.caja("WEB_Revoque_Gris", (X0 + 0.15, xd), (0.85, 0.9), (ALTO_PB - 0.3, ALTO_PB - LOSA_CIELO))
+    # la jardinera de la foto sigue delante de la expansión, más angosta
+    m.caja("WEB_Revoque_Gris", (X0 + 0.15, xd), (0.05, 0.3), (0, 0.4))
+    m.esfera("WEB_Planta", X0 + 1.3, 0.18, 0.5, 0.25, 0.8)
+    m.caja("WEB_Piso_Balcon", (X0 + 0.15, xd), (0.3, 0.85), (0, 0.02))
+    m.caja("WEB_Revoque_Gris", (xd, xd + 0.1), (0.05, 0.6), (0, ALTO_PB))
+    maceta_con_planta(m, X0 + 0.55, 0.6, 0.02)
+    m.caja("WEB_Vidrio_Local", (xd + 0.15, 0.05), (0.55, 0.6), (0.45, ALTO_PB - 0.3))
+    m.caja("WEB_Revoque_Gris", (xd + 0.1, 0.15), (0.05, 0.6), (0, 0.4))
+    m.esfera("WEB_Planta", X0 + 3.4, 0.3, 0.55, 0.3, 0.8)
     listones(m, "WEB_Metal_Negro", X0 + 0.2, 0.1, 0.0, 0.08, 0.4, ALTO_PB - 0.2, ancho=0.08, paso=0.19)
-    m.caja("WEB_Revoque_Gris", (X0, X0 + 0.2), (0, 0.6), (0, ALTO_PB))
+    m.caja("WEB_Revoque_Gris", (X0, X0 + 0.2), (0, 0.9), (0, ALTO_PB))
     # columna de piedra negra con el 931 (los números van aparte); posiciones medidas en la foto
     m.caja("WEB_Piedra_Negra", (0.15, 1.05), (-0.1, 0.6), (0, ALTO_PB))
     # acceso retirado con hall cálido
@@ -399,6 +408,11 @@ def remate(col):
     esquina(m, *z)
     laterales(m, *z)
     m.caja("WEB_Revoque_Claro", (X0 + 0.15, X1 - 0.15), (ESQUINA_FONDO, FONDO), zi)
+    # azotea (plano-azotea.jpg): sala de máquinas del ascensor contra la medianera derecha, sobre el pasadizo, y
+    # salida de la escalera. Alturas supuestas (2,40 libres); en los renders del cliente no se ven
+    zs = (z[1], TECHO + 0.3 + 2.4)
+    m.caja("WEB_Revoque_Claro", (X0 + 3.5, X1 - 0.15), (3.2, 6.18), zs)
+    m.caja("WEB_Revoque_Claro", (X0 + 3.05, X0 + 5.55), (6.18, 11.13), zs)
     vigas(m, VIDRIO_Y + 0.2, TECHO)
     m.caja("WEB_Revoque_Gris", (xa, xb), (VIDRIO_Y - 0.05, VIDRIO_Y + 0.2), z)
     m.caja("WEB_Cielorraso", (xa, xb), (-BALCON - 0.05, VIDRIO_Y - 0.05), (TECHO - LOSA - 0.005, TECHO - LOSA))

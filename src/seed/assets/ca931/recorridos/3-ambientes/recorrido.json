@@ -36,7 +36,7 @@
       "rumbo": 270.0,
       "panorama": "pasillo.webp",
       "x": 48.33,
-      "y": 45.07,
+      "y": 46.99,
       "enlaces": [
         "estar",
         "bano",
@@ -46,10 +46,10 @@
     {
       "clave": "bano",
       "titulo": "Baño",
-      "rumbo": 177.3,
+      "rumbo": 332.4,
       "panorama": "bano.webp",
-      "x": 42.69,
-      "y": 45.34,
+      "x": 42.41,
+      "y": 46.99,
       "enlaces": [
         "pasillo"
       ]

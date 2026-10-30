@@ -9,8 +9,9 @@ verdad** para el modelo 3D y todo lo que sale de Blender: cada render nuestro se
 | `fachada-dia-desde-derecha.jpg` | Fachada de día, cámara a la derecha, con autos en la vereda | 1570×1600 |
 | `fachada-atardecer.jpg` | Misma toma que la izquierda, al atardecer con luces encendidas | 1269×1240 |
 | `acceso-peatonal.jpg` | Detalle del acceso: listones negros, columna "931", panel de madera | 1448×1086 |
-| `plano-planta-baja.jpg` | Planta baja, opción 2 (anteproyecto) | 1206×815 |
-| `plano-pisos-1-a-4.jpg` | Planta tipo pisos 1 a 4, opción 2 (anteproyecto) | 1206×813 |
+| `plano-planta-baja.jpg` | Planta baja (anteproyecto, versión corregida) | 1103×735 |
+| `plano-pisos-1-a-4.jpg` | Planta tipo pisos 1 a 4 (anteproyecto, versión corregida) | 1113×770 |
+| `plano-azotea.jpg` | Azotea: sala de máquinas del ascensor y salida de la escalera | 1109×772 |
 
 ## 1. Qué dicen las referencias
 
@@ -19,13 +20,21 @@ fondo (19,50 del otro lado: el lote no es un rectángulo perfecto). Edificado 15
 (sólo en PB; en los pisos es vacío). **PB + 4 pisos**, con un remate de losa en voladizo arriba. Balcones de 1,40 m
 sobre la línea municipal en los pisos.
 
+**Planos corregidos (29/10).** El cliente mandó versiones nuevas de PB y planta tipo (las de la "opción 2" tenían
+errores) y la azotea. Cambios: en el 3 ambientes el estar pasa de 6,60 a 6,20 m de fondo y el baño 1 se corre hacia
+adelante, con un placard del termo eléctrico entre el estar y el baño; en el 2 ambientes el termo va en un placard
+entre la heladera y el baño; en la PB el dormitorio 1 se retira 0,70 m de la línea municipal y deja una expansión
+de 1,60 m² detrás de los listones. Los balcones pasan a 5,01 (A) y 3,50 m (B) con 0,30 entre ellos, que es lo que ya
+mostraban las fotos para el lado A (la franja de madera de las fotos sigue midiendo ~1 m). La azotea suma la sala de
+máquinas del ascensor (2,68 m de ancho, contra la medianera derecha) y la salida de la escalera.
+
 **Unidades (9, igual que los 9 medidores de gas del plano).**
 
 | Código propuesto | Dónde | Tipología | Cubierta | Descubierta | Total |
 |---|---|---|---|---|---|
-| `PB` | Planta baja, fondo | 4 ambientes con patio | 90,50 m² | patio 31,30 m² | 121,80 m² |
-| `1A`…`4A` | Pisos 1–4, lado izquierdo (visto desde la calle) | 3 ambientes con balcón | 69,50 m² | balcón 6,80 m² | 76,30 m² |
-| `1B`…`4B` | Pisos 1–4, lado derecho | 2 ambientes con balcón | 49,00 m² | balcón 4,90 m² | 53,90 m² |
+| `PB` | Planta baja, fondo | 4 ambientes con patio | 89,00 m² | patio 31,30 m² + expansión 1,60 m² | 121,90 m² |
+| `1A`…`4A` | Pisos 1–4, lado izquierdo (visto desde la calle) | 3 ambientes con balcón | 69,50 m² | balcón 6,90 m² | 76,40 m² |
+| `1B`…`4B` | Pisos 1–4, lado derecho | 2 ambientes con balcón | 49,00 m² | balcón 4,30 m² | 53,30 m² |
 
 Lado izquierdo/derecho sale de cruzar la PB del plano con el render: los dormitorios de la PB (borde de arriba del
 plano) quedan detrás de los listones negros, a la izquierda; el hall de acceso (borde de abajo) va con la puerta, a la
@@ -184,6 +193,15 @@ girada 180° sobre el eje de la calle (en las tomas de fachada no está). Afuera
 Desde la sesión de Blender: `previa()` (perspectiva en ~15 s con el mismo ambiente) y `tanda()` (renders_recorrido
 encolado; ~15 min por panorámica de 6144 × 3072 en la RX 6700 XT). El seed los carga desde
 `src/seed/assets/ca931/recorridos/<recorrido>/` y prende la sección.
+
+**Terminaciones interiores (las pasó el cliente, 29/10, con fotos de referencia de cocina y baño).** Piso de madera
+(porcelanato símil madera en tablas: la textura `wood_floor` ya lo es); cocina con muebles laqueados taupe y perfil
+gola de aluminio, mesada de granito negro pulido con desayunador en cascada hasta el piso, bacha gris, anafe a gas
+gris con horno negro abajo y revestimiento símil mármol blanco veteado entre mesada y alacenas; baños en porcelanato
+gris piedra de 60 × 120 en paredes y piso, vanitory de roble suspendido de dos cajones con mesada gris y bacha bajo
+mesada, espejo con LED perimetral, inodoro de apoyo con mochila, mampara con perfil negro y lluvia negra; aberturas
+negras (carpinterías y manijas). Están en `recorrido_ca931.py` (`materiales_recorrido`, `bajo_mesada`, `vanitory`,
+`inodoro`, `ducha`); granito, mármol y porcelanato son procedurales, sin texturas nuevas.
 
 **Control de calidad de cada render:** ponerlo al lado (o encima, en diferencia) de la referencia con la misma
 cámara y revisar: proporciones, colores de cada material, cantidad de listones, ubicación del número 931, plantas y

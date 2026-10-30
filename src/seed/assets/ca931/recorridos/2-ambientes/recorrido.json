@@ -59,10 +59,10 @@
     {
       "clave": "bano",
       "titulo": "Baño",
-      "rumbo": 180.0,
+      "rumbo": 21.4,
       "panorama": "bano.webp",
       "x": 51.12,
-      "y": 31.92,
+      "y": 31.37,
       "enlaces": [
         "pasillo"
       ]

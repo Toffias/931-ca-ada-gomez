@@ -626,8 +626,10 @@ def render_plano(cambios, escena, todos, centro, lado, z_corte, ruta, lado_px):
     """
     Vista cenital ortográfica de la unidad cortada a z_corte: lo de arriba se oculta y lo que atraviesa el corte se
     reemplaza por una copia recortada. Lo que está por debajo del piso también se oculta: afuera de la unidad queda
-    transparente y la web pone el fondo del tema.
+    transparente y la web pone el fondo del tema. Lo que se oculta vuelve al terminar: si no, el recorrido que
+    sigue en la tanda (otro piso) se renderiza sin edificio.
     """
+    cambios = Cambios()  # propios, no los de la tanda
     z_piso = z_corte - 1.6 / ESCALA
     cerca = lado * 1.5  # sólo se corta lo que cae cerca de la unidad; lo lejano está abajo o arriba y se oculta
     copias = []
@@ -660,6 +662,7 @@ def render_plano(cambios, escena, todos, centro, lado, z_corte, ruta, lado_px):
         escena.render.filepath = ruta
         bpy.ops.render.render(write_still=True)
     finally:
+        cambios.restaurar()
         for c in copias:
             malla = c.data
             bpy.data.objects.remove(c)

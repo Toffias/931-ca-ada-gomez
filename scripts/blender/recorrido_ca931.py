@@ -129,7 +129,8 @@ def vano(p, mats, eje, c, u0, u1, espesor, alto, puerta=None, **opciones):
     else:
         p.caja(u0, c - e, u1, c + e, DINTEL_PUERTAS, alto, mats["pared"], 0.0)
     if puerta:
-        vi["puerta"](p, mats, eje, c, u0, u1, espesor, puerta, **opciones)
+        # manijas negras, como las aberturas (pedido del cliente)
+        vi["puerta"](p, dict(mats, acero=mats["negro"]), eje, c, u0, u1, espesor, puerta, **opciones)
 
 
 def revestir_bano(p, mats, d0, d1, a0, a1, alto, puerta, ducha=None):
@@ -157,61 +158,85 @@ def en_pared(p, a, d, frente):
     return p.en(a, d, {"-d": 0, "+a": 90, "+d": 180, "-a": -90}[frente])
 
 
-def hornallas(p, mats, hx, hy, zm):
-    """anafe vitrocerámico con la serigrafía de las hornallas (sin ella se lee como acero)"""
-    p.caja(hx - 0.29, hy - 0.25, hx + 0.29, hy + 0.25, zm, zm + 0.006, mats["vitro"], 0.003)
-    for dx, dy, r in ((-0.14, -0.12, 0.09), (0.14, -0.12, 0.07), (-0.14, 0.12, 0.07), (0.14, 0.12, 0.09)):
-        tmp = bmesh.new()
-        bmesh.ops.create_circle(tmp, cap_ends=False, segments=48, radius=r,
-                                matrix=Matrix.Translation((hx + dx, hy + dy, zm + 0.0062)))
-        borde = bmesh.ops.extrude_edge_only(tmp, edges=tmp.edges[:])
-        adentro = [e for e in borde["geom"] if isinstance(e, bmesh.types.BMVert)]
-        k = 1 - 0.012 / r
-        bmesh.ops.scale(tmp, vec=(k, k, 1), space=Matrix.Translation((-(hx + dx), -(hy + dy), 0)), verts=adentro)
-        p._sumar(tmp, mats["serigrafia"])
+def anafe_gas(p, mats, hx, hy, zm):
+    """anafe a gas de acero gris (pedido del cliente) con cuatro quemadores y rejas de fundición negras"""
+    p.caja(hx - 0.29, hy - 0.25, hx + 0.29, hy + 0.25, zm, zm + 0.008, mats["anafe"], 0.004)
+    for dx, dy, r in ((-0.14, -0.12, 0.05), (0.14, -0.12, 0.04), (-0.14, 0.12, 0.04), (0.14, 0.12, 0.06)):
+        p.cilindro(hx + dx, hy + dy, zm + 0.008, zm + 0.022, r + 0.012, mats["acero"], 32)
+        p.cilindro(hx + dx, hy + dy, zm + 0.022, zm + 0.03, r, mats["fundicion"], 32)
+    # rejas: dos parrillas con barras en cruz
+    for x0, x1 in ((hx - 0.28, hx - 0.005), (hx + 0.005, hx + 0.28)):
+        for y in (hy - 0.24, hy, hy + 0.24):
+            p.caja(x0, y - 0.006, x1, y + 0.006, zm + 0.03, zm + 0.045, mats["fundicion"], 0.002)
+        for x in (x0, (x0 + x1) / 2, x1):
+            p.caja(x - 0.006, hy - 0.24, x + 0.006, hy + 0.24, zm + 0.03, zm + 0.045, mats["fundicion"], 0.002)
 
 
-def bajo_mesada(p, mats, largo, prof=0.6, anafe=None, pileta=None, alacenas=True, vuelo=0.0):
-    """bajo mesada laqueado con tiradores, mesada de cuarzo, bacha y grifería, anafe y alacenas con campana.
-    Fondo en y = 0, frente en y = -prof; vuelo: lo que la mesada sobresale por atrás (desayunador de una isla)"""
-    zt, zm = 0.87, 0.9
+def bajo_mesada(p, mats, largo, prof=0.6, anafe=None, pileta=None, alacenas=True, vuelo=0.0, cascada=False):
+    """cocina de referencia del cliente: bajo mesada laqueado taupe con perfil gola de aluminio, mesada de granito
+    negro, bacha gris, anafe a gas gris con horno negro abajo y alacenas taupe sobre revestimiento símil mármol.
+    Fondo en y = 0, frente en y = -prof; vuelo: lo que la mesada sobresale por atrás (desayunador de una isla);
+    cascada: la mesada baja hasta el piso en los extremos libres, como el desayunador de granito de la foto
+    (True: los dos; "fin": sólo en x = largo, cuando el otro extremo toca un muro)"""
+    zt, zm, zg = 0.87, 0.9, 0.79   # caras de abajo y de arriba de la mesada, filo superior de las puertas
+    taupe = mats["laca_taupe"]
     p.caja(0, -prof + 0.06, largo, 0, 0, 0.1, mats["negro"], 0.001)
-    p.caja(0, -prof + 0.02, largo, 0, 0.1, 0.868, mats["laca_gris"], 0.001)
-    n = max(1, round(largo / 0.6))
-    for i in range(n):
-        a, b = largo * i / n, largo * (i + 1) / n
-        p.caja(a + 0.0015, -prof, b - 0.0015, -prof + 0.02, 0.1, 0.868, mats["laca_gris"], 0.002)
-        xm = (a + b) / 2
-        p.caja(xm - 0.16, -prof - 0.024, xm + 0.16, -prof - 0.012, 0.8, 0.812, mats["acero"])
+    p.caja(0, -prof + 0.02, largo, 0, 0.1, zg, taupe, 0.001)
+    # gola: canal de aluminio retirado bajo la mesada (las puertas no llevan tirador)
+    p.caja(0, -prof + 0.06, largo, 0, zg, zt - 0.002, taupe, 0.001)
+    p.caja(0, -prof + 0.055, largo, -prof + 0.06, zg + 0.01, zt - 0.002, mats["aluminio"], 0.001)
+    tramos = [(0.0, largo)]
+    if anafe is not None:   # el horno ocupa el módulo bajo el anafe
+        tramos = [(0.0, anafe - 0.3), (anafe + 0.3, largo)]
+        p.caja(anafe - 0.3, -prof - 0.004, anafe + 0.3, -prof + 0.02, 0.12, 0.7, mats["horno"], 0.003)
+        p.caja(anafe - 0.3, -prof - 0.004, anafe + 0.3, -prof + 0.02, 0.705, zg, mats["negro"], 0.003)
+        p.caja(anafe - 0.22, -prof - 0.045, anafe + 0.22, -prof - 0.03, 0.62, 0.64, mats["negro"], 0.004)
         for s in (-1, 1):
-            p.caja(xm + s * 0.135 - 0.005, -prof - 0.012, xm + s * 0.135 + 0.005, -prof, 0.8, 0.812, mats["acero"], 0)
+            p.caja(anafe + s * 0.2 - 0.008, -prof - 0.03, anafe + s * 0.2 + 0.008, -prof - 0.004, 0.625, 0.635,
+                   mats["negro"], 0.002)
+        for i in range(4):   # perillas del anafe en el frente del horno
+            x = anafe - 0.21 + 0.14 * i
+            p.cilindro(x, -prof - 0.012, 0.735, 0.765, 0.018, mats["acero"], 20)
+    for t0, t1 in tramos:
+        n = max(1, round((t1 - t0) / 0.6)) if t1 - t0 > 0.15 else 0
+        for i in range(n):
+            a, b = t0 + (t1 - t0) * i / n, t0 + (t1 - t0) * (i + 1) / n
+            p.caja(a + 0.0015, -prof, b - 0.0015, -prof + 0.02, 0.1, zg, taupe, 0.002)
     y0, y1 = -prof - 0.02, vuelo
+    granito = mats["granito"]
     if pileta is None:
-        p.caja(0, y0, largo, y1, zt, zm, mats["mesada"], 0.004)
+        p.caja(0, y0, largo, y1, zt, zm, granito, 0.004)
     else:
         b1, b2, c1, c2 = pileta - 0.25, pileta + 0.25, -prof + 0.1, -0.1
-        p.caja(0, y0, b1, y1, zt, zm, mats["mesada"], 0.004)
-        p.caja(b2, y0, largo, y1, zt, zm, mats["mesada"], 0.004)
-        p.caja(b1, y0, b2, c1, zt, zm, mats["mesada"], 0.002)
-        p.caja(b1, c2, b2, y1, zt, zm, mats["mesada"], 0.002)
-        p.caja(b1 + 0.005, c1 + 0.005, b2 - 0.005, c2 - 0.005, 0.7, 0.705, mats["acero"], 0.002)
-        for u1, v1, u2, v2 in ((b1, c1, b2, c1 + 0.005), (b1, c2 - 0.005, b2, c2), (b1, c1, b1 + 0.005, c2),
-                               (b2 - 0.005, c1, b2, c2)):
-            p.caja(u1, v1, u2, v2, 0.7, zt, mats["acero"], 0.001)
-        gx, gy = pileta, -0.05
-        p.cilindro(gx, gy, zm, zm + 0.03, 0.028, mats["cromo"], chaflan=0.004)
-        p.tubo((gx, gy, zm + 0.02), (gx, gy, zm + 0.34), 0.014, mats["cromo"])
-        p.tubo((gx, gy, zm + 0.34), (gx, gy - 0.2, zm + 0.34), 0.012, mats["cromo"])
-        p.tubo((gx, gy - 0.2, zm + 0.34), (gx, gy - 0.2, zm + 0.28), 0.012, mats["cromo"])
+        p.caja(0, y0, b1, y1, zt, zm, granito, 0.004)
+        p.caja(b2, y0, largo, y1, zt, zm, granito, 0.004)
+        p.caja(b1, y0, b2, c1, zt, zm, granito, 0.002)
+        p.caja(b1, c2, b2, y1, zt, zm, granito, 0.002)
+        bacha = mats["bacha"]
+        p.caja(b1 + 0.005, c1 + 0.005, b2 - 0.005, c2 - 0.005, 0.7, 0.705, bacha, 0.002)
+        for u1, v1, u2, v2 in ((b1, c1, b2, c1 + 0.008), (b1, c2 - 0.008, b2, c2), (b1, c1, b1 + 0.008, c2),
+                               (b2 - 0.008, c1, b2, c2)):
+            p.caja(u1, v1, u2, v2, 0.7, zt + 0.002, bacha, 0.001)
+        p.cilindro(pileta, (c1 + c2) / 2, 0.704, 0.707, 0.045, mats["acero"], 24)   # válvula
+        gx, gy, g = pileta, -0.05, mats["griferia"]
+        p.cilindro(gx, gy, zm, zm + 0.03, 0.028, g, chaflan=0.004)
+        p.tubo((gx, gy, zm + 0.02), (gx, gy, zm + 0.34), 0.014, g)
+        p.tubo((gx, gy, zm + 0.34), (gx, gy - 0.2, zm + 0.34), 0.012, g)
+        p.tubo((gx, gy - 0.2, zm + 0.34), (gx, gy - 0.2, zm + 0.28), 0.012, g)
+        p.caja(gx + 0.035, gy - 0.01, gx + 0.045, gy + 0.01, zm + 0.12, zm + 0.2, g, 0.003)
+    if cascada:
+        for x0 in ((-0.03, largo) if cascada is True else (largo,)):
+            p.caja(x0, y0, x0 + 0.03, y1, 0.0, zm, granito, 0.004)
     if anafe is not None:
-        hornallas(p, mats, anafe, -prof / 2, zm)
+        anafe_gas(p, mats, anafe, -prof / 2, zm)
     if alacenas:
-        p.caja(0, -0.01, largo, 0, zm, 1.45, mats["porcelanato"], 0.001)
-        p.caja(0, -0.33, largo, 0, 1.45, 2.25, mats["laca"], 0.001)
+        p.caja(0, -0.01, largo, 0, zm, 1.45, mats["marmol_cocina"], 0.001)
+        p.caja(0, -0.33, largo, 0, 1.45, 2.25, taupe, 0.001)
         n = max(1, round(largo / 0.5))
         for i in range(n):
             a, b = largo * i / n, largo * (i + 1) / n
-            p.caja(a + 0.0015, -0.35, b - 0.0015, -0.33, 1.45, 2.25, mats["laca"], 0.002)
+            p.caja(a + 0.0015, -0.35, b - 0.0015, -0.33, 1.47, 2.25, taupe, 0.002)
+            p.caja(a + 0.0015, -0.35, b - 0.0015, -0.33, 1.45, 1.47, mats["aluminio"], 0.001)   # tirador al canto
         if anafe is not None:
             p.caja(anafe - 0.29, -0.36, anafe + 0.29, -0.02, 1.43, 1.45, mats["acero"], 0.002)
         p.caja(0.05, -0.27, largo - 0.05, -0.25, 1.442, 1.45, mats["luz"], 0)
@@ -271,43 +296,75 @@ def rack(p, mats, largo, prof=0.42, tele=True):
 
 
 def inodoro(p, mats, bidet=False):
-    """suspendido, de 36 × 55 (fondo contra la pared en y = 0)"""
+    """de apoyo y a ras de la pared, el inodoro con mochila (baño de referencia del cliente); fondo contra la pared
+    en y = 0"""
     s = mats["WEB_Sanitario"]
-    p.caja(-0.18, -0.55, 0.18, 0, 0.2, 0.42, s, 0.07, 4)
+    p.caja(-0.17, -0.56, 0.17, -0.12, 0.0, 0.34, s, 0.08, 4)
+    p.caja(-0.18, -0.6, 0.18, -0.02, 0.32, 0.4, s, 0.07, 4)
     if bidet:
-        p.caja(-0.13, -0.45, 0.13, -0.15, 0.405, 0.43, mats["sombra"], 0.03, 3)
-        p.cilindro(0, -0.09, 0.42, 0.45, 0.022, mats["cromo"], chaflan=0.004)
-        p.tubo((0, -0.09, 0.45), (0, -0.16, 0.47), 0.01, mats["cromo"])
+        p.caja(-0.13, -0.5, 0.13, -0.18, 0.385, 0.405, mats["sombra"], 0.03, 3)
+        p.cilindro(0, -0.1, 0.4, 0.43, 0.022, mats["griferia"], chaflan=0.004)
+        p.tubo((0, -0.1, 0.43), (0, -0.17, 0.45), 0.01, mats["griferia"])
     else:
-        p.caja(-0.17, -0.54, 0.17, -0.06, 0.42, 0.44, s, 0.015, 3)
-        p.caja(-0.08, -0.008, 0.08, 0, 1.0, 1.12, mats["cromo"], 0.004)
+        p.caja(-0.175, -0.59, 0.175, -0.16, 0.4, 0.43, s, 0.03, 4)          # tapa
+        p.caja(-0.18, -0.2, 0.18, 0.0, 0.4, 0.8, s, 0.04, 4)                # mochila
+        p.cilindro(0, -0.1, 0.8, 0.81, 0.025, mats["cromo"], 24)           # pulsador
 
 
 def vanitory(p, mats, largo, espejo=True):
-    """mueble de nogal suspendido con bacha de apoyo, grifería y espejo con LED"""
-    s = mats["WEB_Sanitario"]
-    p.caja(0, -0.45, largo, 0, 0.45, 0.82, mats["nogal"], 0.004)
-    p.caja(0, -0.47, largo, 0, 0.82, 0.85, mats["mesada"], 0.003)
+    """mueble de roble suspendido de dos cajones, mesada gris piedra con bacha blanca bajo mesada, grifería
+    grafito y espejo con LED perimetral (baño de referencia del cliente)"""
+    s, r, top = mats["WEB_Sanitario"], mats["roble"], mats["mesada_bano"]
+    p.caja(0.01, -0.44, largo - 0.01, 0, 0.36, 0.835, r, 0.004)
+    for z0, z1 in ((0.36, 0.59), (0.6, 0.835)):
+        p.caja(0, -0.46, largo, -0.44, z0, z1, r, 0.004)
+    zt, zm = 0.835, 0.865
     xm = largo / 2
-    p.caja(xm - 0.22, -0.4, xm + 0.22, -0.08, 0.85, 0.97, s, 0.05, 4)
-    p.caja(xm - 0.18, -0.36, xm + 0.18, -0.12, 0.9, 0.972, mats["sombra"], 0.03, 3)
-    p.cilindro(xm, -0.04, 0.85, 0.87, 0.025, mats["cromo"])
-    p.tubo((xm, -0.04, 0.86), (xm, -0.04, 1.12), 0.012, mats["cromo"])
-    p.tubo((xm, -0.04, 1.12), (xm, -0.18, 1.12), 0.011, mats["cromo"])
+    b1, b2, c1, c2 = xm - 0.21, xm + 0.21, -0.38, -0.12
+    p.caja(0, -0.47, b1, 0, zt, zm, top, 0.003)
+    p.caja(b2, -0.47, largo, 0, zt, zm, top, 0.003)
+    p.caja(b1, -0.47, b2, c1, zt, zm, top, 0.002)
+    p.caja(b1, c2, b2, 0, zt, zm, top, 0.002)
+    p.caja(b1, c1, b2, c2, 0.72, 0.73, s, 0.004)
+    for u1, v1, u2, v2 in ((b1, c1, b2, c1 + 0.01), (b1, c2 - 0.01, b2, c2), (b1, c1, b1 + 0.01, c2),
+                           (b2 - 0.01, c1, b2, c2)):
+        p.caja(u1, v1, u2, v2, 0.72, zt + 0.001, s, 0.002)
+    g = mats["grafito"]
+    p.caja(xm - 0.022, -0.075, xm + 0.022, -0.035, zm, zm + 0.22, g, 0.004)
+    p.caja(xm - 0.018, -0.2, xm + 0.018, -0.035, zm + 0.19, zm + 0.22, g, 0.004)
+    p.caja(xm + 0.022, -0.06, xm + 0.03, -0.05, zm + 0.17, zm + 0.25, g, 0.003)
     if espejo:
-        p.caja(0, -0.006, largo, 0, 1.02, 1.82, mats["espejo"], 0.002)
-        p.caja(-0.01, -0.004, largo + 0.01, 0.001, 1.01, 1.83, mats["negro"], 0.002)
-        p.caja(0.02, -0.02, largo - 0.02, -0.011, 1.83, 1.845, mats["luz"], 0)
+        a0, a1 = max(0.0, xm - 0.3), min(largo, xm + 0.3)
+        p.caja(a0, -0.03, a1, -0.005, 1.05, 1.85, mats["negro"], 0.002)
+        p.caja(a0, -0.036, a1, -0.03, 1.05, 1.85, mats["espejo"], 0.002)
+        # LED: banda esmerilada a 2,5 cm del borde y luz que baña la pared por detrás
+        for x0, x1, z0, z1 in ((a0 + 0.025, a1 - 0.025, 1.075, 1.083), (a0 + 0.025, a1 - 0.025, 1.817, 1.825),
+                               (a0 + 0.025, a0 + 0.033, 1.075, 1.825), (a1 - 0.033, a1 - 0.025, 1.075, 1.825)):
+            p.caja(x0, -0.0365, x1, -0.0355, z0, z1, mats["luz"], 0)
+        p.caja(a0 + 0.02, -0.006, a1 - 0.02, -0.004, 1.07, 1.83, mats["luz"], 0)
 
 
 def ducha(p, mats, d0, d1, a0, a1, mampara, flor):
-    """plato, mampara fija de vidrio ((a0, d0, a1, d1) de la hoja) y flor de techo"""
+    """plato, mampara de vidrio con perfil negro ((a0, d0, a1, d1) de la hoja) y lluvia negra de techo"""
     p.caja(a0, d0, a1, d1, 0, 0.03, mats["WEB_Sanitario"], 0.006)
     ma0, md0, ma1, md1 = mampara
     p.caja(ma0, md0, ma1, md1, 0.03, 2.0, mats["vidrio"], 0.002)
+    n, e = mats["negro"], 0.012
+    if md1 - md0 >= ma1 - ma0:   # la hoja va a lo largo de d
+        am = (ma0 + ma1) / 2
+        for d in (md0, md1):
+            p.caja(am - e, d - e, am + e, d + e, 0.03, 2.0, n, 0.002)
+        for z in (0.03, 1.98):
+            p.caja(am - e, md0, am + e, md1, z, z + 0.02, n, 0.002)
+    else:
+        dm = (md0 + md1) / 2
+        for a in (ma0, ma1):
+            p.caja(a - e, dm - e, a + e, dm + e, 0.03, 2.0, n, 0.002)
+        for z in (0.03, 1.98):
+            p.caja(ma0, dm - e, ma1, dm + e, z, z + 0.02, n, 0.002)
     fa, fd = flor
-    p.cilindro(fa, fd, 2.08, 2.095, 0.11, mats["cromo"], 32)
-    p.tubo((fa, fd, 2.095), (fa, fd, H_TIPO - 0.005), 0.01, mats["cromo"])
+    p.cilindro(fa, fd, 2.08, 2.095, 0.15, mats["griferia"], 40)
+    p.tubo((fa, fd, 2.095), (fa, fd, H_TIPO - 0.005), 0.012, mats["griferia"])
 
 
 def cortina(p, mats, cara, u0, u1, alto, lado=1):
@@ -404,17 +461,17 @@ def tres_ambientes(col, mats):
 
     # puertas: entrada desde el palier (cerrada), baño 1 corrediza, dormitorio 2 y principal batientes, baño 2 en
     # suite (corrediza del lado del baño) y pasos sin hoja al pasillo y del vestidor al principal
-    vano(p, mats, "x", 3.125, 6.9, 7.9, 0.15, alto, "b", lado=-1, cerrada=True)
-    vano(p, mats, "x", 2.05, 7.6, 8.4, 0.10, alto, "b", lado=1, corrediza=True)
+    vano(p, mats, "x", 3.125, 6.5, 7.45, 0.15, alto, "b", lado=-1, cerrada=True)
+    vano(p, mats, "x", 2.05, 7.25, 8.05, 0.10, alto, "b", lado=1, corrediza=True)
     vano(p, mats, "x", 3.125, 11.3, 12.2, 0.15, alto, "a", lado=1)
     vano(p, mats, "y", 12.35, 2.15, 3.05, 0.10, alto, "b", lado=1)
     vano(p, mats, "y", 10.9, 0.80, 1.45, 0.10, alto, "a", lado=-1, corrediza=True)
     vano(p, mats, "y", 12.35, 0.80, 1.45, 0.10, alto)
-    vano(p, mats, "y", 6.85, 2.10, 3.05, 0.10, alto)
+    vano(p, mats, "y", 6.45, 2.10, 3.05, 0.10, alto)
 
     # cocina: isla con pileta (banquetas del lado del estar), mesada con anafe y alacenas, heladera
     with en_pared(p, 3.0, 0.65, "+a"):
-        bajo_mesada(p, mats, 1.7, anafe=None, pileta=0.85, alacenas=False, vuelo=0.25)
+        bajo_mesada(p, mats, 1.7, anafe=None, pileta=0.85, alacenas=False, vuelo=0.25, cascada=True)
     with en_pared(p, 5.28, 2.4, "-a"):
         bajo_mesada(p, mats, 1.75, anafe=1.45)
     with en_pared(p, 5.28, 2.98, "-a"):
@@ -431,18 +488,22 @@ def tres_ambientes(col, mats):
         estantes(p, mats, 1.35, prof=0.6)
     with en_pared(p, 2.0, 12.3, "-a"):
         estantes(p, mats, 1.35, prof=0.5)
+    # placard del termo eléctrico, entre el estar y el baño 1, que abre al pasillo
+    with en_pared(p, 1.4, 6.5, "+a"):
+        placard(p, mats, 0.65)
+    p.caja(2.0, 6.5, 2.1, 7.15, 2.3, alto, mats["pared"], 0.0)
 
-    # baño 1: inodoro, bidet y vanitory contra el estar; ducha en el rincón del fondo
-    revestir_bano(p, mats, 6.9, 8.8, CARA_MEDIANERA, 2.0, alto, ("a1", 7.6, 8.4), ducha="d1")
-    with en_pared(p, 0.5, 6.915, "+d"):
+    # baño 1: ducha adelante, contra el placard del termo; inodoro, bidet y vanitory contra el baño 2
+    revestir_bano(p, mats, 7.25, 8.8, CARA_MEDIANERA, 2.0, alto, ("a1", 7.25, 8.05), ducha="d0")
+    with en_pared(p, 0.45, 8.785, "-d"):
         inodoro(p, mats)
-    with en_pared(p, 0.95, 6.915, "+d"):
+    with en_pared(p, 0.9, 8.785, "-d"):
         inodoro(p, mats, bidet=True)
-    with en_pared(p, 1.95, 6.915, "+d"):
-        vanitory(p, mats, 0.6)
-    ducha(p, mats, 7.95, 8.785, 0.165, 1.1, (1.095, 8.3, 1.105, 8.785), (0.62, 8.4))
-    plafon(p, col, mats, "Rec_Luz_Bano_1", 1.3, 7.9, zf, alto, 6)
-    luz(col, "Rec_Luz_Espejo_1", 1.65, 7.0, zf + 1.9, 2, tamano=0.5)
+    with en_pared(p, 1.33, 8.785, "-d"):
+        vanitory(p, mats, 0.55)
+    ducha(p, mats, 7.265, 8.1, 0.165, 1.0, (0.995, 7.265, 1.005, 7.75), (0.55, 7.65))
+    plafon(p, col, mats, "Rec_Luz_Bano_1", 1.3, 8.0, zf, alto, 6)
+    luz(col, "Rec_Luz_Espejo_1", 1.6, 8.6, zf + 1.9, 2, tamano=0.5)
     # baño 2 (en suite): ducha de pared a pared, inodoro y bidet contra la medianera, vanitory contra el pasillo
     revestir_bano(p, mats, 8.9, 10.85, CARA_MEDIANERA, 2.0, alto, ("d1", 0.80, 1.45), ducha="d0")
     ducha(p, mats, 8.915, 9.55, 0.165, 1.985, (0.165, 9.545, 1.1, 9.555), (1.0, 9.2))
@@ -474,7 +535,7 @@ def tres_ambientes(col, mats):
     p.crear(col, zf, n)
 
     # cuadros y colgante del comedor (Poly Haven)
-    modelo("hanging_picture_frame_02", col, 0.165, 5.4, 90, zf + 1.45, n)
+    modelo("hanging_picture_frame_02", col, 0.165, 5.3, 90, zf + 1.45, n)
     modelo("hanging_picture_frame_01", col, 0.165, 14.0, 90, zf + 1.5, n)
     modelo("hanging_picture_frame_01", col, 2.1, 9.9, 90, zf + 1.5, n)
     modelo("modern_ceiling_lamp_01", col, 1.175, 1.8, 0, zf + alto - 1.173, n)
@@ -483,8 +544,8 @@ def tres_ambientes(col, mats):
     r = "3-ambientes"
     camara_pano(col, r, "estar", "Estar comedor", 1, 2.3, 3.6, zf, (1.3, 0.6), nombre="3 ambientes", **LUZ)
     camara_pano(col, r, "cocina", "Cocina", 2, 4.14, 1.6, zf, (4.0, 0.6))
-    camara_pano(col, r, "pasillo", "Pasillo", 3, 2.58, 8.0, zf, (1.5, 8.0))   # arranca mirando la puerta del baño
-    camara_pano(col, r, "bano", "Baño", 4, 1.55, 7.95, zf, (1.6, 6.9))
+    camara_pano(col, r, "pasillo", "Pasillo", 3, 2.58, 7.65, zf, (1.5, 7.65))   # arranca mirando la puerta del baño
+    camara_pano(col, r, "bano", "Baño", 4, 1.5, 7.65, zf, (0.9, 8.8))
     camara_pano(col, r, "hall", "Hall de dormitorios", 5, 2.6, 11.75, zf, (2.6, 15.0))
     camara_pano(col, r, "dormitorio", "Dormitorio", 6, 4.4, 12.9, zf, (4.4, 15.5))
     # el vestidor y el baño en suite quedan en diagonal a la puerta del principal: esos enlaces van a mano
@@ -515,13 +576,13 @@ def dos_ambientes(col, mats):
 
     # entrada desde el palier (cerrada), baño con corrediza del lado del pasillo, dormitorio batiente, paso a la cocina
     vano(p, mats, "x", 5.355, 5.40, 6.30, 0.15, alto, "a", lado=1, cerrada=True)
-    vano(p, mats, "x", 6.65, 10.10, 10.90, 0.10, alto, "a", lado=-1, corrediza=True)
+    vano(p, mats, "x", 6.65, 10.12, 10.90, 0.10, alto, "a", lado=-1, corrediza=True)
     vano(p, mats, "y", 11.70, 5.73, 6.60, 0.10, alto, "a", lado=1)
     vano(p, mats, "y", 9.30, 5.73, 6.60, 0.10, alto)
 
     # cocina en L: isla con pileta y desayunador hacia el comedor, mesada con anafe contra la medianera, heladera
     with en_pared(p, 8.5, 6.25, "+d"):
-        bajo_mesada(p, mats, 1.9, pileta=1.1, alacenas=False, vuelo=0.3)
+        bajo_mesada(p, mats, 1.9, pileta=1.1, alacenas=False, vuelo=0.3, cascada="fin")
     with en_pared(p, derecha, 8.6, "-a"):
         bajo_mesada(p, mats, 1.75, anafe=1.2)
     with en_pared(p, derecha, 9.23, "-a"):
@@ -534,19 +595,22 @@ def dos_ambientes(col, mats):
         rack(p, mats, 1.6)
     with en_pared(p, 8.5, 11.75, "+d"):
         placard(p, mats, 1.9)
+    # placard del termo eléctrico, entre la cocina y el baño, que abre al pasillo
+    with en_pared(p, 7.3, 10.02, "-a"):
+        placard(p, mats, 0.67)
+    p.caja(6.6, 9.35, 6.7, 10.02, 2.3, alto, mats["pared"], 0.0)
 
-    # baño: vanitory contra la cocina, inodoro y bidet contra el dormitorio, ducha contra la medianera y termo
-    revestir_bano(p, mats, 9.35, 11.65, 6.7, derecha, alto, ("a0", 10.10, 10.90), ducha="a1")
-    with en_pared(p, 7.5, 9.365, "+d"):
-        vanitory(p, mats, 0.7)
-    with en_pared(p, 6.95, 11.635, "-d"):
+    # baño: vanitory, inodoro y bidet contra el dormitorio; ducha en el rincón de la medianera
+    revestir_bano(p, mats, 10.12, 11.65, 6.7, derecha, alto, ("a0", 10.12, 10.90), ducha="a1")
+    with en_pared(p, 6.75, 11.635, "-d"):
+        vanitory(p, mats, 0.55)
+    with en_pared(p, 7.6, 11.635, "-d"):
         inodoro(p, mats)
-    with en_pared(p, 7.35, 11.635, "-d"):
+    with en_pared(p, 8.1, 11.635, "-d"):
         inodoro(p, mats, bidet=True)
-    ducha(p, mats, 10.0, 11.635, 7.6, derecha - 0.015, (7.595, 10.85, 7.605, 11.635), (8.05, 10.8))
-    p.cilindro(8.1, 9.65, 1.25, 1.95, 0.22, mats["WEB_Sanitario"], 32, chaflan=0.02)   # termo eléctrico
-    plafon(p, col, mats, "Rec_Luz_Bano_B", 7.6, 10.5, zf, alto, 6)
-    luz(col, "Rec_Luz_Espejo_B", 7.15, 9.45, zf + 1.9, 2, tamano=0.5)
+    ducha(p, mats, 10.135, 10.95, 7.55, derecha - 0.015, (7.545, 10.45, 7.555, 10.95), (8.05, 10.5))
+    plafon(p, col, mats, "Rec_Luz_Bano_B", 7.4, 10.8, zf, alto, 6)
+    luz(col, "Rec_Luz_Espejo_B", 7.02, 11.45, zf + 1.9, 2, tamano=0.5)
 
     for u0, u1 in ((6.63, 7.13), (7.86, 8.36)):
         cortina(p, mats, CARA_FRENTE, u0, u1, alto)
@@ -569,7 +633,7 @@ def dos_ambientes(col, mats):
     camara_pano(col, r, "balcon", "Balcón", 2, 7.2, -0.6, zf, (7.2, -1.4), enlaces="estar")
     camara_pano(col, r, "cocina", "Cocina", 3, 7.0, 7.6, zf, (8.3, 7.6))
     camara_pano(col, r, "pasillo", "Pasillo", 4, 6.17, 10.5, zf, (6.17, 15.0))
-    camara_pano(col, r, "bano", "Baño", 5, 7.15, 10.4, zf, (7.15, 9.35))
+    camara_pano(col, r, "bano", "Baño", 5, 7.15, 10.5, zf, (7.6, 11.65))
     camara_pano(col, r, "dormitorio", "Dormitorio", 6, 6.3, 12.85, zf, (7.5, 14.0))
 
 
@@ -586,10 +650,11 @@ def planta_baja(col, mats):
     o["reemplaza"] = "Interior_PB_Muebles"
 
     p = Pieza("Recorrido_PB")
-    # frente: el ventanal de los dormitorios detrás de los listones (planta_baja() de modelar_ca931.py); el tramo
-    # del dormitorio 2 que no tiene vidrio va pintado
-    pintar_muro(p, mats, "a", 0.6, 1, CARA_MEDIANERA, 5.31, alto, [(0.25, 4.38, 0.45, 3.0, 0.05)])
-    pintar_muro(p, mats, "d", CARA_MEDIANERA, 1, 0.6, CARA_FONDO, alto)
+    # frente: los ventanales de los dormitorios detrás de los listones (planta_baja() de modelar_ca931.py). El 1
+    # se retira a 0,90 con puerta-ventana a la expansión; el tramo del 2 que no tiene vidrio va pintado
+    pintar_muro(p, mats, "a", 0.9, 1, CARA_MEDIANERA, 2.47, alto, [(0.25, 2.42, 0.05, 3.0, 0.05)])
+    pintar_muro(p, mats, "a", 0.6, 1, 2.57, 5.31, alto, [(2.62, 4.38, 0.45, 3.0, 0.05)])
+    pintar_muro(p, mats, "d", CARA_MEDIANERA, 1, 0.9, CARA_FONDO, alto)
     pintar_muro(p, mats, "d", derecha, -1, 8.8, CARA_FONDO, alto)
     # contrafrente: puerta-ventana del estar al patio y ventana del dormitorio 3
     pintar_muro(p, mats, "a", CARA_FONDO, -1, CARA_MEDIANERA, derecha, alto,
@@ -608,7 +673,7 @@ def planta_baja(col, mats):
 
     # cocina: isla con pileta y banquetas del lado del comedor, mesada con anafe y heladera contra el dormitorio 3
     with en_pared(p, 3.05, 12.3, "+a"):
-        bajo_mesada(p, mats, 2.95, pileta=1.8, alacenas=False, vuelo=0.25)
+        bajo_mesada(p, mats, 2.95, pileta=1.8, alacenas=False, vuelo=0.25, cascada=True)
     with en_pared(p, 5.4, 15.35, "-a"):
         bajo_mesada(p, mats, 2.35, anafe=1.15)
     with en_pared(p, 5.4, 12.98, "-a"):
@@ -649,8 +714,8 @@ def planta_baja(col, mats):
     for u0, u1 in ((0.25, 0.75), (2.75, 3.25)):
         cortina(p, mats, CARA_FONDO, u0, u1, alto, lado=-1)
     riel(p, mats, CARA_FONDO, 0.2, 3.28, alto, lado=-1)
-    for a0, a1 in ((0.25, 2.47), (2.57, 4.38)):
-        roller(p, mats, a0, a1, 0.66, 3.0, 1.9)
+    roller(p, mats, 0.25, 2.42, 0.96, 3.0, 2.0)
+    roller(p, mats, 2.62, 4.38, 0.66, 3.0, 1.9)
     roller(p, mats, 6.06, 8.06, CARA_FONDO + 0.03, 2.4, 1.7)
 
     # el estar queda lejos de las ventanas: spots en el cielorraso, como en una obra de verdad
@@ -659,7 +724,7 @@ def planta_baja(col, mats):
                             ("Rec_Luz_Paso_PB", 6.0, 11.3, 10)):
         p.cilindro(a, d, alto - 0.008, alto - 0.002, 0.045, mats["luz"], 24)
         luz(col, nombre, a, d, alto - 0.02, w, tamano=0.08)
-    for nombre, a, d in (("Rec_Luz_Noche_PB_1", 0.37, 2.05), ("Rec_Luz_Noche_PB_2", 5.09, 1.95),
+    for nombre, a, d in (("Rec_Luz_Noche_PB_1", 0.37, 2.15), ("Rec_Luz_Noche_PB_2", 5.09, 1.95),
                          ("Rec_Luz_Noche_PB_3", 8.25, 12.88), ("Rec_Luz_Noche_PB_4", 8.25, 14.92)):
         luz(col, nombre, a, d, 0.86, 8, "POINT", 0.06)
     p.crear(col, zf, n)
@@ -701,6 +766,94 @@ def enfrente(col):
 
 
 # ---------------------------------------------------------------- principal
+def _nodo(nt, tipo, **valores):
+    n = nt.nodes.new(tipo)
+    for k, v in valores.items():
+        if k in n.inputs:
+            n.inputs[k].default_value = v
+        else:
+            setattr(n, k, v)
+    return n
+
+
+def _rampa(nt, entrada, paradas, constante=False):
+    """ColorRamp con [(posición, (r, g, b))]"""
+    r = nt.nodes.new("ShaderNodeValToRGB")
+    cr = r.color_ramp
+    cr.interpolation = "CONSTANT" if constante else "LINEAR"
+    while len(cr.elements) < len(paradas):
+        cr.elements.new(0.5)
+    for el, (pos, color) in zip(cr.elements, paradas):
+        el.position, el.color = pos, (*color, 1)
+    nt.links.new(entrada, r.inputs["Fac"])
+    return r.outputs["Color"]
+
+
+def _juntas(nt, bsdf, color, ancho, alto, junta=0.5, relieve=0.15):
+    """placas con junta fina (textura de ladrillo sin trabar, UV en metros): mezcla el color de la junta y la hunde"""
+    uv = nt.nodes.new("ShaderNodeTexCoord").outputs["UV"]
+    b = _nodo(nt, "ShaderNodeTexBrick", offset=0.0, squash=1.0, **{"Scale": 1.0, "Mortar Size": 0.002,
+              "Mortar Smooth": 0.3, "Brick Width": ancho, "Row Height": alto})
+    nt.links.new(uv, b.inputs["Vector"])
+    mezcla = _nodo(nt, "ShaderNodeMix", data_type="RGBA")
+    nt.links.new(b.outputs["Fac"], mezcla.inputs["Factor"])
+    nt.links.new(color, vi["socket"](mezcla, "A", "RGBA"))
+    oscuro = _nodo(nt, "ShaderNodeMix", data_type="RGBA", blend_type="MULTIPLY", **{"Factor": 1.0})
+    nt.links.new(color, vi["socket"](oscuro, "A", "RGBA"))
+    vi["socket"](oscuro, "B", "RGBA").default_value = (junta, junta, junta, 1)
+    nt.links.new(vi["socket"](oscuro, "Result", "RGBA", salida=True), vi["socket"](mezcla, "B", "RGBA"))
+    nt.links.new(vi["socket"](mezcla, "Result", "RGBA", salida=True), bsdf.inputs["Base Color"])
+    bump = _nodo(nt, "ShaderNodeBump", **{"Strength": relieve, "Distance": 0.002, "invert": True})
+    nt.links.new(b.outputs["Fac"], bump.inputs["Height"])
+    nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+
+
+def porcelanato_piedra(nombre, color, rugosidad=0.45):
+    """porcelanato gris piedra en placas de 60 × 120 con junta fina: paredes y piso de los baños (foto del cliente)"""
+    m, nt, bsdf = vi["arbol_limpio"](nombre)
+    ruido = _nodo(nt, "ShaderNodeTexNoise", **{"Scale": 6.0, "Detail": 6.0, "Roughness": 0.6})
+    nt.links.new(nt.nodes.new("ShaderNodeTexCoord").outputs["UV"], ruido.inputs["Vector"])
+    c = _rampa(nt, ruido.outputs["Fac"], [(0.3, tuple(v * 0.93 for v in color)), (0.7, tuple(v * 1.06 for v in color))])
+    _juntas(nt, bsdf, c, 0.6, 1.2)
+    bsdf.inputs["Roughness"].default_value = rugosidad
+    m.diffuse_color = (*color, 1)
+    return m
+
+
+def granito_negro(nombre):
+    """granito negro pulido con puntitos grises y verdosos, como la mesada de la foto del cliente"""
+    m, nt, bsdf = vi["arbol_limpio"](nombre)
+    uv = nt.nodes.new("ShaderNodeTexCoord").outputs["UV"]
+    granos = _nodo(nt, "ShaderNodeTexVoronoi", **{"Scale": 260.0, "Randomness": 1.0})
+    nt.links.new(uv, granos.inputs["Vector"])
+    gris = nt.nodes.new("ShaderNodeRGBToBW")
+    nt.links.new(granos.outputs["Color"], gris.inputs["Color"])
+    c = _rampa(nt, gris.outputs["Val"], [(0.0, (0.006, 0.006, 0.007)), (0.8, (0.018, 0.02, 0.019)),
+                                         (0.93, (0.09, 0.1, 0.09)), (0.97, (0.32, 0.33, 0.31))], constante=True)
+    nt.links.new(c, bsdf.inputs["Base Color"])
+    bsdf.inputs["Roughness"].default_value = 0.06
+    bsdf.inputs["Coat Weight"].default_value = 0.8
+    bsdf.inputs["Coat Roughness"].default_value = 0.03
+    m.diffuse_color = (0.02, 0.02, 0.02, 1)
+    return m
+
+
+def marmol_veteado(nombre):
+    """porcelanato símil mármol blanco con vetas grises, en placas de 1,20 × 0,60 (revestimiento de la cocina)"""
+    m, nt, bsdf = vi["arbol_limpio"](nombre)
+    uv = nt.nodes.new("ShaderNodeTexCoord").outputs["UV"]
+    ondas = _nodo(nt, "ShaderNodeTexWave", wave_type="BANDS", bands_direction="DIAGONAL",
+                  **{"Scale": 1.3, "Distortion": 14.0, "Detail": 9.0, "Detail Scale": 1.4, "Detail Roughness": 0.62})
+    nt.links.new(uv, ondas.inputs["Vector"])
+    base, gris, veta = (0.72, 0.715, 0.7), (0.6, 0.6, 0.6), (0.2, 0.2, 0.21)
+    c = _rampa(nt, ondas.outputs["Fac"], [(0.0, base), (0.42, base), (0.47, gris), (0.5, veta), (0.52, gris),
+                                          (0.56, base)])
+    _juntas(nt, bsdf, c, 1.2, 0.6, junta=0.8, relieve=0.08)
+    bsdf.inputs["Roughness"].default_value = 0.12
+    m.diffuse_color = (*base, 1)
+    return m
+
+
 def materiales_recorrido(mats):
     liso = vi["liso"]
     mats = dict(mats)
@@ -708,10 +861,22 @@ def materiales_recorrido(mats):
     mats["cielorraso"] = liso("REC_Cielorraso", (0.82, 0.82, 0.81), 0.85)
     mats["sombra"] = liso("REC_Sanitario_Interior", (0.8, 0.8, 0.79), 0.08)
     mats["screen"] = vi["voile"]("REC_Screen")
-    mats["piso_bano"] = vi["pbr"]("REC_Piso_Bano", "marmol", color_fijo=(0.2, 0.195, 0.19), rugosidad=(0.1, 0.35),
-                                  normal=1.4)
-    mats["porcelanato_oscuro"] = vi["pbr"]("REC_Porcelanato_Oscuro", "marmol", color_fijo=(0.2, 0.19, 0.175),
-                                           rugosidad=(0.04, 0.3), normal=1.6)
+    # terminaciones que pasó el cliente (fotos de referencia de cocina y baño): mesada de granito negro, bacha gris,
+    # anafe gris y horno negro, muebles laqueados taupe, revestimiento símil mármol; baños en porcelanato gris piedra
+    # (paredes y piso), vanitory de roble con mesada gris, grifería negra y grafito; aberturas negras
+    mats["granito"] = granito_negro("REC_Granito_Negro")
+    mats["marmol_cocina"] = marmol_veteado("REC_Marmol_Cocina")
+    mats["laca_taupe"] = liso("REC_Laca_Taupe", (0.4, 0.365, 0.32), 0.38, **{"Coat Weight": 0.15})
+    mats["bacha"] = liso("REC_Bacha_Gris", (0.16, 0.16, 0.155), 0.4)
+    mats["anafe"] = liso("REC_Anafe_Gris", (0.2, 0.2, 0.2), 0.4, Metallic=0.6)
+    mats["fundicion"] = liso("REC_Fundicion", (0.012, 0.012, 0.012), 0.75)
+    mats["horno"] = liso("REC_Horno_Negro", (0.004, 0.004, 0.005), 0.04, **{"Coat Weight": 1.0})
+    mats["griferia"] = liso("REC_Griferia_Negra", (0.02, 0.02, 0.02), 0.4, Metallic=0.8)
+    mats["grafito"] = liso("REC_Griferia_Grafito", (0.12, 0.12, 0.12), 0.25, Metallic=1.0)
+    mats["mesada_bano"] = porcelanato_piedra("REC_Mesada_Bano", (0.33, 0.315, 0.29), rugosidad=0.3)
+    mats["porcelanato"] = porcelanato_piedra("REC_Porcelanato_Piedra", (0.23, 0.215, 0.195))
+    mats["porcelanato_oscuro"] = mats["porcelanato"]   # la ducha lleva el mismo porcelanato, como en la foto
+    mats["piso_bano"] = porcelanato_piedra("REC_Piso_Bano", (0.27, 0.255, 0.235), rugosidad=0.5)
     return mats
 
 

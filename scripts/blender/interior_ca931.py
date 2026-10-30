@@ -1,6 +1,6 @@
 """
 Interiores de Cañada de Gómez 931 para los renders de plantas (docs/renders-plantas.md), calcados de los planos del
-cliente (docs/referencias/plano-planta-baja.jpg y plano-pisos-1-a-4.jpg, opción 2): muros con espesor y vanos de
+cliente (docs/referencias/plano-planta-baja.jpg y plano-pisos-1-a-4.jpg, versión corregida): muros con espesor y vanos de
 puerta, solados por ambiente, muebles low-poly, escalera y pasadizo del ascensor.
 
 No se corre solo: lo ejecuta modelar_ca931.py (comparte Malla, material, MATERIALES y las medidas). Va en la
@@ -37,40 +37,42 @@ MUROS_TIPO = [
     (4.65, 4.80, 3.20, 3.80), (4.65, 4.80, 4.70, 5.13),
     # medianera entre A y B adelante, con la puerta de B desde el palier
     (0.42, 3.00, 5.28, 5.43), (4.80, 5.40, 5.28, 5.43), (6.30, 6.90, 5.28, 5.43),
-    # estar de A / palier: muro ciego (el rack del estar va contra él). Se entra a A por el hall, entre 6,90 y 7,90
-    (4.80, 6.90, 3.05, 3.20),
+    # estar de A / palier: muro ciego (el rack del estar va contra él). Se entra a A por el hall, entre 6,50 y 7,45
+    (4.80, 6.50, 3.05, 3.20),
     # fondo del palier y medianera A|B de atrás (cocina, baño y dormitorio de B)
     (6.75, 6.90, 5.28, 5.73), (6.90, 15.50, 5.58, 5.73),
     # escalera: lateral hacia el pasillo de A y fondo (frente del dormitorio 2 de A)
-    (7.90, 11.30, 3.05, 3.20), (11.10, 11.25, 3.20, 5.58),
+    (7.45, 11.30, 3.05, 3.20), (11.10, 11.25, 3.20, 5.58),
     # dormitorio 2 de A: puerta desde el pasillo; muro con el principal
     (12.20, 15.50, 3.05, 3.20),
-    # A: estar / baños; pasillo con la puerta del baño 1. El baño 2 es en suite: se entra por el vestidor, que
-    # abre al dormitorio principal
-    (6.80, 6.90, 0.15, 2.10),
-    (6.90, 7.60, 2.00, 2.10), (8.40, 12.30, 2.00, 2.10),
+    # A: estar (6,20 de fondo) / placard del termo, que abre al pasillo; baño 1 con puerta al pasillo. El baño 2 es
+    # en suite: se entra por el vestidor, que abre al dormitorio principal
+    (6.40, 6.50, 0.15, 2.10), (7.15, 7.25, 0.15, 2.10),
+    (8.05, 12.30, 2.00, 2.10),
     (8.80, 8.90, 0.15, 2.00), (10.85, 10.95, 0.15, 0.80), (10.85, 10.95, 1.45, 2.00),
     (12.30, 12.40, 0.15, 0.80), (12.30, 12.40, 1.45, 2.15),
-    # B: cocina / pasillo; baño con puerta al pasillo; baño / dormitorio
-    (9.25, 9.35, 6.60, 8.51), (9.35, 10.10, 6.60, 6.70), (10.90, 11.65, 6.60, 6.70), (11.65, 11.75, 6.60, 8.51),
+    # B: cocina / placard del termo (abre al pasillo) / baño con puerta al pasillo / dormitorio
+    (9.25, 9.35, 6.60, 8.51), (10.02, 10.12, 6.60, 8.51), (10.90, 11.65, 6.60, 6.70), (11.65, 11.75, 6.60, 8.51),
 ]
 
 SOLADOS_TIPO = [
-    ("INT_Madera", 0.42, 6.80, 0.15, 3.05),      # estar comedor A
+    ("INT_Madera", 0.42, 6.40, 0.15, 3.05),      # estar comedor A
     ("INT_Ceramica", 0.42, 3.00, 3.05, 5.28),    # cocina A
-    ("INT_Madera", 6.90, 12.30, 2.10, 3.05),     # pasillo A
-    ("INT_Ceramica", 6.90, 8.80, 0.15, 2.00),    # baño 1 A
+    ("INT_Madera", 6.40, 12.30, 2.10, 3.05),     # pasillo A
+    ("INT_Madera", 6.50, 7.15, 0.15, 2.00),      # placard del termo A
+    ("INT_Ceramica", 7.25, 8.80, 0.15, 2.00),    # baño 1 A
     ("INT_Ceramica", 8.90, 10.85, 0.15, 2.00),   # baño 2 A
     ("INT_Madera", 10.95, 12.30, 0.15, 2.00),    # vestidor A
     ("INT_Madera", 12.40, 15.50, 0.15, 3.05),    # dormitorio principal A
     ("INT_Madera", 11.25, 15.50, 3.20, 5.58),    # dormitorio 2 A
-    ("INT_Comun", 4.80, 7.90, 3.20, 5.28),       # palier
-    ("INT_Comun", 7.90, 11.10, 3.20, 5.58),      # escalera
+    ("INT_Comun", 4.80, 7.45, 3.20, 5.28),       # palier
+    ("INT_Comun", 7.45, 11.10, 3.20, 5.58),      # escalera
     ("INT_Pozo", 3.15, 4.65, 3.20, 5.13),        # pasadizo del ascensor
     ("INT_Madera", 0.42, 6.90, 5.43, 8.51),      # estar comedor B
     ("INT_Ceramica", 6.90, 9.25, 5.73, 8.51),    # cocina B
     ("INT_Madera", 9.35, 11.65, 5.73, 6.60),     # pasillo B
-    ("INT_Ceramica", 9.35, 11.65, 6.70, 8.51),   # baño B
+    ("INT_Madera", 9.35, 10.02, 6.60, 8.51),     # placard del termo B
+    ("INT_Ceramica", 10.12, 11.65, 6.70, 8.51),  # baño B
     ("INT_Madera", 11.75, 15.50, 5.73, 8.51),    # dormitorio B
 ]
 
@@ -84,7 +86,12 @@ def muebles_tipo(m, s):
     mesada(m, 0.65, 2.35, 3.0, 3.6, banquetas="a0", pileta=True, sueltos=s)
     mesada(m, 0.65, 2.4, 4.68, 5.26, anafe=0.95)
     heladera(m, 2.4, 2.98, 4.62, 5.26)
-    bano(m, 6.9, 8.8, 0.15, 2.0, ducha="d1")
+    # baño 1: ducha adelante, junto al placard; inodoro, bidet y vanitory contra el baño 2
+    caja(m, "INT_Ducha", 7.25, 8.1, 0.15, 1.0, 0, 0.04)
+    for a in (0.45, 0.9):
+        caja(m, "INT_Sanitario", 8.25, 8.8, a - 0.18, a + 0.18, 0, 0.4)
+    caja(m, "INT_Mueble", 8.35, 8.8, 1.35, 1.9, 0, 0.85)
+    caja(m, "INT_Mueble", 6.5, 7.15, 0.15, 2.0, 0, 2.3)                       # placard del termo
     bano(m, 8.9, 10.85, 0.15, 2.0, ducha="d0")
     caja(m, "INT_Madera_Mueble", 10.95, 12.3, 0.15, 0.75, 0, 2.0)          # estantes del vestidor
     caja(m, "INT_Madera_Mueble", 10.95, 12.3, 1.5, 2.0, 0, 2.0)
@@ -100,7 +107,12 @@ def muebles_tipo(m, s):
     mesada(m, 6.85, 8.6, 7.93, 8.5, anafe=7.4)
     heladera(m, 8.6, 9.2, 7.86, 8.5)
     mesada(m, 5.95, 6.85, 6.6, 8.5, banquetas="d0", pileta=True, sueltos=s)
-    bano(m, 9.35, 11.65, 6.7, 8.51, ducha="d0")
+    caja(m, "INT_Mueble", 9.35, 10.02, 6.7, 8.51, 0, 2.3)                     # placard del termo
+    # baño: vanitory, inodoro y bidet contra el dormitorio; ducha en el rincón de la medianera
+    caja(m, "INT_Mueble", 11.2, 11.65, 6.75, 7.3, 0, 0.85)
+    for a in (7.6, 8.1):
+        caja(m, "INT_Sanitario", 11.1, 11.65, a - 0.18, a + 0.18, 0, 0.4)
+    caja(m, "INT_Ducha", 10.12, 10.95, 7.55, 8.51, 0, 0.04)
     cama(s, 13.2, 14.8, 6.51, 8.51, cabecera="a1")
     caja(m, "INT_Mueble", 13.2, 14.8, 5.73, 6.1, 0, 0.5)                      # rack del dormitorio
     caja(m, "INT_Madera_Mueble", 11.8, 12.4, 6.6, 8.5, 0, 2.0)
@@ -110,7 +122,7 @@ def muebles_tipo(m, s):
 # ---------------------------------------------------------------- planta baja
 MUROS_PB = [
     # dormitorios al frente (detrás de los listones negros), con las puertas juntas al hall; el 2 termina contra
-    # el ascensor y se entra por un paso al lado
+    # el ascensor y se entra por un paso al lado. El 1 se retira a 0,90 y deja la expansión al frente
     (0.60, 3.92, 2.47, 2.57), (3.92, 4.02, 0.15, 1.70), (3.92, 4.02, 2.47, 2.62),
     (0.60, 4.80, 5.31, 5.43),
     # pasadizo del ascensor, alineado con el de los pisos; la puerta da al hall de acceso
@@ -131,7 +143,8 @@ MUROS_PB = [
 ]
 
 SOLADOS_PB = [
-    ("INT_Madera", 0.60, 3.92, 0.15, 2.47),      # dormitorio 1
+    ("INT_Madera", 0.90, 3.92, 0.15, 2.47),      # dormitorio 1
+    ("INT_Madera", 0.10, 0.85, 0.15, 2.47),      # expansión
     ("INT_Madera", 0.60, 3.00, 2.57, 5.31),      # dormitorio 2
     ("INT_Madera", 3.00, 3.92, 2.57, 3.42),
     ("INT_Madera", 3.92, 7.45, 2.10, 3.30),      # pasillo interno
@@ -157,7 +170,7 @@ SOLADOS_PB = [
 
 def muebles_pb(m, s):
     # dormitorios 1 y 2: camas de una plaza con la cabecera contra la medianera y contra el hall (plano)
-    cama(s, 0.9, 1.8, 0.15, 2.15, cabecera="a0", mesitas=False)
+    cama(s, 1.0, 1.9, 0.15, 2.15, cabecera="a0", mesitas=False)
     cama(s, 0.8, 1.7, 3.31, 5.31, cabecera="a1", mesitas=False)
     caja(m, "INT_Madera_Mueble", 2.45, 3.0, 3.57, 5.31, 0, 2.0)            # placard del dormitorio 2
     caja(m, "INT_Madera_Mueble", 0.75, 1.95, 2.57, 3.02, 0.72, 0.75)        # escritorio
