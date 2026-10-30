@@ -124,9 +124,13 @@ def vano(p, mats, eje, c, u0, u1, espesor, alto, puerta=None, **opciones):
     """dintel de mampostería sobre un vano y, si va, la puerta con marco (vestir_interior.puerta: eje "x" = muro a
     lo largo de d en a = c; "y" = a lo largo de a en d = c)"""
     e = espesor / 2
+    # los solados terminan en la cara de los tabiques: en el vano se veía la losa. Madera de lado a lado, 1 mm abajo
+    # de los solados para no quedar coplanar donde se pisan
     if eje == "x":
+        p.caja(c - e - 0.01, u0, c + e + 0.01, u1, 0, 0.019, mats["piso"], 0.0)
         p.caja(c - e, u0, c + e, u1, DINTEL_PUERTAS, alto, mats["pared"], 0.0)
     else:
+        p.caja(u0, c - e - 0.01, u1, c + e + 0.01, 0, 0.019, mats["piso"], 0.0)
         p.caja(u0, c - e, u1, c + e, DINTEL_PUERTAS, alto, mats["pared"], 0.0)
     if puerta:
         # manijas negras, como las aberturas (pedido del cliente)
@@ -858,6 +862,7 @@ def materiales_recorrido(mats):
     liso = vi["liso"]
     mats = dict(mats)
     mats["pared"] = bpy.data.materials["INT_Muro"]
+    mats["piso"] = bpy.data.materials["INT_Madera"]
     mats["cielorraso"] = liso("REC_Cielorraso", (0.82, 0.82, 0.81), 0.85)
     mats["sombra"] = liso("REC_Sanitario_Interior", (0.8, 0.8, 0.79), 0.08)
     mats["screen"] = vi["voile"]("REC_Screen")

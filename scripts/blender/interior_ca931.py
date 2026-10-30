@@ -57,7 +57,7 @@ MUROS_TIPO = [
 
 SOLADOS_TIPO = [
     ("INT_Madera", 0.42, 6.40, 0.15, 3.05),      # estar comedor A
-    ("INT_Ceramica", 0.42, 3.00, 3.05, 5.28),    # cocina A
+    ("INT_Madera", 0.42, 3.00, 3.05, 5.28),      # cocina A (madera, como el resto: cliente)
     ("INT_Madera", 6.40, 12.30, 2.10, 3.05),     # pasillo A
     ("INT_Madera", 6.50, 7.15, 0.15, 2.00),      # placard del termo A
     ("INT_Ceramica", 7.25, 8.80, 0.15, 2.00),    # baño 1 A
@@ -69,7 +69,7 @@ SOLADOS_TIPO = [
     ("INT_Comun", 7.45, 11.10, 3.20, 5.58),      # escalera
     ("INT_Pozo", 3.15, 4.65, 3.20, 5.13),        # pasadizo del ascensor
     ("INT_Madera", 0.42, 6.90, 5.43, 8.51),      # estar comedor B
-    ("INT_Ceramica", 6.90, 9.25, 5.73, 8.51),    # cocina B
+    ("INT_Madera", 6.90, 9.25, 5.73, 8.51),      # cocina B
     ("INT_Madera", 9.35, 11.65, 5.73, 6.60),     # pasillo B
     ("INT_Madera", 9.35, 10.02, 6.60, 8.51),     # placard del termo B
     ("INT_Ceramica", 10.12, 11.65, 6.70, 8.51),  # baño B
@@ -152,7 +152,7 @@ SOLADOS_PB = [
     ("INT_Ceramica", 4.62, 7.35, 0.15, 2.00),    # baño 1
     ("INT_Madera", 7.45, 15.50, 0.15, 3.30),     # estar comedor
     ("INT_Madera", 11.40, 12.30, 3.30, 5.40),
-    ("INT_Ceramica", 12.30, 15.50, 3.30, 5.40),  # cocina
+    ("INT_Madera", 12.30, 15.50, 3.30, 5.40),    # cocina
     ("INT_Madera", 12.30, 15.50, 5.50, 8.51),    # dormitorio 3
     ("INT_Madera", 10.40, 12.30, 5.50, 8.51),    # paso con placard
     ("INT_Madera", 11.40, 12.15, 5.40, 5.50),

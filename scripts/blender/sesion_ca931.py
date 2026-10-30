@@ -115,7 +115,10 @@ def _preparar_recorrido(rr, cambios):
         if o.get("reemplaza") and o["reemplaza"] in bpy.data.objects:
             cambios.fijar(bpy.data.objects[o["reemplaza"]], "hide_render", True)
     rn = bpy.app.driver_namespace["ca931"]["renders"]
+    # sin macetas de caja: la de la expansión de planta baja quedaba en la ventana del dormitorio 1 (en los
+    # balcones las tapan las de Poly Haven)
     mats = rn["materiales_render"]()
+    mats["WEB_Maceta"] = mats["WEB_Planta"]
     for o in bpy.data.objects:
         if o.type == "MESH":
             for i, m in enumerate(o.data.materials):
@@ -126,7 +129,7 @@ def _preparar_recorrido(rr, cambios):
             cambios.fijar(o, "hide_render", True)  # los de caja: en su lugar, los de la plantilla
     col = bpy.data.collections.new("R_Recorrido")
     esc.collection.children.link(col)
-    rn["plantas"](col)
+    rn["plantas"](col, jardinera=False)
 
     def sacar():
         for o in list(col.all_objects):
@@ -136,10 +139,11 @@ def _preparar_recorrido(rr, cambios):
     cambios.fijar(esc.cycles, "device", "GPU")
 
 
-def previa(nombre, camara, giro=0.0, muestras=128, lente=14, ancho=960, alto=540, extra=None):
+def previa(nombre, camara, giro=0.0, muestras=128, lente=14, ancho=960, alto=540, extra=None, inclinar=0.0):
     """
     perspectiva rápida desde la cámara Pano_* `camara` (girada `giro` grados a la derecha) con el mismo ambiente
-    que la panorámica: para revisar antes de la tanda (~10 s). PNG en blender/web/previas/<nombre>.png
+    que la panorámica: para revisar antes de la tanda (~10 s). PNG en blender/web/previas/<nombre>.png.
+    inclinar: grados hacia abajo (para revisar pisos y umbrales)
     """
     import math
     import time
@@ -160,7 +164,7 @@ def previa(nombre, camara, giro=0.0, muestras=128, lente=14, ancho=960, alto=540
     esc.collection.objects.link(cam)
     f = pano.matrix_world.to_3x3() @ Vector((0, 0, -1))
     cam.location = pano.matrix_world.translation
-    cam.rotation_euler = (math.radians(90), 0, math.atan2(-f.x, f.y) - math.radians(giro))
+    cam.rotation_euler = (math.radians(90 - inclinar), 0, math.atan2(-f.x, f.y) - math.radians(giro))
     antes = esc.camera, esc.render.filepath
     os.makedirs(PREVIAS, exist_ok=True)
     try:

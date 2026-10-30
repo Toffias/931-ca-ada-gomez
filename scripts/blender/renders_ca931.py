@@ -171,15 +171,16 @@ def colocar(slug, col, x, y, giro, z):
         col.objects.link(c)
 
 
-def plantas(col):
-    """macetas con plantas reales en los balcones del 3 ambientes, colgantes en el 2 ambientes y en la jardinera"""
+def plantas(col, jardinera=True):
+    """macetas con plantas reales en los balcones del 3 ambientes, colgantes en el 2 ambientes y en la jardinera
+    (ésta no en el recorrido: tapaba las ventanas de los dormitorios de planta baja)"""
     g = medidas()
     for n in range(1, g["PISOS"] + 1):
         z = g["ALTO_PB"] + (n - 1) * g["ALTO_PISO"] + g["LOSA"]
         colocar("potted_plant_01", col, g["X0"] + g["ALETA"] + 0.4, -g["BALCON"] + 0.4, -60, z)
         colocar("potted_plant_01", col, g["MAD_I"] - 0.45, -g["BALCON"] + 0.4, 40, z)
         colocar("potted_plant_02", col, g["X1"] - 0.6, -g["BALCON"] + 0.06, 25, z + 1.0)  # sobre el antepecho
-    for x in (g["X0"] + 1.5, g["X0"] + 3.0):
+    for x in (g["X0"] + 1.5, g["X0"] + 3.0) if jardinera else ():
         colocar("potted_plant_01", col, x, 0.3, 0, 0.4)
 
 

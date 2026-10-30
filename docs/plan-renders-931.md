@@ -195,7 +195,8 @@ encolado; ~15 min por panorámica de 6144 × 3072 en la RX 6700 XT). El seed los
 `src/seed/assets/ca931/recorridos/<recorrido>/` y prende la sección.
 
 **Terminaciones interiores (las pasó el cliente, 29/10, con fotos de referencia de cocina y baño).** Piso de madera
-(porcelanato símil madera en tablas: la textura `wood_floor` ya lo es); cocina con muebles laqueados taupe y perfil
+(porcelanato símil madera en tablas: la textura `wood_floor` ya lo es) en toda la unidad, cocina incluida y
+corrido por los vanos de las puertas (30/10); cocina con muebles laqueados taupe y perfil
 gola de aluminio, mesada de granito negro pulido con desayunador en cascada hasta el piso, bacha gris, anafe a gas
 gris con horno negro abajo y revestimiento símil mármol blanco veteado entre mesada y alacenas; baños en porcelanato
 gris piedra de 60 × 120 en paredes y piso, vanitory de roble suspendido de dos cajones con mesada gris y bacha bajo
