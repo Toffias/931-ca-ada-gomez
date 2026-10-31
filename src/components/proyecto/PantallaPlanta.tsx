@@ -25,6 +25,7 @@ type Props = {
   niveles: Nivel[]
   unidades: Unidad[]
   escena: Escena | null
+  foto?: string | null
   pois: PuntoDeInteres[]
   amenities: Record<string, string>
   resaltar?: string | null
@@ -33,7 +34,7 @@ type Props = {
 }
 
 // Planta de un piso (spec E) o nivel especial con puntos de interés (spec F).
-export function PantallaPlanta({ torre, torres, nivel, niveles, unidades, escena, pois, amenities, resaltar, conTour, dormitoriosPosibles }: Props) {
+export function PantallaPlanta({ torre, torres, nivel, niveles, unidades, escena, foto, pois, amenities, resaltar, conTour, dormitoriosPosibles }: Props) {
   const router = useRouter()
   const rutas = useRutas()
   const t = useTextos()
@@ -79,6 +80,8 @@ export function PantallaPlanta({ torre, torres, nivel, niveles, unidades, escena
 
   return (
     <div className="pantalla pantalla-planta" onPointerMove={(e) => s.hover && setMouse([e.clientX, e.clientY])}>
+      {/* foto del frente, muy desenfocada y lavada hacia el fondo del tema, detrás de la manzana */}
+      {foto && <div className="planta-ambiente" style={{ '--foto': `url("${foto}")` } as React.CSSProperties} aria-hidden />}
       <div className={`planta-lienzo${escena?.fondo ? ' con-render' : ''}`}>
         {escena ? (
           <VisorEscena

@@ -36,11 +36,20 @@ export type EsquemaDibujo = {
 
 export type ImagenEscena = { url: string; alt?: string }
 
+/** manzana dibujada detrás de un render de planta transparente (ver components/escena/Manzana) */
+export type EntornoEscena = {
+  /** caja del edificio en el render, en unidades del viewBox: [x0, y0, x1, y1]; y1 es la línea municipal */
+  huella: [number, number, number, number]
+  /** nombre de la calle del frente */
+  calle?: string | null
+}
+
 export type Escena = {
   ancho: number
   alto: number
   /** render pre-generado; si falta se dibuja `esquema` */
   fondo?: ImagenEscena | null
   esquema?: EsquemaDibujo | null
+  entorno?: EntornoEscena | null
   formas: FormaEscena[]
 }

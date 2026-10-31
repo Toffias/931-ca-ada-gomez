@@ -7,6 +7,7 @@ import { cache } from 'react'
 import type { Edificio, Media } from '@/payload-types'
 
 import { imagen, obtenerEdificio, obtenerEdificios, obtenerSitio } from './datos'
+import { huellaRender } from './escena/huella'
 import { leerMascara } from './escena/mascara'
 import type { Escena, FormaEscena } from './escena/tipos'
 import { carasConUnidades, esquemaFachada, type Orientacion } from './esquemas/fachada'
@@ -74,7 +75,11 @@ const escalaDe = (e: Edificio) => e.config3D?.escala ?? 1
 
 // ---------- plantas ----------
 
-export type EscenaNivel = { escena: Escena | null; pois: PuntoDeInteres[] }
+/** `foto`: toma de la fachada que va muy desenfocada detrás de las plantas transparentes */
+export type EscenaNivel = { escena: Escena | null; pois: PuntoDeInteres[]; foto?: string | null }
+
+/** "Cañada de Gómez 931, Rosario" → "Cañada de Gómez" */
+const nombreCalle = (direccion?: string | null) => direccion?.split(',')[0].replace(/\s+\d.*$/, '').trim() || null
 
 export const escenaNivel = cache(async (slug: string, piso: number): Promise<EscenaNivel> => {
   const e = await obtenerEdificio(slug)
@@ -95,14 +100,22 @@ export const escenaNivel = cache(async (slug: string, piso: number): Promise<Esc
   const mascara = await mascaraDe(nivel?.mascara)
   // un render sin máscara sólo sirve si el nivel no tiene unidades (los POI van en %)
   if (cenital && (mascara || nivel?.tipo === 'especial')) {
+    const ancho = mascara?.ancho ?? cenital.ancho ?? 1000
+    const alto = mascara?.alto ?? cenital.alto ?? 1000
+    // render transparente: detrás va la manzana, armada sobre la caja del edificio, y la foto del frente
+    const media = esMedia(elegido) && imagen(elegido) ? elegido : esMedia(otro) ? otro : null
+    const huella = media ? await huellaRender(`${media.filename}:${media.updatedAt}`, () => leerMedia(media), ancho, alto) : null
+    const foto = huella ? imagen(e.vistasDisponibilidad?.[0]?.imagen) ?? imagen((await obtenerSitio()).giro?.[0]?.imagen) : null
     return {
       escena: {
-        ancho: mascara?.ancho ?? cenital.ancho ?? 1000,
-        alto: mascara?.alto ?? cenital.alto ?? 1000,
+        ancho,
+        alto,
         fondo: { url: cenital.grande, alt: cenital.alt },
+        entorno: huella ? { huella, calle: nombreCalle(e.direccion) } : null,
         formas: mascara?.formas.filter((f) => f.tipo === 'unidad') ?? [],
       },
       pois,
+      foto: foto?.chica,
     }
   }
 

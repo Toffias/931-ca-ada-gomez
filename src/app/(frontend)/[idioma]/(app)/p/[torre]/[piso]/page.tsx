@@ -26,7 +26,7 @@ export default async function PaginaPlanta({ params, searchParams }: Props) {
   const nivel = torre?.niveles.find((n) => n.piso === piso)
   if (!torre || !nivel || !Number.isInteger(piso)) notFound()
 
-  const [torres, todas, { escena, pois }, amenities, visibles] = await Promise.all([
+  const [torres, todas, { escena, pois, foto }, amenities, visibles] = await Promise.all([
     obtenerTorres(),
     obtenerUnidadesDeTorre(slug),
     escenaNivel(slug, piso),
@@ -43,6 +43,7 @@ export default async function PaginaPlanta({ params, searchParams }: Props) {
       niveles={torre.niveles}
       unidades={unidades}
       escena={escena}
+      foto={foto}
       pois={pois}
       amenities={Object.fromEntries(visibles.amenities ? amenities.map((a) => [a.slug, a.nombre]) : [])}
       resaltar={u}

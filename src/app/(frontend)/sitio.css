@@ -208,6 +208,21 @@
 .planta-lienzo.con-render { inset: 0;
   --encuadre-arriba: calc(var(--barra) + 16px); --encuadre-derecha: 96px; --encuadre-abajo: 24px; --encuadre-izquierda: 24px; }
 .planta-lienzo.con-render .controles-zoom { right: 88px; }
+/* detrás de un render transparente: la foto del frente muy desenfocada y lavada hacia el fondo del tema, para que
+   dé color y luz sin leerse; encima, la manzana en líneas finas (components/escena/Manzana) */
+.planta-ambiente { position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+  --filtro-ambiente: blur(24px) brightness(.7) saturate(.95); --velo-ambiente: color-mix(in srgb, var(--fondo) 52%, transparent); }
+:root[data-tema='claro'] .planta-ambiente {
+  --filtro-ambiente: blur(24px) brightness(1.15) saturate(.75); --velo-ambiente: color-mix(in srgb, var(--fondo) 58%, transparent); }
+.planta-ambiente::before { content: ''; position: absolute; inset: -6%; background: var(--foto) center / cover no-repeat; filter: var(--filtro-ambiente); }
+.planta-ambiente::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 85% at 50% 50%, var(--velo-ambiente), var(--fondo) 130%); }
+.manzana-rayado { stroke: rgb(var(--tinta) / .06); stroke-width: 6px; vector-effect: non-scaling-stroke; }
+.manzana-lote { fill: rgb(var(--tinta) / .05); stroke: rgb(var(--tinta) / .32); stroke-width: 1.25px; vector-effect: non-scaling-stroke; }
+.manzana-vereda { fill: rgb(var(--tinta) / .1); }
+.manzana-cordon { stroke: rgb(var(--tinta) / .25); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.manzana-eje { stroke: rgb(var(--tinta) / .4); stroke-width: 2px; vector-effect: non-scaling-stroke; }
+.manzana-arbol { fill: rgb(var(--tinta) / .11); stroke: rgb(var(--tinta) / .18); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.manzana-calle { fill: rgb(var(--tinta) / .6); font-weight: 600; }
 /* los textos van en cards con fondo propio: no dependen de lo que haya detrás en la imagen */
 .planta-titulo { position: absolute; top: calc(var(--barra) + 4px); left: 20px; z-index: 5; display: grid; gap: 2px; pointer-events: none;
   padding: 12px 16px; border-radius: var(--radio); background: var(--tarjeta); border: 1px solid var(--borde); box-shadow: var(--sombra);

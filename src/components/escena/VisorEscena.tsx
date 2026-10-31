@@ -10,6 +10,7 @@ import type { PuntoDeInteres } from '@/lib/tipos'
 
 import { Icono } from '../ui/Icono'
 import { useTextos } from '../ui/ProveedorIdioma'
+import { formaCalle, Manzana } from './Manzana'
 
 export type EventoForma = { forma: FormaEscena; x: number; y: number }
 
@@ -63,7 +64,7 @@ export function VisorEscena({
   zoom = false,
   className,
 }: Props) {
-  const { ancho, alto, fondo, esquema, formas } = escena
+  const { ancho, alto, fondo, esquema, entorno, formas } = escena
   const t = useTextos()
   const inicio = useRef<[number, number] | null>(null)
   const caja = useRef<HTMLDivElement>(null)
@@ -118,7 +119,8 @@ export function VisorEscena({
           izquierda: px('izquierda'),
           cubrir: getComputedStyle(el).getPropertyValue('--encuadre-cubrir').trim() === '1',
         }
-        const e = encuadreCubrir({ ancho, alto, formas }, width, height, m)
+        // con manzana, el encuadre se aleja lo necesario para mostrar también la calle
+        const e = encuadreCubrir({ ancho, alto, formas: entorno ? [...formas, formaCalle(entorno)] : formas }, width, height, m)
         setVista(e.vista)
         setPxPorUnidad(e.escala)
         return
@@ -131,7 +133,7 @@ export function VisorEscena({
     const ro = new ResizeObserver(medir)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [ancho, alto, ajuste, formas])
+  }, [ancho, alto, ajuste, formas, entorno])
   // con 'cubrir-formas' el texto se mide sobre lo que se ve, no sobre toda la imagen
   const lado = vista ? Math.max(vista[2], vista[3]) : Math.max(ancho, alto)
   const fuente = Math.min(Math.max(lado / 48, 15 / pxPorUnidad), lado / 22)
@@ -151,6 +153,7 @@ export function VisorEscena({
       role="img"
       aria-label={esquema?.titulo ?? fondo?.alt ?? t.escena.plano}
     >
+      {entorno && <Manzana entorno={entorno} />}
       {fondo && <image href={fondo.url} x={0} y={0} width={ancho} height={alto} preserveAspectRatio="xMidYMid slice" />}
 
       {esquema && (
