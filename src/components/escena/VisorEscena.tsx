@@ -232,6 +232,7 @@ export function VisorEscena({
             return (
               <g key={k} transform={`translate(${f.centro[0]} ${f.centro[1]})`}>
                 <g className={clases} style={colorDe?.(f) ? ({ '--color': colorDe(f) } as React.CSSProperties) : undefined}>
+                  <circle className="marcador-latido" r={r * 1.9} />
                   <circle className="marcador-halo" r={r * 2.6} />
                   <circle className="marcador-anillo" r={r * 1.9} />
                   <circle className="marcador-punto" r={r} />

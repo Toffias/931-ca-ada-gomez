@@ -88,6 +88,9 @@ export function PantallaPlanta({ torre, torres, nivel, niveles, unidades, escena
             apagada={s.apagada}
             hover={s.hover?.unidad.codigo}
             resaltada={s.elegida?.unidad.codigo ?? resaltar}
+            // sobre el render, los mismos circulitos que en Disponibilidad; el esquema sigue con etiquetas
+            etiquetas={!escena.fondo}
+            marcadores={!!escena.fondo}
             etiquetaDe={(f) => {
               const u = s.unidadDe(f)
               return u ? t.escena.unidadEstado(u.codigo, t.estados[s.estadoDe(u)]) : f.clave

@@ -178,6 +178,15 @@
 .marcador.hover, .marcador.resaltada { transform: scale(1.3); }
 .marcador.hover .marcador-halo, .marcador.resaltada .marcador-halo { opacity: .28; }
 .marcador.apagada { opacity: .3; }
+/* latido: un anillo del color del estado que se expande y se apaga, para invitar a tocar la unidad */
+.marcador-latido { fill: none; stroke: var(--color); stroke-width: 2; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center;
+  animation: latido-marcador 2.4s var(--ease) infinite; }
+.marcador.apagada .marcador-latido, .marcador.hover .marcador-latido, .marcador.resaltada .marcador-latido { animation: none; opacity: 0; }
+@keyframes latido-marcador {
+  0% { transform: scale(1); opacity: .9; }
+  70%, 100% { transform: scale(2.4); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .marcador-latido { animation: none; opacity: 0; } }
 
 .etiqueta { pointer-events: none; --color: var(--muted); }
 .etiqueta rect { fill: color-mix(in srgb, var(--superficie) 88%, transparent); stroke: var(--color); stroke-width: 2; vector-effect: non-scaling-stroke; }

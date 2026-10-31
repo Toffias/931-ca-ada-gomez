@@ -13,9 +13,9 @@ import type { Seccion, Torre } from './tipos'
 
 export type ItemMenu = { href: string; etiqueta: string; icono: NombreIcono; hijos?: { href: string; etiqueta: string }[] }
 
-/** piso con el que se abre "Plantas": el primero con unidades, contando desde abajo */
+/** piso con el que se abre "Plantas": el más alto con unidades (niveles viene de arriba hacia abajo) */
 export const pisoInicial = (t: Torre) =>
-  [...t.niveles].reverse().find((n) => n.tipo === 'unidades')?.piso ?? t.niveles.at(-1)?.piso ?? 0
+  t.niveles.find((n) => n.tipo === 'unidades')?.piso ?? t.niveles[0]?.piso ?? 0
 
 /** una sección se ve si está prendida en el admin y además tiene contenido */
 export const seccionesVisibles = cache(async (): Promise<Record<Seccion, boolean>> => {
