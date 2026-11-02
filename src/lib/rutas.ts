@@ -28,6 +28,8 @@ const base = {
   // modo: 'info', 'ilustrado' o una vista de mapa ('mapa', 'streetview', 'cerca-supermercados'…)
   ubicacion: (modo: string = 'info') => `/ubicacion/${modo}`,
   contacto: () => '/contacto',
+  // link de baja de los mails del avance de obra
+  bajaObra: (token: string) => `/baja?t=${encodeURIComponent(token)}`,
   blog: (slug?: string | null) => `/blog${slug ? `/${slug}` : ''}`,
 }
 

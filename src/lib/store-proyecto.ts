@@ -19,6 +19,7 @@ type EstadoProyecto = {
   consulta: PedidoConsulta | null
   menuAbierto: boolean
   qrAbierto: boolean
+  suscripcionAbierta: boolean
 
   set: (p: Partial<Omit<EstadoProyecto, 'set'>>) => void
 }
@@ -31,6 +32,7 @@ export const useProyecto = create<EstadoProyecto>((set) => ({
   consulta: null,
   menuAbierto: false,
   qrAbierto: false,
+  suscripcionAbierta: false,
 
   set: (p) => set(p),
 }))

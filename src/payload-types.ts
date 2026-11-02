@@ -76,6 +76,7 @@ export interface Config {
     articulos: Articulo;
     autores: Autor;
     consultas: Consulta;
+    'suscriptores-obra': SuscriptorObra;
     media: Media;
     users: User;
     'payload-kv': PayloadKv;
@@ -94,6 +95,7 @@ export interface Config {
     articulos: ArticulosSelect<false> | ArticulosSelect<true>;
     autores: AutoresSelect<false> | AutoresSelect<true>;
     consultas: ConsultasSelect<false> | ConsultasSelect<true>;
+    'suscriptores-obra': SuscriptoresObraSelect<false> | SuscriptoresObraSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -486,6 +488,10 @@ export interface AvanceDeObra {
   fecha: string;
   edificio?: (number | null) | Edificio;
   texto?: string | null;
+  /**
+   * Al crear el avance se manda un mail a cada suscriptor (Ventas → Suscriptores). Destildar para cargar entregas viejas sin avisar.
+   */
+  avisarSuscriptores?: boolean | null;
   fotos?:
     | {
         imagen: number | Media;
@@ -609,6 +615,25 @@ export interface Consulta {
   createdAt: string;
 }
 /**
+ * Reciben un mail cada vez que se carga un avance de obra nuevo. Cada mail trae su link para darse de baja.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "suscriptores-obra".
+ */
+export interface SuscriptorObra {
+  id: number;
+  email: string;
+  /**
+   * Los mails le llegan en este idioma.
+   */
+  idioma?: ('es' | 'en') | null;
+  activo?: boolean | null;
+  bajaEn?: string | null;
+  token?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -694,6 +719,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'consultas';
         value: number | Consulta;
+      } | null)
+    | ({
+        relationTo: 'suscriptores-obra';
+        value: number | SuscriptorObra;
       } | null)
     | ({
         relationTo: 'media';
@@ -954,6 +983,7 @@ export interface AvancesDeObraSelect<T extends boolean = true> {
   fecha?: T;
   edificio?: T;
   texto?: T;
+  avisarSuscriptores?: T;
   fotos?:
     | T
     | {
@@ -1029,6 +1059,19 @@ export interface ConsultasSelect<T extends boolean = true> {
   edificio?: T;
   unidad?: T;
   estado?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "suscriptores-obra_select".
+ */
+export interface SuscriptoresObraSelect<T extends boolean = true> {
+  email?: T;
+  idioma?: T;
+  activo?: T;
+  bajaEn?: T;
+  token?: T;
   updatedAt?: T;
   createdAt?: T;
 }

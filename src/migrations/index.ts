@@ -4,6 +4,7 @@ import * as migration_20260929_193113_idiomas_contenido from './20260929_193113_
 import * as migration_20260929_201328_blog from './20260929_201328_blog';
 import * as migration_20260929_221042_blog_autores from './20260929_221042_blog_autores';
 import * as migration_20261028_000935_video_entrada from './20261028_000935_video_entrada';
+import * as migration_20261102_164341_suscripcion_obra from './20261102_164341_suscripcion_obra';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261028_000935_video_entrada.up,
     down: migration_20261028_000935_video_entrada.down,
-    name: '20261028_000935_video_entrada'
+    name: '20261028_000935_video_entrada',
+  },
+  {
+    up: migration_20261102_164341_suscripcion_obra.up,
+    down: migration_20261102_164341_suscripcion_obra.down,
+    name: '20261102_164341_suscripcion_obra'
   },
 ];

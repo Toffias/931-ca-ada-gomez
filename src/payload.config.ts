@@ -16,6 +16,7 @@ import { Consultas } from './collections/Consultas'
 import { Edificios } from './collections/Edificios'
 import { Media } from './collections/Media'
 import { Recorridos } from './collections/Recorridos'
+import { SuscriptoresObra } from './collections/SuscriptoresObra'
 import { Tipologias } from './collections/Tipologias'
 import { Unidades } from './collections/Unidades'
 import { Users } from './collections/Users'
@@ -46,7 +47,7 @@ export default buildConfig({
   },
   // idioma del contenido (el de la interfaz del admin es i18n, arriba)
   localization: LOCALIZACION,
-  collections: [Edificios, Tipologias, Unidades, Amenities, Recorridos, AvancesDeObra, Articulos, Autores, Consultas, Media, Users],
+  collections: [Edificios, Tipologias, Unidades, Amenities, Recorridos, AvancesDeObra, Articulos, Autores, Consultas, SuscriptoresObra, Media, Users],
   globals: [Sitio],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

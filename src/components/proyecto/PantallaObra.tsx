@@ -7,6 +7,7 @@ import type { Imagen } from '@/lib/tipos'
 
 import { Galeria } from '../ui/Galeria'
 import { useIdioma, useTextos } from '../ui/ProveedorIdioma'
+import { BotonSuscripcionObra } from './SuscripcionObra'
 
 export type Avance = { id: number | string; titulo: string; fecha: string; texto?: string | null; fotos: Imagen[] }
 
@@ -36,6 +37,7 @@ export function PantallaObra({ avances }: { avances: Avance[] }) {
           {dia.format(new Date(a.fecha))}
         </time>
         {a.texto && <p>{a.texto}</p>}
+        <BotonSuscripcionObra />
 
         <nav className="obra-linea" aria-label={t.entregas}>
           {[...meses.entries()].map(([m, items]) => (

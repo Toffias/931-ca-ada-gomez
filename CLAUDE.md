@@ -21,6 +21,10 @@ acá ("Use this template" en GitHub) y se configura con la checklist de abajo. L
 - Leads: se guardan en Payload (colección `Consultas`) y cada una se avisa por mail (`src/lib/aviso-consulta.ts`,
   vía `after()`) a *Proyecto → Contacto → Emails que reciben las consultas* (o al email de contacto). Mails con
   **Resend** si hay `RESEND_API_KEY`; si no, `src/lib/email-consola.ts` los imprime en la consola del server.
+- Suscripción al avance de obra (colección `SuscriptoresObra`, `src/lib/suscripcion-obra.ts`): modal que sale
+  solo la primera vez (localStorage) si la sección Obra está prendida, y botón en Obra. Cada avance **creado desde el
+  admin** (con usuario: el seed y los snapshots no avisan) manda un mail a cada suscriptor en su idioma, con link de
+  baja (`/baja?t=<token>`, confirma con un clic) y `List-Unsubscribe` de un clic (`/api/suscripcion/baja`).
 - Blog (colección `Articulos`, con borradores, y `Autores`): lo carga el cliente para SEO/GEO. `/blog` y `/blog/<slug>` se dibujan
   enteros en el servidor con canonical/hreflang, Open Graph y JSON-LD (`BlogPosting`, `BreadcrumbList`, `FAQPage`,
   en `src/lib/datos-estructurados.ts`). También van al sitemap y a `/llms.txt`; `robots.ts` deja pasar a los

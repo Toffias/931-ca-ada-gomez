@@ -19,17 +19,20 @@ import { ConsultaModal } from './ConsultaModal'
 import { ModalQR } from './ModalQR'
 import { SelectorIdioma } from './SelectorIdioma'
 import { SincronizarDisponibilidad } from './SincronizarDisponibilidad'
+import { ModalSuscripcionObra } from './SuscripcionObra'
 
 type Props = {
   proyecto: Pick<Proyecto, 'nombre' | 'logo' | 'contacto' | 'legal' | 'privacidad' | 'desarrolladora' | 'tema'>
   menu: ItemMenu[]
   disponibilidad: Disponibilidad
+  /** sección Obra prendida en el admin: ofrece la suscripción a los avances la primera vez */
+  suscripcionObra: boolean
   children: React.ReactNode
 }
 
 // Navegación global (spec B): menú lateral, tema, QR de la pantalla, pantalla completa y zoom.
 // Vive en el layout, así no se remonta al pasar de una pantalla a otra.
-export function Marco({ proyecto, menu, disponibilidad, children }: Props) {
+export function Marco({ proyecto, menu, disponibilidad, suscripcionObra, children }: Props) {
   const pathname = usePathname()
   const rutas = useRutas()
   const t = useTextos()
@@ -147,6 +150,7 @@ export function Marco({ proyecto, menu, disponibilidad, children }: Props) {
         <AvisoLlegada />
       </Suspense>
       <ConsultaModal privacidad={proyecto.privacidad} whatsapp={c.whatsapp} motivos={c.motivos} />
+      <ModalSuscripcionObra privacidad={proyecto.privacidad} automatico={suscripcionObra} />
     </div>
   )
 }

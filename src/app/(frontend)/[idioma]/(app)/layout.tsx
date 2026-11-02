@@ -6,7 +6,7 @@ import { armarMenu } from '@/lib/navegacion'
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const [proyecto, menu, disponibilidad] = await Promise.all([obtenerProyecto(), armarMenu(), obtenerDisponibilidad()])
   return (
-    <Marco proyecto={proyecto} menu={menu} disponibilidad={disponibilidad}>
+    <Marco proyecto={proyecto} menu={menu} disponibilidad={disponibilidad} suscripcionObra={proyecto.secciones.obra}>
       {children}
     </Marco>
   )

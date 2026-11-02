@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 
 import { avisarConsulta } from '@/lib/aviso-consulta'
 import { esIdioma, IDIOMA_DEFECTO } from '@/lib/idiomas'
+import { darDeBaja, mandarBienvenida, suscribir } from '@/lib/suscripcion-obra'
 import { textosDe } from '@/textos'
 
 export type ResultadoConsulta = { ok: boolean; mensaje: string }
@@ -65,5 +66,43 @@ export async function enviarConsulta(_prev: ResultadoConsulta | null, form: Form
   } catch (err) {
     console.error('[consulta]', err)
     return { ok: false, mensaje: t.error }
+  }
+}
+
+const idiomaDe = (form: FormData) => {
+  const v = form.get('idioma')
+  return esIdioma(v) ? v : IDIOMA_DEFECTO
+}
+
+/** Alta en los avisos del avance de obra (modal de la web). Se ve en el admin → Ventas → Suscriptores. */
+export async function suscribirseObra(_prev: ResultadoConsulta | null, form: FormData): Promise<ResultadoConsulta> {
+  const idioma = idiomaDe(form)
+  const t = textosDe(idioma).suscripcion
+  if (form.get('sitio_web')) return { ok: true, mensaje: '' }
+
+  const email = String(form.get('email') ?? '').trim().slice(0, 200)
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, mensaje: t.emailInvalido }
+
+  try {
+    const payload = await getPayload({ config })
+    const nuevo = await suscribir(payload, email, idioma)
+    // a quien ya estaba suscripto no se le vuelve a mandar la bienvenida (ni se le avisa que ya estaba)
+    if (nuevo) after(() => mandarBienvenida(payload, nuevo).catch((err) => console.error('[suscripción obra] bienvenida', err)))
+    return { ok: true, mensaje: '' }
+  } catch (err) {
+    console.error('[suscripción obra]', err)
+    return { ok: false, mensaje: t.error }
+  }
+}
+
+/** Baja desde el link de los mails: pide un clic en la página, así los antivirus que abren los links no dan de baja a nadie. */
+export async function bajaObra(_prev: ResultadoConsulta | null, form: FormData): Promise<ResultadoConsulta> {
+  const t = textosDe(idiomaDe(form)).suscripcion
+  try {
+    const ok = await darDeBaja(await getPayload({ config }), String(form.get('token') ?? ''))
+    return ok ? { ok: true, mensaje: '' } : { ok: false, mensaje: t.bajaInvalida }
+  } catch (err) {
+    console.error('[suscripción obra] baja', err)
+    return { ok: false, mensaje: t.bajaError }
   }
 }

@@ -445,6 +445,19 @@ a.chip.activo { border-color: var(--acento); background: color-mix(in srgb, var(
 .obra-miniaturas button.activa { border-color: var(--acento); }
 .obra-miniaturas img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; }
 .obra-miniaturas span { font-size: 12px; line-height: 1.3; }
+.obra-panel .obra-suscripcion { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; margin-top: 4px; }
+.obra-suscripcion svg { width: 18px; height: 18px; }
+
+/* ---------- suscripción al avance de obra (modal y página de baja) ---------- */
+.suscripcion-texto { margin: 0; color: var(--texto-2); font-size: 14.5px; line-height: 1.55; }
+.suscripcion-aviso { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+.suscripcion-acciones { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.pantalla-baja { display: grid; place-items: center; padding: 72px 16px 24px; overflow-y: auto; }
+.baja-caja { width: 100%; max-width: 440px; display: grid; gap: 12px; padding: 24px; background: var(--superficie); border: 1px solid var(--borde); border-radius: 18px; box-shadow: var(--sombra); }
+.baja-caja h1 { margin: 0; font-size: 24px; }
+.baja-caja p { margin: 0; color: var(--texto-2); line-height: 1.55; font-size: 14.5px; overflow-wrap: anywhere; }
+.baja-caja .form-consulta { margin-top: 0; }
+.baja-caja > .link { justify-self: start; font-size: 13px; }
 
 /* ---------- video ---------- */
 .pantalla-video { display: grid; place-items: center; padding: calc(var(--barra) + 8px) 24px 24px; background: #000; }
