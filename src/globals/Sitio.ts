@@ -7,11 +7,12 @@ import { obligatorioEnDefecto } from '../lib/localizacion'
 // Datos del proyecto inmobiliario (una web = un proyecto, que puede tener varias torres).
 // Cambiarlos acá alcanza para "vestir" la plantilla.
 
-const imagenes = (name: string, label: string): Field => ({
+const imagenes = (name: string, label: string, description?: string): Field => ({
   name,
   label,
   type: 'array',
   labels: { singular: 'Imagen', plural: 'Imágenes' },
+  ...(description ? { admin: { description } } : {}),
   fields: [
     { name: 'imagen', type: 'upload', relationTo: 'media', required: true },
     { name: 'epigrafe', type: 'text', localized: true },
@@ -275,7 +276,11 @@ export const Sitio: GlobalConfig = {
         {
           label: 'Galería y video',
           fields: [
-            imagenes('galeria', 'Galería general'),
+            imagenes(
+              'galeria',
+              'Galería general',
+              'Única fuente de la pantalla Galería: se ven estas fotos, en este orden. Las de las torres, amenities y ubicación no se suman.',
+            ),
             {
               name: 'video',
               label: 'Video institucional',

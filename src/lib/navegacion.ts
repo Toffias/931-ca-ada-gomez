@@ -34,7 +34,7 @@ export const seccionesVisibles = cache(async (): Promise<Record<Seccion, boolean
     disponibilidad: s.disponibilidad && fachadas.length > 0,
     amenities: s.amenities && amenities.length > 0,
     recorridos: s.recorridos && recorridos.length > 0,
-    galeria: s.galeria && ((sitio.galeria?.length ?? 0) > 0 || torres.some((t) => t.galeria.length || t.portada)),
+    galeria: s.galeria && (sitio.galeria?.length ?? 0) > 0,
     video: s.video && !!sitio.video,
     obra: s.obra && avances.length > 0,
     ubicacion: s.ubicacion && !!(sitio.ubicacion?.texto || sitio.ubicacion?.cercanias?.length || sitio.ubicacion?.mapaIlustrado || embedsUbicacion(sitio.ubicacion).length),

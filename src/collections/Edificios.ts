@@ -317,6 +317,10 @@ export const Edificios: CollectionConfig = {
               name: 'galeria',
               type: 'array',
               labels: { singular: 'Imagen', plural: 'Imágenes' },
+              admin: {
+                description:
+                  'Fotos de la torre para "El proyecto" y el folleto. No van a la pantalla Galería: esa se arma en Proyecto → Galería y video.',
+              },
               fields: [
                 { name: 'imagen', type: 'upload', relationTo: 'media', required: true },
                 { name: 'epigrafe', type: 'text', localized: true },
