@@ -8,11 +8,11 @@ Al final verifica el SHA desplegado.
 | Item | Valor |
 |---|---|
 | VPS | `82.29.59.19` (`srv1589149.hstgr.cloud`, KVM 1: 1 vCPU / 4 GB, compartido) |
-| Carpeta | `/var/www/constructoras` (`.env` y `media/` viven sólo ahí, git no los toca) |
-| PM2 | `constructoras`, puerto **3003** (3000–3002 son de las otras apps) |
-| Dominio | `https://constructoras.apzsoftware.online` (DNS en GoDaddy, SSL con certbot) |
-| Base | PostgreSQL local, base y usuario `constructoras` |
-| nginx | `/etc/nginx/sites-available/constructoras` (`client_max_body_size 200M` para videos y `.glb`) |
+| Carpeta | `/var/www/ca931` (`.env` y `media/` viven sólo ahí, git no los toca) |
+| PM2 | `ca931`, puerto **3004** (3000–3003, 3010, 3020–3022 y 3030 son de las otras apps) |
+| Dominio | `https://ca931.apzsoftware.online` (DNS en GoDaddy, SSL con certbot) |
+| Base | PostgreSQL local, base y usuario `ca931` |
+| nginx | `/etc/nginx/sites-available/ca931` (`client_max_body_size 200M` para videos y `.glb`) |
 
 ## Contenido: snapshot
 
@@ -36,8 +36,8 @@ byte iguales (incluidos los tamaños `tarjeta` y `grande`). No viajan usuarios n
   no hace falta que la base exista) y commitear `src/migrations/`.
 - Migraciones siempre con `bash scripts/migrar.sh`, no con `pnpm payload migrate` a secas: a veces el binario de
   Payload sale con código 0 sin migrar nada (se vio en el CI) y el script lo detecta, reintenta y si no, corta.
-- Variables nuevas: agregarlas a mano en `/var/www/constructoras/.env`. Las `NEXT_PUBLIC_*` necesitan build.
-- La Google Maps Embed key está restringida por dominio: sumar `constructoras.apzsoftware.online` en Google Cloud.
+- Variables nuevas: agregarlas a mano en `/var/www/ca931/.env`. Las `NEXT_PUBLIC_*` necesitan build.
+- La Google Maps Embed key está restringida por dominio: sumar `ca931.apzsoftware.online` en Google Cloud.
 
 ## Secrets de GitHub
 
@@ -46,7 +46,7 @@ byte iguales (incluidos los tamaños `tarjeta` y `grande`). No viajan usuarios n
 | `VPS_HOST` | `82.29.59.19` |
 | `VPS_SSH_KEY` | clave privada cuya pública está en `/root/.ssh/authorized_keys` del VPS (la misma que usa DS Design) |
 
-El VPS clona con una deploy key propia (`/root/.ssh/constructoras_gh`, host `github.com-constructoras` en
+El VPS clona con una deploy key propia (`/root/.ssh/ca931_gh`, host `github.com-ca931` en
 `/root/.ssh/config`), agregada como *Deploy key* de sólo lectura en el repo.
 
 Rollback: `git reset --hard <sha>` en el VPS y `bash scripts/deploy/actualizar.sh`, o re-correr el deploy de un

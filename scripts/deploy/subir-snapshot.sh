@@ -5,12 +5,12 @@
 #   bash scripts/deploy/subir-snapshot.sh           → sólo si la base del servidor está vacía
 #   bash scripts/deploy/subir-snapshot.sh fresh     → reemplaza el contenido del servidor (no los usuarios)
 #
-# Variables: VPS (root@82.29.59.19), SSH_KEY (~/.ssh/dsdesign_deploy), DEPLOY_DIR (/var/www/constructoras)
+# Variables: VPS (root@82.29.59.19), SSH_KEY (~/.ssh/dsdesign_deploy), DEPLOY_DIR (/var/www/ca931)
 set -euo pipefail
 
 VPS="${VPS:-root@82.29.59.19}"
 SSH_KEY="${SSH_KEY:-$HOME/.ssh/dsdesign_deploy}"
-DEPLOY_DIR="${DEPLOY_DIR:-/var/www/constructoras}"
+DEPLOY_DIR="${DEPLOY_DIR:-/var/www/ca931}"
 MODO="${1:-}"
 SSH="ssh -i $SSH_KEY -o BatchMode=yes"
 
@@ -26,8 +26,8 @@ $SSH "$VPS" "cd $DEPLOY_DIR && set -o pipefail && NODE_ENV=production pnpm seed:
 
 # Verificación: lo que quedó en la base del servidor contra lo que tiene el snapshot
 esperado=$(node -e "const d=require('./snapshot/datos.json').colecciones;console.log(d.media.length, d.unidades.length)")
-real=$($SSH "$VPS" "sudo -u postgres psql -d constructoras -tAc 'select (select count(*) from media), (select count(*) from unidades)'" | tr '|' ' ')
+real=$($SSH "$VPS" "sudo -u postgres psql -d ca931 -tAc 'select (select count(*) from media), (select count(*) from unidades)'" | tr '|' ' ')
 echo "Archivos y unidades — snapshot: $esperado · servidor: $real"
 [ "$esperado" = "$real" ] || { echo "El servidor no quedó igual al snapshot." >&2; exit 1; }
-$SSH "$VPS" "pm2 describe constructoras > /dev/null 2>&1 && pm2 reload constructoras > /dev/null || true"
+$SSH "$VPS" "pm2 describe ca931 > /dev/null 2>&1 && pm2 reload ca931 > /dev/null || true"
 echo "Listo."

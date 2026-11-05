@@ -172,8 +172,8 @@ Completar al crear un proyecto desde la plantilla (en el repo template queda as�
 - Idiomas: castellano (defecto) e inglés
 - Secciones apagadas: amenities, video, obra, ubicación y blog (sin material todavía); recorridos se prende sola si
   el seed trae panorámicas
-- Producción (hosting, base, storage, dominio): VPS Hostinger (pm2 `constructoras`, puerto 3003), Postgres local,
-  `media/` en disco del VPS, `https://constructoras.apzsoftware.online`. Deploy por GitHub Actions y contenido con
+- Producción (hosting, base, storage, dominio): VPS Hostinger (pm2 `ca931`, puerto 3004, base `ca931`), Postgres local,
+  `media/` en disco del VPS, `https://ca931.apzsoftware.online` (la plantilla vive aparte en `constructoras`). Deploy por GitHub Actions y contenido con
   `scripts/deploy/subir-snapshot.sh`: ver [`docs/deploy.md`](docs/deploy.md).
 - Particularidades de este cliente: planos corregidos el 29/10 (PB con expansión, termo en placard, azotea) y
   terminaciones interiores que definió el cliente (granito negro, muebles taupe, porcelanato gris piedra, aberturas

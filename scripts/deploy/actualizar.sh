@@ -1,11 +1,11 @@
 #!/bin/bash
-# Se corre en el VPS, dentro de /var/www/constructoras, con el código ya en el commit a desplegar
+# Se corre en el VPS, dentro de /var/www/ca931, con el código ya en el commit a desplegar
 # (lo llama .github/workflows/deploy.yml; a mano: bash scripts/deploy/actualizar.sh "$(git rev-parse HEAD)").
 set -euo pipefail
 
 SHA="${1:-$(git rev-parse HEAD 2>/dev/null || echo manual)}"
-PM2_NAME="${PM2_NAME:-constructoras}"
-APP_PORT="${APP_PORT:-3003}"
+PM2_NAME="${PM2_NAME:-ca931}"
+APP_PORT="${APP_PORT:-3004}"
 
 # Todo en modo producción: así Payload nunca hace "push" del schema contra la base real (sólo migraciones).
 export NODE_ENV=production
