@@ -57,6 +57,12 @@
 .menu-hijos a:hover, .menu-hijos a.activo { color: var(--texto); background: rgb(var(--tinta) / .05); }
 .menu-pie { display: grid; gap: 10px; padding: 14px 8px 0; border-top: 1px solid var(--borde); color: var(--muted); }
 .menu-contacto { display: flex; gap: 8px; }
+/* crédito del estudio: oscuro es la base, el claro cambia de logo */
+.menu-credito { display: flex; align-items: center; gap: 10px; }
+.menu-credito a { display: block; flex: none; }
+.menu-credito img { width: 34px; height: auto; }
+.menu-credito .solo-claro, [data-tema='claro'] .menu-credito .solo-oscuro { display: none; }
+[data-tema='claro'] .menu-credito .solo-claro { display: block; }
 .menu-contacto a { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: rgb(var(--tinta) / .06); color: var(--texto); }
 
 /* ---------- transiciones de profundidad (lib/transiciones.ts) ----------

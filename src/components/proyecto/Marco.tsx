@@ -138,7 +138,14 @@ export function Marco({ proyecto, menu, disponibilidad, suscripcionObra, childre
               </a>
             )}
           </div>
-          {proyecto.desarrolladora.nombre && <small>{t.comun.desarrolloDe(proyecto.desarrolladora.nombre)}</small>}
+          {/* crédito del estudio que hizo la web; el logo cambia de versión con el tema */}
+          <div className="menu-credito">
+            <small>{t.marco.sitioDesarrolladoPor}</small>
+            <a href="https://apzsoftware.online" target="_blank" rel="noreferrer">
+              <img className="solo-claro" src="/creditos/apz-software.png" alt="APZ Software" width={480} height={362} />
+              <img className="solo-oscuro" src="/creditos/apz-software-oscuro.png" alt="APZ Software" width={480} height={362} />
+            </a>
+          </div>
         </div>
       </nav>
 

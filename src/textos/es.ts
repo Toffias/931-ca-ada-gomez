@@ -107,6 +107,7 @@ export const es = {
     temaOscuro: 'Pasar a tema oscuro',
     temaClaro: 'Pasar a tema claro',
     telefono: 'Teléfono',
+    sitioDesarrolladoPor: 'Sitio web desarrollado por',
   },
 
   qr: {

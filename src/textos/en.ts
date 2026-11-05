@@ -100,6 +100,7 @@ export const en: Textos = {
     temaOscuro: 'Switch to dark theme',
     temaClaro: 'Switch to light theme',
     telefono: 'Phone',
+    sitioDesarrolladoPor: 'Website developed by',
   },
 
   qr: {
