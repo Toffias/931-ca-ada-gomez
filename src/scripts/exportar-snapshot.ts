@@ -31,10 +31,15 @@ for (const slug of COLECCIONES_SNAPSHOT) {
 // el original y sus tamaños (tarjeta, grande): Payload los re-codificaría distinto al subirlos
 const origen = path.resolve(process.cwd(), payload.collections.media.config.upload.staticDir || 'media')
 let bytes = 0
+// Registros cuyo archivo ya no está (restos de un re-seed): se dejan afuera con aviso en vez de cortar.
+colecciones.media = colecciones.media.filter((m) => {
+  const { id, filename } = m as { id: number; filename?: string }
+  if (!filename || fs.existsSync(path.join(origen, filename))) return true
+  console.warn(`Aviso: media #${id} sin archivo (${filename}), no se exporta`)
+  return false
+})
 for (const m of colecciones.media as { filename?: string; sizes?: Record<string, { filename?: string | null }> }[]) {
   if (!m.filename) continue
-  const archivo = path.join(origen, m.filename)
-  if (!fs.existsSync(archivo)) throw new Error(`Falta el archivo ${archivo}`)
   const tamaños = Object.values(m.sizes ?? {}).map((t) => t?.filename).filter((f): f is string => !!f)
   for (const f of [m.filename, ...tamaños]) {
     if (!fs.existsSync(path.join(origen, f))) continue
