@@ -521,6 +521,11 @@ a.chip.activo { border-color: var(--acento); background: color-mix(in srgb, var(
 .recorrido-plano img { width: 100%; opacity: .85; }
 .recorrido-punto { position: absolute; width: 14px; height: 14px; padding: 0; transform: translate(-50%, -50%); border-radius: 50%; background: #fff; border: 3px solid rgba(0,0,0,.5); }
 .recorrido-punto.activo { background: var(--acento); box-shadow: 0 0 0 4px color-mix(in srgb, var(--acento) 35%, transparent); }
+/* flechas acostadas en el piso de la panorámica (marcadores 3D): van sobre la foto, color fijo */
+.recorrido-flecha { cursor: pointer; }
+.recorrido-flecha > div, .recorrido-flecha svg { display: block; width: 100%; height: 100%; }
+.recorrido-flecha svg { color: var(--texto-imagen); opacity: .9; filter: drop-shadow(0 0 2px rgb(0 0 0 / .45)); transition: opacity .2s, transform .3s; }
+.recorrido-flecha:hover svg { opacity: 1; transform: scale(1.08); }
 .pantalla-recorridos .galeria-titulo { pointer-events: none; }
 /* momento del día: arriba al centro, como el selector Planta 2D / 3D */
 .recorrido-variantes { position: absolute; left: 50%; top: calc(var(--barra) + 16px); transform: translateX(-50%); z-index: 6; display: flex; gap: 2px; padding: 3px; border-radius: 99px;

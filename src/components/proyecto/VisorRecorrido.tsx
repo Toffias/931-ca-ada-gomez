@@ -5,6 +5,7 @@ import '@photo-sphere-viewer/markers-plugin/index.css'
 import '@photo-sphere-viewer/virtual-tour-plugin/index.css'
 
 import type { Viewer } from '@photo-sphere-viewer/core'
+import type { MarkerConfig, MarkersPlugin as PluginMarcadores } from '@photo-sphere-viewer/markers-plugin'
 import type { VirtualTourNode, VirtualTourPlugin } from '@photo-sphere-viewer/virtual-tour-plugin'
 import { useEffect, useRef, useState } from 'react'
 
@@ -35,8 +36,53 @@ type Props = {
 
 const panoramaDe = (p: PuntoRecorrido, variante?: string) => (variante && p.panoramas?.[variante]) || p.panorama
 
-// Recorrido 360 propio (spec L): panoramas equirectangulares. Se pasa de un punto a otro con la lista de ambientes
-// o con los puntos del plano, no con flechas en el piso: según dónde quedaba la cámara se superponían.
+// Flechas en el piso: un ">" fino dentro de un círculo, acostado sobre el piso en la dirección del otro ambiente.
+// Es un marcador 3D (elementLayer): queda fijo en la panorámica y, al girar, sale de cuadro como cualquier objeto.
+const FLECHA =
+  '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<circle cx="50" cy="50" r="45" stroke-width="2.4"/><path d="M35 57 L50 42 L65 57" stroke-width="3.8"/></svg>'
+// El plano es cuadrado y con el norte arriba (renders_recorrido.py); estos metros por lado son aproximados y sólo
+// definen a qué distancia en el piso se apoya la flecha.
+const METROS_PLANO = 13
+const ALTURA_CAMARA = 1.5
+// la flecha va entre estos metros de la cámara: ni a los pies ni perdida al fondo
+const DISTANCIA_FLECHA: [number, number] = [1.5, 3.2]
+const TAMANO_FLECHA = 150 // px del elemento; en 3D se ve más chico cuanto más lejos queda
+
+const flechasDe = (origen: PuntoRecorrido, puntos: PuntoRecorrido[]): MarkerConfig[] => {
+  if (origen.x == null || origen.y == null) return []
+  return origen.enlaces.flatMap((clave) => {
+    const destino = puntos.find((q) => q.clave === clave)
+    if (!destino || destino.x == null || destino.y == null) return []
+    const dx = destino.x - origen.x!
+    const dy = destino.y - origen.y!
+    // rumbo desde el norte, en sentido horario (y del plano crece hacia el sur); con sphereCorrection es el yaw
+    const yaw = Math.atan2(dx, -dy)
+    const metros = (Math.hypot(dx, dy) / 100) * METROS_PLANO
+    const d = Math.min(Math.max(metros * 0.6, DISTANCIA_FLECHA[0]), DISTANCIA_FLECHA[1])
+    const pitch = -Math.atan(ALTURA_CAMARA / d)
+    const elemento = document.createElement('div')
+    elemento.innerHTML = FLECHA
+    // el plugin mide el elemento para dibujarlo en 3D: sin tamaño propio tomaría el ancho del visor
+    elemento.style.width = elemento.style.height = `${TAMANO_FLECHA}px`
+    return [
+      {
+        id: `flecha-${clave}`,
+        elementLayer: elemento,
+        className: 'recorrido-flecha',
+        position: { yaw, pitch },
+        size: { width: TAMANO_FLECHA, height: TAMANO_FLECHA },
+        // los marcadores 3D nacen parados mirando al centro: 90° los acuesta, con el ">" apuntando hacia adelante
+        rotation: { pitch: Math.PI / 2 },
+        tooltip: destino.titulo,
+        data: { destino: clave },
+      },
+    ]
+  })
+}
+
+// Recorrido 360 propio (spec L): panoramas equirectangulares. Se pasa de un punto a otro con las flechas del piso,
+// la lista de ambientes o los puntos del plano.
 export function VisorRecorrido({ puntos, inicial, plano, variantes = [], onCambio }: Props) {
   const t = useTextos()
   const textos = useRef(t)
@@ -54,6 +100,7 @@ export function VisorRecorrido({ puntos, inicial, plano, variantes = [], onCambi
     if (!caja.current || !puntos.length) return
     let viewer: Viewer | null = null
     let vivo = true
+    const porClave = new Map(puntos.map((p) => [p.clave, p]))
 
     Promise.all([
       import('@photo-sphere-viewer/core'),
@@ -95,10 +142,17 @@ export function VisorRecorrido({ puntos, inicial, plano, variantes = [], onCambi
         ],
       })
       const vt = viewer.getPlugin<VirtualTourPlugin>(VirtualTourPlugin)
+      const marcadores = viewer.getPlugin<PluginMarcadores>(MarkersPlugin)
       tour.current = vt
       vt.addEventListener('node-changed', ({ node }) => {
         setActual(node.id)
         onCambioRef.current?.(node.id)
+        const punto = porClave.get(node.id)
+        marcadores.setMarkers(punto ? flechasDe(punto, puntos) : [])
+      })
+      marcadores.addEventListener('select-marker', ({ marker }) => {
+        const destino = (marker.data as { destino?: string } | undefined)?.destino
+        if (destino) vt.setCurrentNode(destino)
       })
     })
 

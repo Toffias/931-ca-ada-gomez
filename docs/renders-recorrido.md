@@ -1,9 +1,9 @@
 # Recorrido 360 de las unidades (Blender → web)
 
 Recorrido por el interior de una tipología: una panorámica por ambiente, que se gira con el mouse o el dedo. Abajo
-a la derecha, la lista de ambientes y el plano con los puntos: un click en cualquiera de los dos lleva ahí. (Antes
-había flechas en el piso hacia los puntos enlazados; según dónde quedaba la cámara se superponían. Los `enlaces` se
-siguen calculando y cargando, pero el visor no los dibuja.) Se ve en la ficha (pestaña *Recorrido*) y en `/recorridos/<recorrido>/<punto>`. Lo muestra
+a la derecha, la lista de ambientes y el plano con los puntos: un click en cualquiera de los dos lleva ahí. Cada
+punto `enlazado` además tiene una flecha fina (">" en un círculo) acostada en el piso, fija en la panorámica en la
+dirección del otro ambiente (sale de `x`/`y` del plano) y a 1,5–3,2 m de la cámara: al girar sale de cuadro. Se ve en la ficha (pestaña *Recorrido*) y en `/recorridos/<recorrido>/<punto>`. Lo muestra
 `components/proyecto/VisorRecorrido.tsx` (Photo Sphere Viewer + Virtual Tour).
 
 La meta es **imagen hiperrealista**: es la pantalla donde el comprador "entra" a la unidad. Un interior de cajas
