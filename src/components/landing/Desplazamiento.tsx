@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
+import { Icono } from '@/components/ui/Icono'
 import { useProyecto } from '@/lib/store-proyecto'
 
 type Props = { className?: string; children: React.ReactNode }
@@ -83,6 +84,74 @@ export function Desplazamiento({ className, children }: Props) {
     <div ref={ref} className={`pantalla landing ${className ?? ''}`}>
       {children}
     </div>
+  )
+}
+
+/**
+ * Botón "Comenzar recorrido" del hero: baja solo, a velocidad pareja, hasta el final de la landing para ver toda la
+ * animación sin scrollear. Cualquier gesto del visitante (rueda, toque, teclado, clic) lo corta; mientras corre hay
+ * un botón fijo para detenerlo.
+ */
+export function RecorridoAutomatico({ texto, detener }: { texto: string; detener: string }) {
+  const ref = useRef<HTMLButtonElement>(null)
+  const parar = useRef<(() => void) | null>(null)
+  const [andando, setAndando] = useState(false)
+
+  useEffect(() => () => parar.current?.(), [])
+
+  const comenzar = () => {
+    const raiz = ref.current?.closest<HTMLElement>('.landing')
+    if (!raiz || parar.current) return
+    // posición propia en float: scrollTop redondea y a velocidad baja se quedaría quieto
+    let pos = raiz.scrollTop
+    let antes = performance.now()
+    let frame = 0
+    const paso = (ahora: number) => {
+      const dt = Math.min(64, ahora - antes) / 1000
+      antes = ahora
+      const fin = raiz.scrollHeight - raiz.clientHeight
+      // ~3 s por pantalla: alcanza para que se lean los textos que se encienden
+      pos = Math.min(fin, pos + raiz.clientHeight * 0.32 * dt)
+      raiz.scrollTop = pos
+      if (pos >= fin - 1) return terminar()
+      frame = requestAnimationFrame(paso)
+    }
+    const cortar = (e: Event) => {
+      if (e instanceof KeyboardEvent && ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return
+      terminar()
+    }
+    const eventos = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const
+    const terminar = () => {
+      cancelAnimationFrame(frame)
+      for (const ev of eventos) window.removeEventListener(ev, cortar, true)
+      parar.current = null
+      setAndando(false)
+    }
+    // se escucha en captura y un frame después, para que el clic que lo arrancó no lo corte
+    requestAnimationFrame(() => {
+      if (parar.current !== terminar) return
+      for (const ev of eventos) window.addEventListener(ev, cortar, { capture: true, passive: true })
+    })
+    parar.current = terminar
+    setAndando(true)
+    frame = requestAnimationFrame((t) => {
+      antes = t
+      frame = requestAnimationFrame(paso)
+    })
+  }
+
+  return (
+    <>
+      <button ref={ref} type="button" className="lp-recorrido" onClick={comenzar}>
+        {texto}
+        <Icono nombre="abajo" tamano={18} />
+      </button>
+      {andando && (
+        <button type="button" className="lp-recorrido-detener" onClick={() => parar.current?.()}>
+          <Icono nombre="cerrar" tamano={14} /> {detener}
+        </button>
+      )}
+    </>
   )
 }
 

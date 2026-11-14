@@ -276,6 +276,8 @@ export const en: Textos = {
 
   proyecto: {
     bajar: 'Scroll to discover',
+    recorrido: 'Start the tour',
+    detenerRecorrido: 'Stop the tour',
     guia: 'Scroll',
     kickerManifiesto: 'The project',
     kickerGiro: 'The building',

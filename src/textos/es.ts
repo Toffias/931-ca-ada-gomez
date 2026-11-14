@@ -289,6 +289,8 @@ export const es = {
 
   proyecto: {
     bajar: 'Deslizá para descubrir',
+    recorrido: 'Comenzar recorrido',
+    detenerRecorrido: 'Detener recorrido',
     guia: 'Scroll',
     kickerManifiesto: 'El proyecto',
     kickerGiro: 'El edificio',

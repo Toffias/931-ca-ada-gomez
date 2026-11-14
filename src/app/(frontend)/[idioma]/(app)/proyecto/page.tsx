@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import { BotonConsulta, Cifra, Desplazamiento, TextoEncendido } from '@/components/landing/Desplazamiento'
+import { BotonConsulta, Cifra, Desplazamiento, RecorridoAutomatico, TextoEncendido } from '@/components/landing/Desplazamiento'
 import { EnlaceProfundo } from '@/components/ui/EnlaceProfundo'
 import { Icono } from '@/components/ui/Icono'
 import { cifrasDelProyecto } from '@/lib/cifras'
@@ -79,10 +79,7 @@ export default async function PaginaProyecto() {
           {proyecto.logo ? <img className="lp-hero-logo" src={proyecto.logo.url} alt={proyecto.nombre} /> : <h1>{proyecto.nombre}</h1>}
           {proyecto.eslogan && <p>{proyecto.eslogan}</p>}
         </div>
-        <span className="lp-bajar" aria-hidden>
-          {tx.bajar}
-          <Icono nombre="abajo" tamano={18} />
-        </span>
+        <RecorridoAutomatico texto={tx.recorrido} detener={tx.detenerRecorrido} />
       </section>
 
       {manifiesto && (
