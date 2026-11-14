@@ -273,6 +273,9 @@ export interface Edificio {
    * Se muestra en la home y mientras carga el 3D. Ideal: un render de Blender.
    */
   portada?: (number | null) | Media;
+  /**
+   * Fotos de la torre para "El proyecto" y el folleto. No van a la pantalla Galería: esa se arma en Proyecto → Galería y video.
+   */
   galeria?:
     | {
         imagen: number | Media;
@@ -1272,6 +1275,9 @@ export interface Sitio {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Única fuente de la pantalla Galería: se ven estas fotos, en este orden. Las de las torres, amenities y ubicación no se suman.
+   */
   galeria?:
     | {
         imagen: number | Media;
