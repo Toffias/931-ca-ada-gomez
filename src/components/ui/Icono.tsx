@@ -23,6 +23,7 @@ const TRAZOS = {
   galeria: 'M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4M15 9h0',
   video: 'M4 6h12v12H4zM16 10l4-2.5v9L16 14',
   obra: 'M4 20h16M6 20V10l6-5 6 5v10M10 20v-5h4v5',
+  campana: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0',
   ubicacion: 'M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21zM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 1 0 0 5z',
   contacto: 'M4 6h16v12H4zM4 7l8 6 8-6',
   blog: 'M5 4h11l3 3v13H5zM8 9h8M8 13h8M8 17h5',

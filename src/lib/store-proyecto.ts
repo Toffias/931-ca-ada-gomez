@@ -20,6 +20,8 @@ type EstadoProyecto = {
   menuAbierto: boolean
   qrAbierto: boolean
   suscripcionAbierta: boolean
+  /** true cuando terminó la pantalla de carga inicial (o ya se mostró en esta sesión) */
+  cargaLista: boolean
 
   set: (p: Partial<Omit<EstadoProyecto, 'set'>>) => void
 }
@@ -33,6 +35,7 @@ export const useProyecto = create<EstadoProyecto>((set) => ({
   menuAbierto: false,
   qrAbierto: false,
   suscripcionAbierta: false,
+  cargaLista: false,
 
   set: (p) => set(p),
 }))

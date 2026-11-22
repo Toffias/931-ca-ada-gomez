@@ -9,7 +9,7 @@ import { quitarIdioma } from '@/lib/idiomas'
 import type { ItemMenu } from '@/lib/navegacion'
 import { useProyecto } from '@/lib/store-proyecto'
 import { llegar } from '@/lib/transiciones'
-import type { Disponibilidad, Proyecto } from '@/lib/tipos'
+import type { Disponibilidad, Imagen, Proyecto } from '@/lib/tipos'
 
 import { EnlaceProfundo } from '../ui/EnlaceProfundo'
 import { Icono } from '../ui/Icono'
@@ -17,22 +17,26 @@ import { useRutas, useTextos } from '../ui/ProveedorIdioma'
 import { BotonTema } from './BotonTema'
 import { ConsultaModal } from './ConsultaModal'
 import { ModalQR } from './ModalQR'
+import { PantallaCarga } from './PantallaCarga'
 import { SelectorIdioma } from './SelectorIdioma'
 import { SincronizarDisponibilidad } from './SincronizarDisponibilidad'
 import { ModalSuscripcionObra } from './SuscripcionObra'
 
 type Props = {
-  proyecto: Pick<Proyecto, 'nombre' | 'logo' | 'contacto' | 'legal' | 'privacidad' | 'desarrolladora' | 'tema'>
+  proyecto: Pick<Proyecto, 'nombre' | 'eslogan' | 'logo' | 'contacto' | 'legal' | 'privacidad' | 'desarrolladora' | 'tema'>
   menu: ItemMenu[]
   disponibilidad: Disponibilidad
   /** sección Obra prendida en el admin: ofrece la suscripción a los avances la primera vez */
   suscripcionObra: boolean
+  /** imagen destacada para el modal "Seguí la obra" (último avance o portada del proyecto) */
+  imagenObra?: Imagen | null
+  ultimoAvance?: { titulo: string; fecha: string } | null
   children: React.ReactNode
 }
 
 // Navegación global (spec B): menú lateral, tema, QR de la pantalla, pantalla completa y zoom.
 // Vive en el layout, así no se remonta al pasar de una pantalla a otra.
-export function Marco({ proyecto, menu, disponibilidad, suscripcionObra, children }: Props) {
+export function Marco({ proyecto, menu, disponibilidad, suscripcionObra, imagenObra, ultimoAvance, children }: Props) {
   const pathname = usePathname()
   const rutas = useRutas()
   const t = useTextos()
@@ -157,7 +161,20 @@ export function Marco({ proyecto, menu, disponibilidad, suscripcionObra, childre
         <AvisoLlegada />
       </Suspense>
       <ConsultaModal privacidad={proyecto.privacidad} whatsapp={c.whatsapp} motivos={c.motivos} />
-      <ModalSuscripcionObra privacidad={proyecto.privacidad} automatico={suscripcionObra} />
+      <ModalSuscripcionObra
+        nombre={proyecto.nombre}
+        eslogan={proyecto.eslogan}
+        privacidad={proyecto.privacidad}
+        automatico={suscripcionObra}
+        imagen={imagenObra}
+        ultimoAvance={ultimoAvance}
+      />
+      <PantallaCarga
+        nombre={proyecto.nombre}
+        logo={proyecto.logo}
+        eslogan={proyecto.eslogan}
+        desarrolladora={proyecto.desarrolladora.nombre}
+      />
     </div>
   )
 }
